@@ -74,5 +74,5 @@ npm install --save-dev sass style-loader css-loader sass-loader && \
 touch webpack.config.ts .eslintrc .eslintignore .prettierrc && \
 echo -e "module.exports = {\n  // your webpack config here\n}" > webpack.config.ts && \
 echo -e "{\n  // your eslint config here\n}" > .eslintrc && \
-echo -e "{\n  // your prettier config here\n}" > .prettierrc && \
+echo -e "{\n  // your prettier config here\n}" > .prettierrc
 ```
