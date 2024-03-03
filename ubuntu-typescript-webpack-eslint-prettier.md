@@ -74,5 +74,31 @@ npm install --save-dev sass style-loader css-loader sass-loader && \
 touch webpack.config.ts .eslintrc .eslintignore .prettierrc && \
 echo -e "module.exports = {\n  // your webpack config here\n}" > webpack.config.ts && \
 echo -e "{\n  // your eslint config here\n}" > .eslintrc && \
-echo -e "{\n  // your prettier config here\n}" > .prettierrc
+echo -e "{\n  // your prettier config here\n}" > .prettierrc && \
+echo '{
+  "compilerOptions": {
+    // Strict Checks
+    "alwaysStrict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
+    "strictFunctionTypes": true,
+    "noImplicitThis": true,
+    "strictBindCallApply": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    // Linter Checks
+    "noImplicitReturns": true, // https://eslint.org/docs/rules/consistent-return ?
+    "noFallthroughCasesInSwitch": true, // https://eslint.org/docs/rules/no-fallthrough
+    "noUnusedLocals": true, // https://eslint.org/docs/rules/no-unused-vars
+    "noUnusedParameters": true, // https://eslint.org/docs/rules/no-unused-vars#args
+    "allowUnreachableCode": false, // https://eslint.org/docs/rules/no-unreachable ?
+    "allowUnusedLabels": false, // https://eslint.org/docs/rules/no-unused-labels
+    // Base Strict Checks
+    "noImplicitUseStrict": false,
+    "suppressExcessPropertyErrors": false,
+    "suppressImplicitAnyIndexErrors": false,
+    "noStrictGenericChecks": false
+  }
+}' > tsconfig.json
 ```
