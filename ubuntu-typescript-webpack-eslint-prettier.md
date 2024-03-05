@@ -252,5 +252,7 @@ echo -e '<!DOCTYPE html>
 </body>
 </html>' > src/index.html && \
 
-webpack serve --open
+sed  '/scripts/a \\t"build": "webpack",\n\t"serve": "webpack serve --open",' package.json  && \
+
+npm run serve
 ```
