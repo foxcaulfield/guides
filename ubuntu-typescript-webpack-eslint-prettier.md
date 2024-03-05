@@ -79,7 +79,7 @@ touch webpack.config.ts .eslintrc .eslintignore .prettierrc && \
 touch src/ts/main.ts && \
 touch src/index.html && \
 
-echo -e "import path from "path";
+echo -e 'import path from "path";
 import webpack from "webpack";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import CompressionPlugin from "compression-webpack-plugin";
@@ -154,7 +154,7 @@ const config: webpack.Configuration = {
 			enforceSizeThreshold: 50000,
 			cacheGroups: {
 				defaultVendors: {
-					test: /[\\/]node_modules[\\/]/,
+					test: /[\\\\/]node_modules[\\\\/]/,
 					priority: -10,
 					reuseExistingChunk: true
 				},
@@ -169,9 +169,9 @@ const config: webpack.Configuration = {
 };
 
 export default config;
-" > webpack.config.ts && \
+' > webpack.config.ts && \
 
-echo -e "{
+echo -e '{
     "root": true,
     "parser": "@typescript-eslint/parser",
     "plugins": [
@@ -193,17 +193,17 @@ echo -e "{
     "env": {
         "node": true
     }
-}" > .eslintrc && \
+}' > .eslintrc && \
 
 echo -e "node_modules\n dist" > .eslintignore && \
 
-echo -e "{
+echo -e '{
     "semi": true,
     "trailingComma": "es5",
     "singleQuote": false,
     "printWidth": 120,
     "useTabs": true
-}" > .prettierrc && \
+}' > .prettierrc && \
 
 echo '{
   "compilerOptions": {
@@ -212,7 +212,7 @@ echo '{
     "strict": true, /* Enable all strict type-checking options. */
 
     "skipLibCheck": false, /* Skip type checking all .d.ts files. */
-    "esModuleInterop": false, /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */
+    "esModuleInterop": true, /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */
     "forceConsistentCasingInFileNames": false, /* Ensure that casing is correct in imports. */
     
     // Strict Checks
@@ -240,7 +240,7 @@ echo '{
   }
 }' > tsconfig.json && \
 
-echo -e "<!DOCTYPE html>
+echo -e '<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -250,7 +250,7 @@ echo -e "<!DOCTYPE html>
 <body>
     
 </body>
-</html>" > src/index.html && \
+</html>' > src/index.html && \
 
 webpack serve --open
 ```
