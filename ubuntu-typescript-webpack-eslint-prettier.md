@@ -77,6 +77,14 @@ echo -e "{\n  // your eslint config here\n}" > .eslintrc && \
 echo -e "{\n  // your prettier config here\n}" > .prettierrc && \
 echo '{
   "compilerOptions": {
+    "target": "ES2020", /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
+    "module": "commonjs", /* Specify what module code is generated. */
+    "strict": true, /* Enable all strict type-checking options. */
+
+    "skipLibCheck": false, /* Skip type checking all .d.ts files. */
+    "esModuleInterop": false, /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */
+    "forceConsistentCasingInFileNames": false, /* Ensure that casing is correct in imports. */
+    
     // Strict Checks
     "alwaysStrict": true,
     "noImplicitAny": true,
@@ -98,7 +106,7 @@ echo '{
     "noImplicitUseStrict": false,
     "suppressExcessPropertyErrors": false,
     "suppressImplicitAnyIndexErrors": false,
-    "noStrictGenericChecks": false
+    "noStrictGenericChecks": false,
   }
 }' > tsconfig.json
 ```
