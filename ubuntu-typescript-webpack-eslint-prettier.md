@@ -61,8 +61,10 @@ Remember to configure your webpack.config.ts, .eslintrc, .eslintignore, and .pre
 Here's a single command that includes all the steps:
 ```
 sudo apt install nodejs && \
+
 mkdir my_project && \
 cd my_project && \
+
 npm init -y && \
 npm install --save-dev webpack webpack-cli webpack-dev-server && \
 npm install --save-dev typescript ts-loader ts-node && \
@@ -252,7 +254,7 @@ echo -e '<!DOCTYPE html>
 </body>
 </html>' > src/index.html && \
 
-sed  '/scripts/a \\t"build": "webpack",\n\t"serve": "webpack serve --open",' package.json  && \
+sed -i '/scripts/a \\t"build": "webpack",\n\t"serve": "webpack serve --open",' package.json  && \
 
 npm run serve
 ```
