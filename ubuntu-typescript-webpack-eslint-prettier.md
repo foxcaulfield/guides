@@ -80,6 +80,7 @@ mkdir --parents src/ts && \
 touch webpack.config.ts .eslintrc .eslintignore .prettierrc && \
 touch src/ts/main.ts && \
 touch src/index.html && \
+touch src/favicon.ico && \
 
 echo -e 'import path from "path";
 import webpack from "webpack";
