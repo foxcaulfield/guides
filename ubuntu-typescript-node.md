@@ -71,14 +71,12 @@ Add a nodemon.json config.
 ```
 sudo apt install nodejs && \
 
-npm init -y && \
+sudo npm init -y && \
 
-npm install --save-dev typescript ts-node nodemon @types/node  && \
+sudo npm install --save-dev typescript ts-node nodemon @types/node  && \
+sudo npm install --save-dev rimraf && \
 
-npm install --save-dev rimraf && \
-
-
-npx tsc --init \
+tsc --init \
 --rootDir src \
 --outDir build \
 --target ES2020 \
@@ -120,7 +118,9 @@ echo '{
   "start:dev": "npx nodemon",
   "build":"rimraf ./build && tsc",
   "start": "npm run build && node build/index.js"
-}' > nodemon.json
+}' > nodemon.json && \
+
+mkdir src build
 ```
 
 
