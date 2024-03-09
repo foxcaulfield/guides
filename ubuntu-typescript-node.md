@@ -81,7 +81,6 @@ npm install --save-dev rimraf && \
 npx tsc --init \
 --rootDir src \
 --outDir build \
-
 --target ES2020 \
 --module commonjs \
 --strict \
@@ -107,7 +106,6 @@ npx tsc --init \
 --suppressExcessPropertyErrors false \
 --suppressImplicitAnyIndexErrors false \
 --noStrictGenericChecks false \
-
 --resolveJsonModule \
 --lib es6 \
 --allowJs true && \
