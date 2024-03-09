@@ -114,7 +114,7 @@ echo '{
   "watch": ["src"],
   "ext": ".ts,.js",
   "ignore": [],
-  "exec": "npx ts-node ./src/index.ts"
+  "exec": "npx ts-node ./src/index.ts",
   "start:dev": "npx nodemon",
   "build":"rimraf ./build && tsc",
   "start": "npm run build && node build/index.js"
