@@ -240,3 +240,34 @@ export class FeedController {
   }
 }
 ```
+
+22. Create init database script
+
+```shell
+touch init.sql
+```
+
+```sql
+CREATE DATABASE treesn_db;
+```
+
+22. Create _docker-compose.file_
+
+```yml
+version: "3.8"
+services:
+  postgres_db:
+    image: postgres
+    container_name: postgres_cont
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "9999:5432"
+    volumes:
+      - postgres_db:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+volumes:
+  postgres_db:
+    driver: local
+```
