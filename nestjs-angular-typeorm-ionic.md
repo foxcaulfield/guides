@@ -1,3 +1,5 @@
+# Nestjs init
+
 1. Install nestjs
 2. Create project folder
 3. Create nested folder for server in it by initializing a nestjs project
@@ -50,24 +52,6 @@ POSTGRES_DATABASE=treesn_db
 })
 // ...
 ```
-
-<!-- 8. Create a feed module
-
-```shell
-nest generate module feed
-```
-
-9. Create a feed service
-
-```shell
-nest generate service feed/services/feed --flat --no-spec
-```
-
-10. Create a feed controller
-
-```shell
-nest generate controller feed/controllers/feed --flat --no-spec
-``` -->
 
 8. 9. 10. Create a feed resource
 
@@ -137,14 +121,14 @@ export class PostEntity implements IPost {
 /* module */
 // ...
 @Module({
-  imports: [TypeOrmModule.forFeature([FeedPostEntity])],
+  imports: [TypeOrmModule.forFeature([PostEntity])],
   // ...
 })
 export class FeedModule {}
 // ...
 ```
 
-17. Inject the **FeedPostEntity** to **FeedService** in order to
+17. Inject the **PostEntity** to **FeedService** in order to
     implement a repository pattern
 
 18. Inject the feed service **to** the feed **controller** with the constructor based injection
@@ -267,7 +251,319 @@ services:
     volumes:
       - postgres_db:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./init.sh:/docker-entrypoint-initdb.d/init.sh
+    entrypoint: ["sh", "/docker-entrypoint-initdb.d/init.sh"]
 volumes:
   postgres_db:
     driver: local
+```
+
+23. Init script for db exist check **init.sh**
+
+```shell
+#!/bin/bash
+set -e
+
+# Проверяем, существует ли база данных
+if psql -U "$POSTGRES_USER" -tc "SELECT 1 FROM pg_database WHERE datname = '$POSTGRES_DATABASE'" | grep -q 1; then
+    echo "Database $POSTGRES_DATABASE already exists"
+else
+    echo "Creating database $POSTGRES_DATABASE"
+    psql -U "$POSTGRES_USER" -c "CREATE DATABASE $POSTGRES_DATABASE"
+fi
+```
+
+```shell
+chmod +x init.sh
+```
+
+# Angular init
+
+- Install ionic cli
+
+```shell
+npm i -g @ionic/cli
+```
+
+- Init ionic app
+
+```shell
+ionic start
+```
+
+- Start ionic app from the proper directory
+
+```shell
+ionic serve
+```
+
+- Create a _header_ component
+
+```shell
+ionic generate component home/components/header
+```
+
+- Import the component (?)
+
+```ts
+// home.module.ts
+//...
+declarations: [HomePage, HeaderComponent];
+// ...
+```
+
+- Delete everything from _home.page.html_
+- Delete everything from _home.page.scss_
+- Create a _popover_ component
+
+```shell
+ionic generate component home/components/header/popover
+```
+
+- Add a profile picture to _src/assets/profile-pic.jpg_
+
+- Content of _header.component_
+
+```html
+<!-- header.component.html -->
+<ion-header class="ion-container ion-no-border">
+  <ion-toolbar>
+    <div class="toolbar-wrapper">
+      <ion-buttons slot="start" class="ion-no-padding">
+        <ion-button>
+          <ion-icon color="primary" class="treesn-logo" name="treesn-logo">
+          </ion-icon>
+        </ion-button>
+        <ion-searchbar
+          class="ion-hide-lg-down"
+          color="tertiary"
+          placeholder="Search"
+        >
+        </ion-searchbar>
+      </ion-buttons>
+
+      <ion-grid>
+        <ion-row class="ion-justify-content-end">
+          <ion-col size="auto">
+            <ion-icon name="home"></ion-icon>
+            <div>Home</div>
+          </ion-col>
+          <ion-col size="auto">
+            <ion-icon name="People"></ion-icon>
+            <div>My network</div>
+          </ion-col>
+          <ion-col size="auto">
+            <ion-icon name="briefcase"></ion-icon>
+            <div>Jobs</div>
+          </ion-col>
+          <ion-col size="auto">
+            <ion-icon name="chatbox-ellipses"></ion-icon>
+            <div>Messages</div>
+          </ion-col>
+          <ion-col size="auto">
+            <ion-icon name="notifications"></ion-icon>
+            <ion-badge
+              color="danger"
+              style="
+              position: absolute;
+              margin-left: -10px;
+              margin-top: -5px;
+              height: 16px;
+              width: 16px;
+              border-radius: 9999px;"
+              >2</ion-badge
+            >
+            <div>Notifications</div>
+          </ion-col>
+          <ion-col size="auto" (click)="presentPopover($event)">
+            <ion-avatar>
+              <ion-img src="../../../../assets/profile-pic.jpg"></ion-img>
+            </ion-avatar>
+            <div
+              style="
+              display: flex;
+              justify-content: center;
+              align-items: center;
+            "
+            >
+              Me
+              <ion-icon
+                style="font-size: 16px;"
+                name="caret-down-outline"
+              ></ion-icon>
+            </div>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </div>
+  </ion-toolbar>
+</ion-header>
+```
+
+```scss
+// header.component.scss
+.toolbar-wrapper {
+  display: flex;
+  max-width: 1128px;
+  margin: auto;
+}
+
+.treesn-logo {
+  font-size: 40px;
+}
+
+ion-icon {
+  font-size: 24px;
+}
+
+ion-col {
+  width: 80px !important;
+  text-align: center;
+  div {
+    font-size: 12px;
+    font-weight: 400;
+  }
+}
+
+ion-badge {
+  font-size: 12px;
+  font-weight: 400;
+}
+
+ion-searchbar {
+  --box-shadow: none;
+  transform: scale(0.8);
+  margin-left: -40px;
+}
+
+ion-header {
+  border-bottom: 1px solid var(--ion-color-light-tint);
+}
+
+ion-avatar {
+  width: 24px;
+  height: 24px;
+  margin: auto;
+}
+```
+
+```ts
+// header.component.ts
+import { Component, OnInit } from "@angular/core";
+import { PopoverController } from "@ionic/angular"; // from docs
+import { PopoverComponent } from "./popover/popover.component";
+
+@Component({
+  selector: "app-header"
+  templateUrl: "./header.component.html"
+  styleUrls: ["./header.component.scss"]
+})
+export class HeaderComponent implements OnInit {
+  constructor(
+    public popoverController: PopoverController // inject it
+  ) {}
+
+  ngOnInit() {  }
+
+  async presentPopover(event: any) {
+    const popover = await this.popoverController.create({
+      component: PopoverComponent,
+      cssClass: "my-custom-class",
+      event: event,
+      // translucent: true
+      showBackdrop: false
+    });
+    await popover.present();
+
+    const { role } = await popover.onDidDismiss();
+    console.log("onDidDismiss resolved with role", role)
+  }
+}
+```
+
+```scss
+// global.scss
+.my-custom-class .popover-content {
+  width: 300px;
+  margin-top: 16px;
+
+  --box-shadow: none;
+}
+```
+
+- Content of _popover.component.html_
+
+```html
+<!-- popover.component.html -->
+<ion-card>
+  <ion-card-header
+    ><ion-grid>
+      <ion-row class="ion-align-items-center ion-justify-content-center">
+        <ion-col size="auto">
+          <ion-avatar>
+            <ion-img src="../../../../../assets/profile-pic.jpg"></ion-img>
+          </ion-avatar>
+        </ion-col>
+        <ion-col>
+          <ion-card-title> The Name </ion-card-title>
+          <ion-card-subtitle> Full Stack Developer </ion-card-subtitle>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+    <ion-button expand="block" size="small" fill="outline" color="primary"
+      >View Profile</ion-button
+    >
+  </ion-card-header>
+
+  <ion-card-content>
+    <ion-card-subtitle color="dark">Account</ion-card-subtitle>
+    <p class="ion-padding-top">Settings & Privacy</p>
+    <p class="ion-padding-top">Help</p>
+    <p class="ion-padding-top">Language</p>
+  </ion-card-content>
+
+  <div class="item-divider"></div>
+
+  <ion-card-content>
+    <ion-card-subtitle color="dark">Manage</ion-card-subtitle>
+    <p class="ion-padding-top">Posts & Activities</p>
+    <p class="ion-padding-top">Job Posting Account</p>
+  </ion-card-content>
+
+  <div class="item-divider"></div>
+
+  <ion-card-content>
+    <p (click)="onSignOut()">Sign out</p>
+  </ion-card-content>
+</ion-card>
+```
+
+```scss
+// popover.component.scss
+.item-divider {
+  border-bottom: 1px solid var(--ion-color-light-tint);
+}
+
+ion-card-content p:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+```
+
+```ts
+// popover.component.ts
+import { Component, OnInit } from "@angular/core";
+
+@Component({
+  selector: "app-popover",
+  templateUrl: "./popover.component.html",
+  styleUrls: ["./popover.component.scss"],
+})
+export class PopoverComponent implements OnInit {
+  constructor() {}
+  ngOnInit() {}
+  onSignOut() {
+    console.log("onSignOut called!");
+  }
+}
 ```
