@@ -26,9 +26,19 @@ Here's how you can set it up using ESLint with the `@typescript-eslint` plugin:
        "eslint:recommended",
        "plugin:@typescript-eslint/recommended"
      ],
-     "rules": {
-       "@typescript-eslint/explicit-member-accessibility": ["error", { "accessibility": "explicit" }]
-     }
+  rules: {
+    '@typescript-eslint/interface-name-prefix': 'error',
+    '@typescript-eslint/explicit-function-return-type': 'error',
+    '@typescript-eslint/explicit-module-boundary-types': 'error',
+    '@typescript-eslint/no-explicit-any': 'error',
+    "@typescript-eslint/explicit-member-accessibility": ["error", { "accessibility": "explicit" }],
+    "@typescript-eslint/typedef": [
+      "error",
+      {
+        "memberVariableDeclaration": true
+      }
+    ]
+  },
    }
    ```
 
