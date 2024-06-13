@@ -22,28 +22,28 @@ Here's how you can set it up using ESLint with the `@typescript-eslint` plugin:
        "sourceType": "module"
      },
      "plugins": ["@typescript-eslint"],
-     "extends": [
-       "eslint:recommended",
-       "plugin:@typescript-eslint/recommended"
-     ],
-  rules: {
-    '@typescript-eslint/interface-name-prefix': 'error',
-    '@typescript-eslint/explicit-function-return-type': 'error',
-    '@typescript-eslint/explicit-module-boundary-types': 'error',
-    '@typescript-eslint/no-explicit-any': 'error',
-    "@typescript-eslint/explicit-member-accessibility": ["error", { "accessibility": "explicit" }],
-    "@typescript-eslint/typedef": [
-      "error",
-      {
-        "memberVariableDeclaration": true
-      }
-    ]
-  },
+     "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+     "rules": {
+       "@typescript-eslint/interface-name-prefix": "error",
+       "@typescript-eslint/explicit-function-return-type": "error",
+       "@typescript-eslint/explicit-module-boundary-types": "error",
+       "@typescript-eslint/no-explicit-any": "error",
+       "@typescript-eslint/explicit-member-accessibility": [
+         "error",
+         { "accessibility": "explicit" }
+       ],
+       "@typescript-eslint/typedef": [
+         "error",
+         {
+           "memberVariableDeclaration": true
+         }
+       ]
+     }
    }
    ```
 
 3. **Run ESLint:**
-   You can now run ESLint to check your TypeScript files for explicit member accessibility. 
+   You can now run ESLint to check your TypeScript files for explicit member accessibility.
 
    ```bash
    npx eslint . --ext .ts
@@ -55,12 +55,13 @@ Here's an example of how the rule works. Given the following TypeScript class:
 
 ```typescript
 class Example {
-  name: string;  // This will trigger a linting error
+  name: string; // This will trigger a linting error
   constructor(name: string) {
     this.name = name;
   }
 
-  getName() {  // This will also trigger a linting error
+  getName() {
+    // This will also trigger a linting error
     return this.name;
   }
 }
@@ -82,4 +83,5 @@ class Example {
 ```
 
 ### Summary
+
 By using ESLint with the `@typescript-eslint` plugin, you can enforce the use of explicit access modifiers in your TypeScript classes. This setup helps maintain code consistency and clarity regarding the accessibility of class members.
