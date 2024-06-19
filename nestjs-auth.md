@@ -181,25 +181,51 @@ export class AppService {
 - Content of **auth/auth.controller.ts**
 
 ```ts
-import { Controller, Get, Post, Body, UseGuards } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+  ValidationPipe,
+} from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { LocalGuard } from "./guards/local.guard";
 import { Prisma } from "@prisma/client";
 import { JwtAuthGuard } from "./guards/jwt.guard";
+import { AuthPayloadDto } from "./dto/auth-payload.dto";
 
 @Controller("auth")
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post("register")
-  async register(@Body() registerDto: Prisma.UsersCreateInput): Promise<any> {
+  async register(
+    @Body(
+      new ValidationPipe({
+        whitelist: true, // Automatically strip non-whitelisted properties
+        forbidNonWhitelisted: true,
+        transform: true,
+      })
+    )
+    registerDto: Prisma.UsersCreateInput
+  ): Promise<any> {
     console.log("register", registerDto);
     return await this.authService.register(registerDto);
   }
 
   @Post("login")
   @UseGuards(LocalGuard)
-  async login(@Body() loginDto: Prisma.UsersCreateInput) {
+  async login(
+    @Body(
+      new ValidationPipe({
+        whitelist: true, // Automatically strip non-whitelisted properties
+        forbidNonWhitelisted: true,
+        transform: true,
+      })
+    )
+    loginDto: AuthPayloadDto
+  ) {
     console.log("login", loginDto);
     return await this.authService.login(loginDto);
   }
@@ -300,7 +326,7 @@ export class AuthService {
     private readonly usersService: UsersService
   ) {}
 
-  async login(loginDto: Prisma.UsersCreateInput) {
+  async login(loginDto: AuthPayloadDto) {
     console.log("auth service login", loginDto);
     const { username, password } = loginDto;
 
@@ -387,8 +413,17 @@ export class AuthService {
 - Content of **auth/dto/auth-payload.dto.ts**
 
 ```ts
+// export class AuthPayloadDto {
+//   username: string;
+//   password: string;
+// }
+import { IsString } from "class-validator";
+
 export class AuthPayloadDto {
+  @IsString()
   username: string;
+
+  @IsString()
   password: string;
 }
 ```
@@ -628,6 +663,7 @@ export class UsersService {
 ```
 
 ## Irrelevant
+
 <!--
 ## Edit database service
 
