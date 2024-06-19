@@ -46,3 +46,9 @@ model User {
   name String
 }
 ```
+
+- Generate a database service
+```
+nest generate service database
+```
+
