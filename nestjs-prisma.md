@@ -14,7 +14,7 @@ nest new project-name --skip-git
 - Install **prisma**
 
 ```shell
-npm i -D prisma
+npm i -D prisma @prisma/client
 ```
 
 - Initialize **prisma**
