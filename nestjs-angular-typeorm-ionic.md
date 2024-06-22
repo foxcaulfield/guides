@@ -1,4 +1,4 @@
-# Nestjs init
+<!-- # Nestjs init
 
 1. Install nestjs
 2. Create project folder
@@ -6,9 +6,9 @@
 
 ```shell
 nest new server
-```
+``` -->
 
-4. Install additional dependencies
+<!-- 4. Install additional dependencies
 
 ```shell
 npm i @nestjs/typeorm typeorm pg @nestjs/config
@@ -18,7 +18,7 @@ npm i @nestjs/typeorm typeorm pg @nestjs/config
 
 ```shell
 touch .env
-```
+``` -->
 
 6. Fill in the **.env** file
 
