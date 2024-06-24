@@ -33,4 +33,5 @@ nx generate @nx/angular:application \
 --skipTests=true \
 --ssr=false \
 --unitTestRunner=none \
+--directory=apps/frontend
 ```
