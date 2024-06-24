@@ -13,7 +13,8 @@ npx create-nx-workspace@latest \
 ```
 
 ```
-npm install @nrwl/angular
+// npm install @nrwl/angular
+nx add @nx/angular
 ```
 
 ```
