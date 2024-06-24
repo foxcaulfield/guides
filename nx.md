@@ -11,6 +11,11 @@ npx create-nx-workspace@latest \
 --ssr=false \
 --workspaceType=integrated
 ```
+
+```
+npm install @nrwl/angular
+```
+
 ```
 nx generate @nx/angular:application \
 --name frontend \
