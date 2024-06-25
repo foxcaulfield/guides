@@ -35,3 +35,14 @@ nx generate @nx/angular:application \
 --unitTestRunner=none \
 --directory=apps/frontend
 ```
+
+
+
+You can add this to your nx.json and it will do what you want. I agree that it’s frustrating when they change it seemingly at random.
+```
+"workspaceLayout": {
+    "appsDir": "apps",
+    "libsDir": "packages"
+  }
+```
+
