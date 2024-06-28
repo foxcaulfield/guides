@@ -71,3 +71,76 @@ generator client {
   output = "../../../node_modules/.prisma/client"
 }
 ```
+- Add models
+```
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id          Int     @id @default(autoincrement())
+  username    String  @unique
+  password    String
+  displayName String? @default("")
+  role        Role    @default(USER)
+}
+
+model UserSetting {
+  id               Int     @id @default(autoincrement())
+  isNotificationOn Boolean
+  isSmsEnabled     Boolean
+}
+
+model Post {
+  id          Int    @id @default(autoincrement())
+  title       String
+  description String
+}
+
+// Orders & Customers
+
+model Customer {
+  customer_id  String  @id @default(uuid())
+  company_name String  @db.VarChar(40)
+  orders       Order[]
+
+  CustomerSetting CustomerSetting?
+}
+
+model CustomerSetting {
+  setting_id           String  @id @default(uuid())
+  customer_description String? @db.Text()
+
+  Customer    Customer @relation(fields: [customer_id], references: [customer_id])
+  customer_id String   @unique
+}
+
+model Order {
+  orded_id    String        @id @default(uuid())
+  order_date  DateTime      @db.Date
+  customer_id String
+  Customer    Customer      @relation(fields: [customer_id], references: [customer_id])
+  OrderDetail OrderDetail[]
+}
+
+model Product {
+  product_id   String        @id @default(uuid())
+  product_name String        @db.VarChar(40)
+  unit_price   Float?        @db.Real
+  OrderDetail  OrderDetail[]
+}
+
+model OrderDetail {
+  order_id   String
+  product_id String
+
+  quantity Int @db.SmallInt
+
+  Order   Order   @relation(fields: [order_id], references: [orded_id])
+  Product Product @relation(fields: [product_id], references: [product_id])
+
+  @@id([order_id, product_id])
+}
+```
