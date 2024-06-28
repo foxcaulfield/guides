@@ -145,7 +145,39 @@ model OrderDetail {
 }
 ```
 
-- Update _.env_ file
+- Update _project.json_ for the _prisma-schema_ lib
+```
+{
+  "name": "prisma-schema",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/shared/prisma-schema/src",
+  "projectType": "library",
+  "tags": ["type:lib", "scope:shared"],
+  "// targets": "to see all targets run: nx show project prisma-schema --web",
+  "targets": {
+    "prisma": {
+      "command": "prisma",
+      "options": {
+        "cwd": "./libs/shared/prisma-schema"
+      }
+    },
+    "migrate": {
+      "command": "prisma migrate dev",
+      "options": {
+        "cwd": "./libs/shared/prisma-schema"
+      }
+    },
+    "generate-types": {
+      "command": "prisma generate",
+      "options": {
+        "cwd": "./libs/shared/prisma-schema"
+      }
+    }
+  }
+}
+```
+
+- Update _.env_ file (move up?)
 ```
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=password
