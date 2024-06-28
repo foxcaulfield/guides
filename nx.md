@@ -192,3 +192,9 @@ DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}
 ```
 
 - Run _postgres_ in a container or any available way
+
+- Run type generating and migration
+```
+nx run prisma-schema:generate-types
+nx run prisma-schema:migrate
+```
