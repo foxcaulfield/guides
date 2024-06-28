@@ -144,3 +144,17 @@ model OrderDetail {
   @@id([order_id, product_id])
 }
 ```
+
+- Update _.env_ file
+```
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=password
+POSTGRES_DB=db1
+POSTGRES_PORT=5432
+POSTGRES_HOST=postgres_dev_cont
+# POSTGRES_PORT=9999
+# POSTGRES_HOST=localhost
+JWT_SECRET = 'secretKey'
+JWT_EXPIRES_IN = '1h'
+DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?schema=public
+```
