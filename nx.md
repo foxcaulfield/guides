@@ -229,3 +229,20 @@ import { PrismaProviderModule } from '@fs4/prisma-provider';
 ...
 ```
 - And then to the feature service and the controller
+
+## Import feature
+- Add the feature to the imports array of the backend app module
+```
+import { Module } from '@nestjs/common';
+
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { PostModule } from '@fs4/feature-post';
+
+@Module({
+  imports: [PostModule], // <---
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule {}
+```
