@@ -43,11 +43,16 @@ nx generate @nx/angular:application \
 
 
 
-You can add this to your nx.json and it will do what you want. I agree that it’s frustrating when they change it seemingly at random.
+- You can add this to your nx.json and it will do what you want. I agree that it’s frustrating when they change it seemingly at random.
 ```
 "workspaceLayout": {
     "appsDir": "apps",
     "libsDir": "packages"
   }
+```
+
+- Add prisma
+```
+npm i prisma @prisma/client
 ```
 
