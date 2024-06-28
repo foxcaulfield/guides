@@ -55,12 +55,13 @@ nx generate @nx/angular:application \
 ```
 npm i prisma @prisma/client
 ```
-- Create two (shared) libs: one for a schema, one for a nestjs module (+ service). [Guide here](https://github.com/nrwl/nx-recipes/tree/main/nestjs-prisma).
-
 - Perform prisma init
 ```
 npx prisma init
 ```
+## Create two (shared) libs: one for a schema, one for a nestjs module (+ service). [Guide here](https://github.com/nrwl/nx-recipes/tree/main/nestjs-prisma).
+
+### First one
 
 - Move _schema.prisma_ file to the root of the _prisma-schema_ lib folder
 - Remove _src_ from the root of the _prisma-schema_ lib folder
@@ -197,4 +198,23 @@ DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}
 ```
 nx run prisma-schema:generate-types
 nx run prisma-schema:migrate
+```
+### Second one
+
+- Command
+```
+npx nx generate @nx/nest:library \
+--name=libs/backend/prisma-provider \
+--importPath=@fs4/prisma-provider \
+--projectNameAndRootFormat=as-provided \
+--service=true \
+--tags=type:lib,scope:backend \
+--unitTestRunner=none \
+--no-interactive
+```
+
+
+## Generate feature
+```
+npx nx generate @nx/nest:library --name=libs/backend/features/post --controller=true --importPath=@fs4/feature-post --projectNameAndRootFormat=as-provided --service=true --tags=type:feature,scope:backend --unitTestRunner=none --no-interactive 
 ```
