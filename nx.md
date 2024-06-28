@@ -228,3 +228,4 @@ import { PrismaProviderModule } from '@fs4/prisma-provider';
   imports: [PrismaProviderModule],
 ...
 ```
+- And then to the feature service and the controller
