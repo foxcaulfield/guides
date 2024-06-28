@@ -158,3 +158,5 @@ JWT_SECRET = 'secretKey'
 JWT_EXPIRES_IN = '1h'
 DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?schema=public
 ```
+
+- Run _postgres_ in a container or any available way
