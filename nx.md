@@ -19,7 +19,7 @@ npx create-nx-workspace@latest \
 ```
 // npm install @nrwl/angular
 nx add @nx/angular
-nx add @nx/nest
+npm i @nx/nest
 ```
 
 ```
