@@ -1,3 +1,4 @@
+- Init workspace
 ```
 npx create-nx-workspace@latest \
 --preset=nest \
@@ -12,9 +13,13 @@ npx create-nx-workspace@latest \
 --workspaceType=integrated
 ```
 
+- [Optional] Add git origin
+
+- Install plugins
 ```
 // npm install @nrwl/angular
 nx add @nx/angular
+nx add @nx/nest
 ```
 
 ```
