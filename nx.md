@@ -218,3 +218,13 @@ npx nx generate @nx/nest:library \
 ```
 npx nx generate @nx/nest:library --name=libs/backend/features/post --controller=true --importPath=@fs4/feature-post --projectNameAndRootFormat=as-provided --service=true --tags=type:feature,scope:backend --unitTestRunner=none --no-interactive 
 ```
+
+- Import the prisma provider module to the feature module
+```
+...
+import { PrismaProviderModule } from '@fs4/prisma-provider';
+
+@Module({
+  imports: [PrismaProviderModule],
+...
+```
