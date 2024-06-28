@@ -55,4 +55,4 @@ nx generate @nx/angular:application \
 ```
 npm i prisma @prisma/client
 ```
-
+- Create two (shared) libs: one for a schema, one for a nestjs module (+ service). [Guide here]([https://pages.github.com/](https://github.com/nrwl/nx-recipes/tree/main/nestjs-prisma)).
