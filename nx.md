@@ -56,3 +56,18 @@ nx generate @nx/angular:application \
 npm i prisma @prisma/client
 ```
 - Create two (shared) libs: one for a schema, one for a nestjs module (+ service). [Guide here](https://github.com/nrwl/nx-recipes/tree/main/nestjs-prisma).
+
+- Perform prisma init
+```
+npx prisma init
+```
+
+- Move _schema.prisma_ file to the root of the _prisma-schema_ lib folder
+- Remove _src_ from the root of the _prisma-schema_ lib folder
+- Update _output_ path in the _schema.prisma_ file
+```
+generator client {
+  provider = "prisma-client-js"
+  output = "../../../node_modules/.prisma/client"
+}
+```
