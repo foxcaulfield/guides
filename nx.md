@@ -61,7 +61,13 @@ npx prisma init
 ```
 ## Create two (shared) libs: one for a schema, one for a nestjs module (+ service). [Guide here](https://github.com/nrwl/nx-recipes/tree/main/nestjs-prisma).
 
+```
+npx nx generate @nx/js:library --name=libs/server/data-access --importPath=@ws5/server/data-access --projectNameAndRootFormat=as-provided --tags=type:data-access,scope:backend --unitTestRunner=none --no-interactive
+```
+
 ### First one
+
+
 
 - Move _schema.prisma_ file to the root of the _prisma-schema_ lib folder
 - Remove _src_ from the root of the _prisma-schema_ lib folder
