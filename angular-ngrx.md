@@ -6,8 +6,14 @@ ng new project-name
 
 #### Install deps
 ```
-ng add @ngrx/store
-ng add @ngrx/effects
+ng add @ngrx/store 
+ng add @ngrx/effects 
+
+npm i uuid
+npm i -D @types/uuid
+
+npm i immer
+npm i ngrx-immer
 ```
 
 #### Create a component
