@@ -4,6 +4,12 @@
 ng new project-name
 ```
 
+#### Install deps
+```
+ng add @ngrx/store
+ng add @ngrx/effects
+```
+
 #### Create a component
 
 ```
