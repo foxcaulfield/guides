@@ -1,7 +1,16 @@
-Create folder for a feature ("todo" for example).
+```
+ng new project-name
+```
+
+```
+ng g component posts/posts-wrapper
+```
+
+Create folder for a feature ("posts" for example).
   Inside it create two folders: store and service.
     Inside store folder create files: actions, reducer, model, effects.
     Inside service folder create angular service.
+
 
 Flow of programming:
   Add a method in a service class
