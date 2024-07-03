@@ -41,7 +41,8 @@ Create folder for a feature ("posts" for example).
 
 
 Flow of programming:
-  Add a method in a service class
-  Add an action with two siblings (success, failure)
-  Add an effect
-  Provide store and provide effects in a app config
+- Add a method in a service class
+- Add an action with two siblings (success, failure)
+- Add an effect
+- Add a reducer with selectors
+- Provide store and provide effects in a app config
