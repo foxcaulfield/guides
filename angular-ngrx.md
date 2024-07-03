@@ -1,9 +1,31 @@
+#### Init a project
+
 ```
 ng new project-name
 ```
 
+#### Create a component
+
 ```
 ng g component posts/posts-wrapper
+```
+
+#### Bind a route
+
+```
+...
+export const routes: Routes = [
+    {path: "posts", component: PostsPageComponent}
+];
+...
+```
+#### Create enviroments
+
+#### Create a service
+
+#### Provide a http client in the configuration
+```
+    provideHttpClient(),
 ```
 
 Create folder for a feature ("posts" for example).
