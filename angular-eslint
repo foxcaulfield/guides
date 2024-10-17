@@ -1,0 +1,3 @@
+ng add @angular-eslint/schematics
+
+npm run lint
