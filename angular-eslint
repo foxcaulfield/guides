@@ -1,3 +1,19 @@
 ng add @angular-eslint/schematics
+// npm run lint
 
-npm run lint
+npm install prettier --save-dev
+npm install prettier-eslint eslint-config-prettier eslint-plugin-prettier --save-dev
+
+Now we need to edit the .eslintrc.json file to include the prettier plugin.
+
+{
+  "root": true,
+  "overrides": [
+    {
+      "files": ["*.ts"],
+      "extends": [
+        ...
+        "plugin:prettier/recommended"
+      ],
+    },
+...
