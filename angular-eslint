@@ -17,3 +17,75 @@ Now we need to edit the .eslintrc.json file to include the prettier plugin.
       ],
     },
 ...
+
+
+
+
+eslitrc file
+
+{
+    "root": true,
+    "ignorePatterns": [
+        "projects/**/*"
+    ],
+    "overrides": [
+        {
+            "files": [
+                "*.ts"
+            ],
+            "extends": [
+                "plugin:prettier/recommended",
+                "eslint:recommended",
+                "plugin:@typescript-eslint/recommended",
+                "plugin:@angular-eslint/recommended",
+                "plugin:@angular-eslint/template/process-inline-templates"
+            ],
+            "rules": {
+                "@angular-eslint/directive-selector": [
+                    "error",
+                    {
+                        "type": "attribute",
+                        "prefix": "app",
+                        "style": "camelCase"
+                    }
+                ],
+                "@angular-eslint/component-selector": [
+                    "error",
+                    {
+                        "type": "element",
+                        "prefix": "app",
+                        "style": "kebab-case"
+                    }
+                ],
+                "@typescript-eslint/explicit-function-return-type": "error",
+                "@typescript-eslint/explicit-module-boundary-types": "error",
+                "@typescript-eslint/no-explicit-any": "error",
+                "@typescript-eslint/explicit-member-accessibility": [
+                    "error",
+                    {
+                        "accessibility": "explicit"
+                    }
+                ],
+                "@typescript-eslint/typedef": [
+                    "error",
+                    {
+                        "memberVariableDeclaration": true,
+                        "variableDeclaration": true, // Requires types for `let` and `const` variables
+                        "variableDeclarationIgnoreFunction": false // Enforce even if the value is a function or constant
+                    }
+                ],
+                "@typescript-eslint/no-inferrable-types": "off"
+            }
+        },
+        {
+            "files": [
+                "*.html"
+            ],
+            "extends": [
+                "plugin:@angular-eslint/template/recommended",
+                "plugin:@angular-eslint/template/accessibility"
+            ],
+            "rules": {}
+        }
+    ]
+}
