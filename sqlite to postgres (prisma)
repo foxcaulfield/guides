@@ -1,0 +1,47 @@
+pgloader file
+
+LOAD DATABASE
+     FROM sqlite:///home/maxim/Desktop/main_folder/7702__repos/clozemaster_parser/mydb.sqlite
+     INTO postgresql://max:password@localhost:5432/clozemaster
+
+WITH include drop, create tables, create indexes, reset sequences
+
+SET work_mem to '16MB',
+     maintenance_work_mem to '512 MB',
+     search_path to 'public'
+
+CAST type datetime to timestamp, type timestamp to "timestamptz not null default current_timestamp" drop default drop not null
+
+excluding table names like '_prisma_migrations';
+
+
+execute
+pgloader file.load
+---
+npx prisma db pull
+---
+The `map` attributes in your Prisma schema reflect non-default constraint and index names migrated from SQLite via pgloader. To remove them:
+
+1. Rename the constraints in PostgreSQL to match Prisma defaults:
+   - For `collections`: `ALTER TABLE collections RENAME CONSTRAINT "idx_16415_collections_pkey" TO "collections_pkey";`
+   - For `exercises`: `ALTER TABLE exercises RENAME CONSTRAINT "idx_16425_sqlite_autoindex_exercises_1" TO "exercises_pkey";`
+   - For `word_bank`: 
+     - `ALTER TABLE word_bank RENAME CONSTRAINT "idx_16420_idx_word_bank_word" TO "word_bank_pkey";`
+     - If a separate unique index exists, drop it if redundant: `DROP INDEX IF EXISTS "idx_16420_sqlite_autoindex_word_bank_1";` (Prisma's `@id` handles uniqueness).
+
+2. Rerun `npx prisma db pull` to update the schema without `map`.
+
+---
+To baseline your Prisma migrations on the existing PostgreSQL database without losing data:
+
+1. Create a baseline migration directory: `mkdir -p prisma/migrations/0_init`
+
+2. Generate the baseline SQL: `npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script > prisma/migrations/0_init/migration.sql`
+
+3. Create the migration lock file if absent: `echo 'provider = "postgresql"' > prisma/migrations/migration_lock.toml`
+
+4. Mark the baseline as applied: `npx prisma migrate resolve --applied 0_init`
+
+5. Verify status: `npx prisma migrate status`
+
+You can now run `npx prisma migrate dev` for future changes.
