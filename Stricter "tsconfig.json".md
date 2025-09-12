@@ -1,3 +1,4 @@
+```JavaScript
 {
 	"compilerOptions": {
 		"module": "nodenext",
@@ -44,3 +45,4 @@
 		"noStrictGenericChecks": false
 	}
 }
+```
