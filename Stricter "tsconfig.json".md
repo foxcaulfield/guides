@@ -27,7 +27,7 @@
 		"strictFunctionTypes": true,
 		"noImplicitThis": true,
 		"strictBindCallApply": true,
-		"noPropertyAccessFromIndexSignature": true,
+		// "noPropertyAccessFromIndexSignature": true,
 		"noUncheckedIndexedAccess": true,
 
 		// Linter Checks
