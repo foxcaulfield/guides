@@ -1,4 +1,4 @@
-Yes, there is a way to enforce explicit access modifiers (`private`, `public`, `protected`) in TypeScript classes by using a custom ESLint rule or a TSLint rule, depending on your linting setup. While TypeScript itself doesn't have a compiler option to enforce this directly, you can achieve this through linting tools.
+There is a way to enforce explicit access modifiers (`private`, `public`, `protected`) in TypeScript classes by using a custom ESLint rule or a TSLint rule, depending on your linting setup. While TypeScript itself doesn't have a compiler option to enforce this directly, you can achieve this through linting tools.
 
 Here's how you can set it up using ESLint with the `@typescript-eslint` plugin:
 
@@ -100,7 +100,3 @@ class Example {
   }
 }
 ```
-
-### Summary
-
-By using ESLint with the `@typescript-eslint` plugin, you can enforce the use of explicit access modifiers in your TypeScript classes. This setup helps maintain code consistency and clarity regarding the accessibility of class members.
