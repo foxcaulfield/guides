@@ -22,8 +22,24 @@
 			"env": {
 				"PORT": "3000" // Set your desired port here
 			}
+		},
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "Alt. Debug NestJS",
+			"runtimeExecutable": "npm",
+			"runtimeArgs": [
+				"run",
+				"start:debug",
+				"--",
+				"--inspect-brk"
+			],
+			"console": "integratedTerminal",
+			"restart": true,
+			"autoAttachChildProcesses": true
 		}
 	]
 }
+
 
 ```
