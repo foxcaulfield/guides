@@ -5,17 +5,25 @@
 		{
 			"type": "node",
 			"request": "launch",
-			"name": "Launch NestJS",
-			"runtimeArgs": ["-r", "ts-node/register", "-r", "tsconfig-paths/register"],
-			"args": ["src/main.ts"],
-			"autoAttachChildProcesses": true,
-			"outFiles": ["${workspaceFolder}/dist/**/*.js"],
+			"name": "Debug NestJS",
+			"runtimeArgs": [
+				"-r",
+				"ts-node/register",
+				"-r",
+				"tsconfig-paths/register"
+			],
+			"args": [
+				"-r",
+				"tsconfig-paths/register",
+				"src/main.ts"
+			],
+			"console": "integratedTerminal",
 			"sourceMaps": true,
 			"env": {
 				"PORT": "3000" // Set your desired port here
-			},
-			"console": "integratedTerminal"
+			}
 		}
 	]
 }
+
 ```
