@@ -2,6 +2,25 @@ Yes, there is a way to enforce explicit access modifiers (`private`, `public`, `
 
 Here's how you can set it up using ESLint with the `@typescript-eslint` plugin:
 
+
+**CURRENT METHOD**
+```typescript
+// ...existing code...
+{
+    rules: {
+        // ...existing rules...
+        "@typescript-eslint/explicit-member-accessibility": [
+            "error",
+            { accessibility: "explicit" },
+        ],
+    },
+},
+// ...existing code...
+```
+
+
+
+**OLD METHOD**
 ### Step-by-Step Setup for ESLint
 
 1. **Install ESLint and TypeScript Plugin:**
