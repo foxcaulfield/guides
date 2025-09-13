@@ -1,23 +1,22 @@
-install "Prettier" VS Code plugin
-intall "ESLint" VS Code plugin
+1. install "Prettier" VS Code plugin
+2. install "ESLint" VS Code plugin
 
 ---
 
----
-
-settings.json
-
+#### `settings.json`
+```json
 {
     "editor.insertSpaces": false,
     "javascript.preferences.quoteStyle": "double",
     "typescript.preferences.quoteStyle": "double",
     "editor.detectIndentation": false
 }
+```
 
 ---
 
-.prettierrc
-
+#### `.prettierrc`
+```json
 {
 	"singleQuote": false,
 	"trailingComma": "all",
@@ -25,12 +24,14 @@ settings.json
 	"tabWidth": 4,
 	"printWidth": 60
 }
+```
 
 ---
 
-eslint.config.mjs
+#### `eslint.config.mjs`
 
-~
+```JavaScript
+// ...existing code...
 rules: {
 			"@typescript-eslint/no-explicit-any": "off",
 			"@typescript-eslint/no-floating-promises":
@@ -51,4 +52,5 @@ rules: {
 				},
 			],
 		},
-~
+// ...existing code...
+```
