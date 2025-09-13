@@ -19,7 +19,7 @@ Here's how you can set it up using ESLint with the `@typescript-eslint` plugin:
 ```
 
 
-
+---
 **OLD METHOD**
 ### Step-by-Step Setup for ESLint
 
