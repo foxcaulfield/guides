@@ -1,3 +1,9 @@
+```sh
+npm i --save @nestjs/config
+```
+
+---
+
 #### `src/config/configuration.ts`
 
 ```TypeScript
