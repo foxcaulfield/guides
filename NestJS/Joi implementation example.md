@@ -1,5 +1,9 @@
 ```sh
-npm i --save @nestjs/config
+npm install --save @nestjs/config
+```
+
+```sh
+npm install --save joi
 ```
 
 ---
