@@ -33,7 +33,7 @@ npx prisma generate
 ### Configure Better Auth Instance
 
 <details>
-  <summary>Click to expand</summary>
+  <summary>See file:</summary>
 
 `File: src/auth.ts`
 ```TypeScript
@@ -75,4 +75,68 @@ Then run another migration to apply them to the database:
 npx prisma migrate dev --name init_better_auth_schemas
 npx prisma generate
 ```
+
+---
+
+### Integrate Better Auth in NestJS
+
+Better Auth needs raw request bodies for its handlers. 
+So, in **main.ts**, disable the default parser when creating the app (as per docs [better-auth.com](https://www.better-auth.com/docs/integrations/nestjs)).
+Also make sure to set `credentials: true` and the correct origin.
+
+<details>
+	<summary>See file:</summary>
+
+`File: src/main.ts`
+```TypeScript 
+import { NestFactory } from "@nestjs/core";
+import { AppModule } from "./app.module";
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule, { bodyParser: false });
+  app.enableCors({
+    origin: ['http://localhost:5173'], // Svelte app server port
+    credentials: true                  // allow cookies
+  });
+  await app.listen(process.env.PORT || 3000);
+}
+bootstrap();
+```
+ 
+</details>
+
+---
+
+### Import AuthModule
+
+In your `AppModule`, import `AuthModule.forRoot(auth)`, passing the instance you created:
+
+<details>
+	<summary>See file:</summary>
+
+`File: src/app.module.ts`
+```TypeScript
+import { Module } from "@nestjs/common";
+import { AuthModule } from "@thallesp/nestjs-better-auth";
+import { auth } from "./auth";  // path to your auth instance
+
+@Module({
+  imports: [ AuthModule.forRoot(auth) ],
+  // ... controllers/providers as usual
+})
+export class AppModule {}
+
+```
+ 
+</details>
+
+---
+
+### Protect routes with AuthGuard
+
+```TypeScript
+```
+
+---
+
 # 2. Frontend setup
