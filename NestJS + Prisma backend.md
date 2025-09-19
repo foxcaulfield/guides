@@ -96,7 +96,8 @@ In this file: import Better Auth and create your auth instance (don't forget the
   <summary>File: src/auth.ts</summary>
 
 ```ts
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "generated/prisma"; 
+// import { PrismaClient } from "@prisma/client"; /* Alt path, depends on your client -> output value in your schema.prisma file */
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 
