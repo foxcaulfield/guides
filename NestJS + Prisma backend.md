@@ -337,7 +337,19 @@ rules: {
 // ...
 ```
 
-</details>
+</details
+	
+### Ensure VS Code extensions are installed
+
+Make sure the following VS Code extensions are installed:
+
+- **ESLint**
+- **Prettier - Code formatter**
+
+
+### Run linting and formatting
+
+Run the following commands to lint and format your code:
 
 ```sh
 npm run lint
