@@ -87,7 +87,6 @@ services:
 volumes:
     db_data:
         driver: local
-
 ```
 
 Then start the container:
@@ -95,7 +94,7 @@ Then start the container:
 docker compose up -d
 ```
 Or start *just* the `db` service:
-``sh
+```sh
 docker compose up db -d
 ```
 
