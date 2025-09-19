@@ -283,7 +283,7 @@ You can set up the project configuration files to match your preferences. For ex
 		<strong>.prettierrc</strong> — Prettier formatting options
 	</summary>
 
-```prettier
+```json
 {
 	"singleQuote": false,
 	"trailingComma": "all",
@@ -297,13 +297,54 @@ You can set up the project configuration files to match your preferences. For ex
 
 <details>
 	<summary>
-		<strong>.eslintrc</strong> — ESLint rules and formatting
+		<strong>.eslint.config.mjs</strong> — ESLint rules and formatting
 	</summary>
 
 ```ts
+//...
+rules: {
+			// ... existing rules
+			"@typescript-eslint/no-explicit-any": "off",
+			"@typescript-eslint/no-floating-promises": "warn",
+			"@typescript-eslint/no-unsafe-argument": "warn",
+			"prettier/prettier": [
+				"error",
+				{
+					// endOfLine: "auto",
+					printWidth: 120,
+					// trailingComma: "es5",
+					// semi: false,
+					doubleQuote: true,
+					// jsxSingleQuote: true,
+					singleQuote: false,
+					useTabs: true,
+					// tabWidth: 4,
+				},
+			],
+			"@typescript-eslint/explicit-member-accessibility": ["error", { accessibility: "explicit" }],
+			"@typescript-eslint/explicit-function-return-type": [
+				"error",
+				{
+					allowExpressions: false,
+					allowTypedFunctionExpressions: false,
+					allowHigherOrderFunctions: false,
+					allowDirectConstAssertionInArrowFunctions: false,
+					allowConciseArrowFunctionExpressionsStartingWithVoid: false,
+				},
+			],
+			// ... existing rules
+		},
+// ...
 ```
 
 </details>
 
+```sh
+npm run lint
+```
+
+```sh
+npm run format
+```
 
 # Develop the project
