@@ -349,15 +349,22 @@ npm run format
 
 Fix all warnings and errors, then continue.
 
-Remove spec files (optional).
+### Remove spec files (optional)
 
-Add "no-spec" setting to nest-cli.json (optional).
-```js
-// ...
+If you don't need the generated `.spec.ts` files for testing, you can remove them.
+
+### Add "no-spec" setting to `nest-cli.json` (optional)
+
+Edit your `nest-cli.json` and add the following:
+
+```json
+{
   "compilerOptions": {
     "deleteOutDir": true
   }
-// ...
+}
 ```
+
+This ensures that the output directory is cleaned on each build.
 
 # Develop the project
