@@ -222,9 +222,8 @@ This will:
 
 You can set up the project configuration files to match your preferences. For example:
 
-- `tsconfig.json` — TypeScript compiler options
 <details>
-	<summary></summary>
+	<summary><strong>tsconfig.json</strong> — TypeScript compiler options</summary>
 
  ```ts
 {
@@ -277,7 +276,28 @@ You can set up the project configuration files to match your preferences. For ex
 
 </details>
 
-- `.eslintrc` — ESLint rules and formatting
-- `.prettierrc` — Prettier formatting options
+<details>
+	<summary>.prettierrc</strong> — Prettier formatting options</summary>
+
+```prettier
+{
+	"singleQuote": false,
+	"trailingComma": "all",
+	"useTabs": true,
+	"tabWidth": 4,
+	"printWidth": 120
+}
+```
+
+</details>
+
+<details>
+	<summary><strong>.eslintrc</strong> — ESLint rules and formatting</summary>
+
+```ts
+```
+
+</details>
+
 
 # Develop the project
