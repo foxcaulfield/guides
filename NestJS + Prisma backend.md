@@ -45,7 +45,7 @@ npm install dotenv --save
 ```
 Create and configure a `.env`
 ```sh
-mkdir .env
+echo "" > .env
 ```
 `.env`
 ```env
