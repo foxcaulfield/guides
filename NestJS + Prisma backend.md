@@ -357,11 +357,13 @@ If you don't need the generated `.spec.ts` files for testing, you can remove the
 
 Edit your `nest-cli.json` and add the following:
 
-```json
+```js
 {
-  "compilerOptions": {
-    "deleteOutDir": true
-  }
+	// ...
+	"generateOptions": {
+		"spec": false
+	}
+	// ...
 }
 ```
 
