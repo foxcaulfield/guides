@@ -381,5 +381,17 @@ If you don't plan to write tests for this project, you can remove all test-relat
 ̶ ̶ ̶ ̶ ̶"̶t̶e̶s̶t̶:̶d̶e̶b̶u̶g̶"̶:̶ ̶"̶n̶o̶d̶e̶ ̶-̶-̶i̶n̶s̶p̶e̶c̶t̶-̶b̶r̶k̶ ̶-̶r̶ ̶t̶s̶c̶o̶n̶f̶i̶g̶-̶p̶a̶t̶h̶s̶/̶r̶e̶g̶i̶s̶t̶e̶r̶ ̶-̶r̶ ̶t̶s̶-̶n̶o̶d̶e̶/̶r̶e̶g̶i̶s̶t̶e̶r̶ ̶n̶o̶d̶e̶_̶m̶o̶d̶u̶l̶e̶s̶/̶.̶b̶i̶n̶/̶j̶e̶s̶t̶ ̶-̶-̶r̶u̶n̶I̶n̶B̶a̶n̶d̶"̶,̶
 ̶ ̶ ̶ ̶ ̶"̶t̶e̶s̶t̶:̶e̶2̶e̶"̶:̶ ̶"̶j̶e̶s̶t̶ ̶-̶-̶c̶o̶n̶f̶i̶g̶ ̶.̶/̶t̶e̶s̶t̶/̶j̶e̶s̶t̶-̶e̶2̶e̶.̶j̶s̶o̶n̶"̶
 ```
+### Run linting and formatting one more time
+
+```sh
+npm run lint
+```
+
+```sh
+npm run format
+```
+
+Make sure that there are no errors or warnings remaining.
+
 
 # Develop the project
