@@ -223,6 +223,60 @@ This will:
 You can set up the project configuration files to match your preferences. For example:
 
 - `tsconfig.json` — TypeScript compiler options
+<details>
+	<summary></summary>
+
+ ```ts
+{
+	"compilerOptions": {
+		"module": "nodenext",
+		"moduleResolution": "nodenext",
+		"resolvePackageJsonExports": true,
+		"esModuleInterop": true,
+		"isolatedModules": true,
+		"declaration": true,
+		"removeComments": true,
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
+		"allowSyntheticDefaultImports": true,
+		"target": "ES2023",
+		"sourceMap": true,
+		"outDir": "./dist",
+		"baseUrl": "./",
+		"incremental": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+
+		// Strict Checks
+		"alwaysStrict": true,
+		"noImplicitAny": true,
+		"strictNullChecks": true,
+		"strictPropertyInitialization": true,
+		"strictFunctionTypes": true,
+		"noImplicitThis": true,
+		"strictBindCallApply": true,
+		// "noPropertyAccessFromIndexSignature": true,
+		"noUncheckedIndexedAccess": true,
+
+		// Linter Checks
+		"noImplicitReturns": true, // https://eslint.org/docs/rules/consistent-return ?
+		"noFallthroughCasesInSwitch": true, // https://eslint.org/docs/rules/no-fallthrough
+		"noUnusedLocals": true, // https://eslint.org/docs/rules/no-unused-vars
+		"noUnusedParameters": true, // https://eslint.org/docs/rules/no-unused-vars#args
+		"allowUnreachableCode": false, // https://eslint.org/docs/rules/no-unreachable ?
+		"allowUnusedLabels": false, // https://eslint.org/docs/rules/no-unused-labels
+
+		// Base Strict Checks
+		"noImplicitUseStrict": false,
+		"suppressExcessPropertyErrors": false,
+		"suppressImplicitAnyIndexErrors": false,
+		"noStrictGenericChecks": false
+	}
+}
+```
+
+</details>
+
 - `.eslintrc` — ESLint rules and formatting
 - `.prettierrc` — Prettier formatting options
 
