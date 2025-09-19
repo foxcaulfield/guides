@@ -34,6 +34,8 @@ nest new .
 ```
 ⚠️ Make sure the current folder is empty to avoid conflicts with existing files.
 
+Navigate to your project folder (if you don't already).
+
 # Install dependencies
 
 ### dotenv [(docs)](https://www.npmjs.com/package/dotenv)
