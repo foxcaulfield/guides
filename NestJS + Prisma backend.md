@@ -61,7 +61,10 @@ npm install prisma
 npx prisma init
 ```
 
-### Better Auth  [(docs)](https://www.better-auth.com/docs/integrations/nestjs)
+### Better Auth  
+
+[(docs 1)](https://www.better-auth.com/docs/installation)
+[(docs 2)](https://www.better-auth.com/docs/integrations/nestjs)
 
 #### Better Auth instance configuration
 
@@ -83,11 +86,35 @@ Create a file named `auth.ts` in the `src` directory:
 mkdir src/auth.ts
 ```
 
-In this file: import Better Auth and create your auth instance.
+In this file: import Better Auth and create your auth instance (don't forget the `prismaAdapter` here).
+`src/auth.ts`
 ```ts
+import { PrismaClient } from "@prisma/client";
 import { betterAuth } from "better-auth";
+import { prismaAdapter } from "better-auth/adapters/prisma";
 
+const prismaClient = new PrismaClient();
 export const auth = betterAuth({
-    database: // ...
-})
+	secret: process.env.BETTER_AUTH_SECRET,
+
+	database: prismaAdapter(prismaClient, {
+		provider: "postgresql",
+	}),
+
+	emailAndPassword: {
+		enabled: true,
+	},
+
+	user: {
+		additionalFields: {
+			role: {
+				fieldName: "role",
+				type: "string",
+			},
+		},
+	},
+
+	// Your frontend origin
+	// trustedOrigins: ["http://localhost:5173"],
+});
 ```
