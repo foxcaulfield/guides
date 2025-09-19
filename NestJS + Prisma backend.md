@@ -1,5 +1,7 @@
 Prerequisites
 - Docker
+- Node.js
+- nvm (optional)
 
 # Install NestJS CLI
 
