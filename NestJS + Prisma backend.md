@@ -208,3 +208,12 @@ Run the command and accept all prompts:
 npx @better-auth/cli generate
 ```
 This will overwrite your `schema.prisma` (models), but if you’ve been following this guide from the beginning, you shouldn’t have any yet.
+
+Run the migration command:
+```sh
+npx prisma migrate dev --name init
+```
+This will:
+- Create a new migration in prisma/migrations with the name init.
+- Apply the migration to your database.
+- Generate Prisma Client in node_modules/.prisma/client.
