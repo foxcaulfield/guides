@@ -8,9 +8,7 @@
 		"isolatedModules": true,
 		"declaration": true,
 		"removeComments": true,
-		"emitDecoratorMetadata": true,
-		"experimentalDecorators": true,
-		"allowSyntheticDefaultImports": true,
+		"allowSyntheticDefaultImports": false,
 		"target": "ES2023",
 		"sourceMap": true,
 		"outDir": "./dist",
@@ -18,6 +16,12 @@
 		"incremental": true,
 		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true,
+
+		"strict": true,
+
+		// Decorators
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
 
 		// Strict Checks
 		"alwaysStrict": true,
@@ -45,4 +49,5 @@
 		"noStrictGenericChecks": false
 	}
 }
+
 ```
