@@ -1,3 +1,6 @@
+Prerequisites
+- Docker
+
 # Install NestJS CLI
 
 ### Install 
@@ -35,6 +38,39 @@ nest new .
 ⚠️ Make sure the current folder is empty to avoid conflicts with existing files.
 
 Navigate to your project folder (if you don't already).
+
+# Set up the database
+
+Create a `docker-compose.yaml`
+```sh
+echo "" > docker-compose.yaml
+```
+
+Add the following configuration:
+```yaml
+services:
+    db:
+        image: postgres:17
+        env_file: .env
+        ports:
+            - 5432:5432
+        volumes:
+            - db_data:/var/lib/postgresql/data
+    # ...
+volumes:
+    db_data:
+        driver: local
+
+```
+
+Then start the container:
+```sh
+docker compose up -d
+```
+Or start *just* the `db` service:
+``sh
+docker compose up db -d
+```
 
 # Install dependencies
 
