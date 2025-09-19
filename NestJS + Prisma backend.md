@@ -41,6 +41,31 @@ nest new .
 
 Navigate to your project folder (if you don't already).
 
+# Install dependencies
+
+### dotenv [(docs)](https://www.npmjs.com/package/dotenv)
+Install
+```sh
+npm install dotenv --save
+```
+Create and configure a `.env`
+```sh
+echo "" > .env
+```
+`.env`
+```env
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+
+POSTGRES_USER=postgresuser
+POSTGRES_PASSWORD=postgrespassword
+POSTGRES_DB=customdb
+
+DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DATABASE_HOST}:${DATABASE_PORT}/${POSTGRES_DB}?schema=public
+# DATABASE_URL="postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
+```
+
+
 # Set up the database
 
 Create a `docker-compose.yaml`
@@ -74,21 +99,6 @@ Or start *just* the `db` service:
 docker compose up db -d
 ```
 
-# Install dependencies
-
-### dotenv [(docs)](https://www.npmjs.com/package/dotenv)
-Install
-```sh
-npm install dotenv --save
-```
-Create and configure a `.env`
-```sh
-echo "" > .env
-```
-`.env`
-```env
-DATABASE_URL="postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
-```
 
 ### Prisma [(docs)](https://www.prisma.io/docs/getting-started/setup-prisma/start-from-scratch/relational-databases-typescript-postgresql)
 
