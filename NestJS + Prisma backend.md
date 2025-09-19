@@ -347,4 +347,17 @@ npm run lint
 npm run format
 ```
 
+Fix all warnings and errors, then continue.
+
+Remove spec files (optional).
+
+Add "no-spec" setting to nest-cli.json (optional).
+```js
+// ...
+  "compilerOptions": {
+    "deleteOutDir": true
+  }
+// ...
+```
+
 # Develop the project
