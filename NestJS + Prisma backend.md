@@ -37,3 +37,9 @@ nest new .
 ```sh
 npm install prisma
 ```
+
+# Set up Prisma
+
+```sh
+npx prisma init
+```
