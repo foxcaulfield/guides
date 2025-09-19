@@ -60,11 +60,15 @@ npm install prisma
 ```sh
 npx prisma init
 ```
+```sh
+npx prisma generate
+```
 
 ### Better Auth  
 
 [(docs 1)](https://www.better-auth.com/docs/installation)
 [(docs 2)](https://www.better-auth.com/docs/integrations/nestjs)
+[(docs 3)](https://github.com/ThallesP/nestjs-better-auth)
 
 #### Better Auth instance configuration
 
@@ -87,7 +91,10 @@ mkdir src/auth.ts
 ```
 
 In this file: import Better Auth and create your auth instance (don't forget the `prismaAdapter` here).
-`src/auth.ts`
+
+<details>
+  <summary>File: src/auth.ts</summary>
+
 ```ts
 import { PrismaClient } from "@prisma/client";
 import { betterAuth } from "better-auth";
@@ -118,3 +125,5 @@ export const auth = betterAuth({
 	// trustedOrigins: ["http://localhost:5173"],
 });
 ```
+
+</details>
