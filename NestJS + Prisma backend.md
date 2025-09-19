@@ -84,7 +84,6 @@ mkdir src/auth.ts
 In this file: import Better Auth and create your auth instance.
 ```ts
 import { betterAuth } from "better-auth";
-import Database from "better-sqlite3";
 
 export const auth = betterAuth({
     database: // ...
