@@ -38,8 +38,8 @@ If you want to initialize the project in the current folder:
 nest new .
 ```
 ⚠️ Make sure the current folder is empty to avoid conflicts with existing files.
-
-Navigate to your project folder (if you don't already).
+<br/><br/>
+Then navigate to your project folder (if you don't already).
 
 # Install dependencies
 
