@@ -63,6 +63,24 @@ npx prisma init
 ```sh
 npx prisma generate
 ```
+<details>
+  <summary>File: prisma/schema.prisma</summary>
+
+```prisma
+generator client {
+    provider = "prisma-client-js"
+    //   output   = "../generated/prisma"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+```
+
+</details>
+
 
 ### Better Auth  
 
