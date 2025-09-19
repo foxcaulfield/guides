@@ -217,3 +217,13 @@ This will:
 - Create a new migration in prisma/migrations with the name init.
 - Apply the migration to your database.
 - Generate Prisma Client in node_modules/.prisma/client.
+
+# Configure project files (optional)
+
+You can set up the project configuration files to match your preferences. For example:
+
+- `tsconfig.json` — TypeScript compiler options
+- `.eslintrc` — ESLint rules and formatting
+- `.prettierrc` — Prettier formatting options
+
+# Develop the project
