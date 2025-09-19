@@ -32,3 +32,8 @@ nest new .
 ```
 ⚠️ Make sure the current folder is empty to avoid conflicts with existing files.
 
+# Install dependencies
+
+```sh
+npm install prisma
+```
