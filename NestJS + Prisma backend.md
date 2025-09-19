@@ -64,7 +64,7 @@ npx prisma init
 #### Better Auth instance configuration
 
 ```sh
-npm install better-auth
+npm install better-auth @thallesp/nestjs-better-auth
 ```
 
 Create a `.env` file (if not perfomed yet)
@@ -76,3 +76,17 @@ BETTER_AUTH_SECRET=your_secret_string
 BETTER_AUTH_URL=http://localhost:5000 # Base URL of your NestJS backend
 ```
 
+Create a file named `auth.ts` in the `src` directory:
+```sh
+mkdir src/auth.ts
+```
+
+In this file: import Better Auth and create your auth instance.
+```ts
+import { betterAuth } from "better-auth";
+import Database from "better-sqlite3";
+
+export const auth = betterAuth({
+    database: // ...
+})
+```
