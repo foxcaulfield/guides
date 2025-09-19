@@ -35,7 +35,8 @@ nest new .
 # Install dependencies
 
 ```sh
-npm install prisma
+npm install prisma \
+better-auth
 ```
 
 # Set up Prisma
