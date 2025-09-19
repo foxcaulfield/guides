@@ -209,7 +209,7 @@ npx @better-auth/cli generate
 ```
 This will overwrite your `schema.prisma` (models), but if you’ve been following this guide from the beginning, you shouldn’t have any yet.
 
-Run the migration command:
+Then run the migration command:
 ```sh
 npx prisma migrate dev --name init
 ```
