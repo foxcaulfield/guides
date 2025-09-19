@@ -107,15 +107,15 @@ npm install prisma
 ```sh
 npx prisma init
 ```
-```sh
-npx prisma generate
-```
+
+
+⚠️ Make sure the `output` field is commented out at `shema.prisma` file. Otherwise, you’ll need to take it into account in later configuration steps.
 
 #### Prisma scheme file example:
+
 <details>
   <summary>File: prisma/schema.prisma</summary>
 	
-⚠️ Make sure the `output` field is commented out. Otherwise, you’ll need to take it into account in later configuration steps.
 
 ```prisma
 generator client {
@@ -132,6 +132,11 @@ datasource db {
 
 </details>
 
+<br/><br/>
+Then run:
+```sh
+npx prisma generate
+```
 
 ### Better Auth  
 
@@ -198,9 +203,8 @@ export const auth = betterAuth({
 
 </details>
 
-Run the command and accept all prompts.
-This will overwrite your schema.prisma (models), but if you’ve been following this guide from the beginning, you shouldn’t have any yet.
-
+Run the command and accept all prompts:
 ```sh
 npx @better-auth/cli generate
 ```
+This will overwrite your `schema.prisma` (models), but if you’ve been following this guide from the beginning, you shouldn’t have any yet.
