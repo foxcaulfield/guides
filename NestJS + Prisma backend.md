@@ -511,11 +511,26 @@ export class PrismaService
 
 ### Create and Set Up the 'users' Feature
 
+You can generate the feature with a single command:
+
+```sh
+nest generate resource users
+```
+
+Or you can create the files manually using separate commands.
+
+The result should include the following files:
+
 `users.service.ts` file
 `users.controller.ts` file
 `users.module.ts` file
 
-Register the Prisma service in the `providers` array of the `UsersModule`:
+<br/>
+
+Register the Prisma service in the `providers` array of the Users module:
+
+<details>
+  <summary><strong>src/users/users.module.ts</strong></summary>
 
 ```ts
 import { Module } from "@nestjs/common";
@@ -526,12 +541,19 @@ import { PrismaService } from "src/prisma/prisma.service";
 @Module({
   imports: [],
   controllers: [UsersController],
-  providers: [UsersService, PrismaService],
+  providers: [UsersService, PrismaService], // <-
 })
 export class UsersModule {}
 ```
 
+</details>
+
+ <br/>
+
 Inject the Prisma service into the `UsersService`:
+
+<details>
+  <summary><strong>src/users/users.service.ts</strong></summary>
 
 ```ts
 import { Injectable } from "@nestjs/common";
@@ -543,6 +565,9 @@ import { PrismaService } from "./../prisma/prisma.service";
 export class UsersService {
   public constructor(private readonly prisma: PrismaService) {} // <- Prisma is injected here
   // ... the rest of the file
+}
 ```
+
+</details>
 
 # FAQ
