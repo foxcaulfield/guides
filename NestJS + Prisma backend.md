@@ -461,6 +461,45 @@ export class AppModule {}
 
 </details>
 
+### Create and set up a Prisma service 
+
+[(docs 1)](https://docs.nestjs.com/recipes/prisma#use-prisma-client-in-your-nestjs-services)
+[(docs 2)](https://www.prisma.io/nestjs)
+
+
+Run the following command to generate a Prisma service:
+```sh
+nest generate service prisma
+```
+This creates a Prisma service in the `src/prisma` directory.
+<br/><br/>
+
+Update the generated prisma.service.ts file to extend PrismaClient and implement lifecycle hooks for database connection management.
+
+<details>
+	<summary>`src/prisma/prisma.service.ts`</summary>
+
+```ts
+import { Injectable, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
+import { PrismaClient } from "@prisma/client";
+
+@Injectable()
+export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+	public async onModuleInit(): Promise<void> {
+		await this.$connect();
+	}
+
+	public async onModuleDestroy(): Promise<void> {
+		await this.$disconnect();
+	}
+}
+
+```
+
+</details>
+
+
+
 ### Create and set up 'users' feature
 
 `users.service.ts` file
