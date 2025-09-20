@@ -1,10 +1,8 @@
-Prerequisites
+# Prerequisites
 
 - Docker
 - Node.js
 - nvm (optional)
-
-<br/><br/>
 
 # Install NestJS CLI
 
@@ -14,19 +12,17 @@ Prerequisites
 npm install -g @nestjs/cli
 ```
 
-### Verify the installation
+### Verify the Installation
 
 ```sh
 nest --version
 ```
 
-<br/><br/>
+# Set Up the Project
 
-# Set up the project
+### Navigate to Your Project Directory
 
-### Navigate to your project directory
-
-#### Option 1: Create the project in a new folder
+#### Option 1: Create the Project in a New Folder
 
 Navigate to the directory where you want to place the project and run:
 
@@ -42,9 +38,9 @@ nest new my_project
 cd my_project
 ```
 
-This will create a new folder `my_project` with a ready-to-use NestJS project.
+This creates a new folder `my_project` with a ready-to-use NestJS project.
 
-#### Option 2: Create the project in the current folder
+#### Option 2: Create the Project in the Current Folder
 
 If you want to initialize the project in the current folder:
 
@@ -60,21 +56,21 @@ cd my_project
 nest new .
 ```
 
-⚠️ Make sure the current folder is empty to avoid conflicts with existing files.
-<br/><br/>
-Then navigate to your project folder (if you don't already).
+⚠️ Ensure the current folder is empty to avoid conflicts with existing files.
 
-# Install dependencies
+Then navigate to your project folder (if not already there).
+
+# Install Dependencies
 
 ### dotenv [(docs)](https://www.npmjs.com/package/dotenv)
 
-Install
+Install:
 
 ```sh
 npm install dotenv --save
 ```
 
-Create and configure a `.env`
+Create and configure a `.env` file:
 
 ```sh
 echo "" > .env
@@ -94,9 +90,9 @@ DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DATABASE_HOST}
 # DATABASE_URL="postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
 ```
 
-# Set up the database
+# Set Up the Database
 
-Create a `docker-compose.yaml`
+Create a `docker-compose.yaml` file:
 
 ```sh
 echo "" > docker-compose.yaml
@@ -125,7 +121,7 @@ Then start the container:
 docker compose up -d
 ```
 
-Or start _just_ the `db` service:
+Or start only the `db` service:
 
 ```sh
 docker compose up db -d
@@ -141,13 +137,12 @@ npm install prisma
 npx prisma init
 ```
 
-⚠️ Make sure the `output` field is commented out at `shema.prisma` file. Otherwise, you’ll need to take it into account in later configuration steps.
+⚠️ Ensure the `output` field is commented out in the `schema.prisma` file. Otherwise, account for it in later configuration steps.
 
-#### Prisma scheme file example:
+#### Prisma Schema File Example
 
 <details>
   <summary>File: prisma/schema.prisma</summary>
-
 
 ```prisma
 generator client {
@@ -159,12 +154,10 @@ datasource db {
     provider = "postgresql"
     url      = env("DATABASE_URL")
 }
-
 ```
 
 </details>
 
-<br/><br/>
 Then run:
 
 ```sh
@@ -177,13 +170,13 @@ npx prisma generate
 [(docs 2)](https://www.better-auth.com/docs/integrations/nestjs)
 [(docs 3)](https://github.com/ThallesP/nestjs-better-auth)
 
-#### Better Auth instance configuration
+#### Better Auth Instance Configuration
 
 ```sh
 npm install better-auth @thallesp/nestjs-better-auth
 ```
 
-Create a `.env` file (if not perfomed yet)
+Create a `.env` file (if not already created).
 
 Add the following environment variables:
 
@@ -199,7 +192,7 @@ Create a file named `auth.ts` in the `src` directory:
 echo "" > src/auth.ts
 ```
 
-In this file: import Better Auth and create your auth instance (don't forget the `prismaAdapter` here).
+In this file, import Better Auth and create your auth instance (include the `prismaAdapter`).
 
 <details>
   <summary>File: src/auth.ts</summary>
@@ -244,7 +237,7 @@ Run the command and accept all prompts:
 npx @better-auth/cli generate
 ```
 
-This will overwrite your `schema.prisma` (models), but if you’ve been following this guide from the beginning, you shouldn’t have any models yet.
+This overwrites your `schema.prisma` (models), but if following this guide from the beginning, no models should exist yet.
 
 Then run the migration command:
 
@@ -254,18 +247,16 @@ npx prisma migrate dev --name init
 
 This will:
 
-- Create a new migration in prisma/migrations with the name init.
+- Create a new migration in prisma/migrations named init.
 - Apply the migration to your database.
 - Generate Prisma Client in node_modules/.prisma/client.
 
-# Configure project files (optional)
+# Configure Project Files (Optional)
 
-You can set up the project configuration files to match your preferences. For example:
+Customize project configuration files as needed. For example:
 
 <details>
-	<summary>
-		<strong>tsconfig.json</strong> — TypeScript compiler options
-	</summary>
+  <summary><strong>tsconfig.json</strong> — TypeScript Compiler Options</summary>
 
 ```ts
 {
@@ -319,9 +310,7 @@ You can set up the project configuration files to match your preferences. For ex
 </details>
 
 <details>
-	<summary>
-		<strong>.prettierrc</strong> — Prettier formatting options
-	</summary>
+  <summary><strong>.prettierrc</strong> — Prettier Formatting Options</summary>
 
 ```json
 {
@@ -336,9 +325,7 @@ You can set up the project configuration files to match your preferences. For ex
 </details>
 
 <details>
-	<summary>
-		<strong>.eslint.config.mjs</strong> — ESLint rules and formatting
-	</summary>
+  <summary><strong>.eslint.config.mjs</strong> — ESLint Rules and Formatting</summary>
 
 ```ts
 //...
@@ -377,14 +364,14 @@ rules: {
 // ...
 ```
 
-</details
-	
-### Make sure the following VS Code extensions are installed
+</details>
+
+### Ensure the Following VS Code Extensions Are Installed
 
 - **ESLint**
 - **Prettier - Code formatter**
 
-### Run linting and formatting
+### Run Linting and Formatting
 
 Run the following commands to lint and format your code:
 
@@ -396,15 +383,15 @@ npm run lint
 npm run format
 ```
 
-Fix all warnings and errors, then continue.
+Resolve all warnings and errors, then proceed.
 
-### Remove spec files (optional)
+### Remove Spec Files (Optional)
 
-If you don't need the generated `.spec.ts` files for testing, you can remove them.
+If the generated `.spec.ts` files for testing are unnecessary, remove them.
 
-### Add "no-spec" setting to `nest-cli.json` (optional)
+### Add "no-spec" Setting to `nest-cli.json` (Optional)
 
-Edit your `nest-cli.json` and add the following:
+Edit `nest-cli.json` and add the following:
 
 ```js
 {
@@ -418,9 +405,9 @@ Edit your `nest-cli.json` and add the following:
 
 This ensures that the output directory is cleaned on each build.
 
-### Remove test scripts and folder (optional)
+### Remove Test Scripts and Folder (Optional)
 
-If you don't plan to write tests for this project, you can remove all test-related scripts from `package.json` **and update any remaining scripts or configuration that reference the `test` folder**.:
+If tests are not planned, remove all test-related scripts from `package.json` and update any remaining scripts or configurations referencing the `test` folder:
 
 ```js
   "format": "prettier --write \"src/**/*.ts\"",
@@ -432,7 +419,7 @@ If you don't plan to write tests for this project, you can remove all test-relat
 ̶ ̶ ̶ ̶ ̶"̶t̶e̶s̶t̶:̶e̶2̶e̶"̶:̶ ̶"̶j̶e̶s̶t̶ ̶-̶-̶c̶o̶n̶f̶i̶g̶ ̶.̶/̶t̶e̶s̶t̶/̶j̶e̶s̶t̶-̶e̶2̶e̶.̶j̶s̶o̶n̶"̶
 ```
 
-### Run linting and formatting one more time
+### Run Linting and Formatting One More Time
 
 ```sh
 npm run lint
@@ -442,9 +429,9 @@ npm run lint
 npm run format
 ```
 
-Make sure that there are no errors or warnings remaining.
+Confirm no errors or warnings remain.
 
-# Develop the project
+# Develop the Project
 
 ### Disable Body Parser
 
@@ -488,7 +475,7 @@ export class AppModule {}
 
 </details>
 
-### Create and set up a Prisma service
+### Create and Set Up a Prisma Service
 
 [(docs 1)](https://docs.nestjs.com/recipes/prisma#use-prisma-client-in-your-nestjs-services)
 [(docs 2)](https://www.prisma.io/nestjs)
@@ -500,12 +487,11 @@ nest generate service prisma
 ```
 
 This creates a Prisma service in the `src/prisma` directory.
-<br/><br/>
 
 Update the generated `prisma.service.ts` file to extend `PrismaClient` and implement lifecycle hooks for database connection management.
 
 <details>
-	<summary><strong>src/prisma/prisma.service.ts</strong></summary>
+  <summary><strong>src/prisma/prisma.service.ts</strong></summary>
 
 ```ts
 import { Injectable, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
@@ -528,7 +514,7 @@ export class PrismaService
 
 </details>
 
-### Create and set up the 'users' feature
+### Create and Set Up the 'users' Feature
 
 `users.service.ts` file
 `users.controller.ts` file
@@ -550,7 +536,7 @@ import { PrismaService } from "src/prisma/prisma.service";
 export class UsersModule {}
 ```
 
-Inject the Prisma service into the `UsersService`
+Inject the Prisma service into the `UsersService`:
 
 ```ts
 import { Injectable } from "@nestjs/common";
@@ -560,8 +546,8 @@ import { PrismaService } from "./../prisma/prisma.service";
 
 @Injectable()
 export class UsersService {
-	public constructor(private readonly prisma: PrismaService) {} // <- Prisma is injected here
-// ... the rest og the file
+  public constructor(private readonly prisma: PrismaService) {} // <- Prisma is injected here
+  // ... the rest of the file
 ```
 
 # FAQ
