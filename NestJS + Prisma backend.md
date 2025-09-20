@@ -348,9 +348,9 @@ rules: {
 
 </details
 	
-### Ensure VS Code extensions are installed
+### Make sure the following VS Code extensions are installed
 
-Make sure the following VS Code extensions are installed:
+
 
 - **ESLint**
 - **Prettier - Code formatter**
