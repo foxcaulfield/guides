@@ -1,8 +1,12 @@
+<br/><br/>
+
 # Prerequisites
 
 - Docker
 - Node.js
 - nvm (optional)
+
+<br/><br/>
 
 # Install NestJS CLI
 
@@ -17,6 +21,8 @@ npm install -g @nestjs/cli
 ```sh
 nest --version
 ```
+
+<br/><br/>
 
 # Set Up the Project
 
@@ -60,7 +66,9 @@ nest new .
 
 Then navigate to your project folder (if not already there).
 
-# Install Dependencies
+<br/><br/>
+
+# Install and Configure Dependencies
 
 ### dotenv [(docs)](https://www.npmjs.com/package/dotenv)
 
@@ -90,7 +98,9 @@ DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DATABASE_HOST}
 # DATABASE_URL="postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
 ```
 
-# Set Up the Database
+<br/><br/>
+
+### Docker + PostgreSQL
 
 Create a `docker-compose.yaml` file:
 
@@ -231,13 +241,40 @@ export const auth = betterAuth({
 
 </details>
 
-Run the command and accept all prompts:
+Run the command and accept all prompts.
+This overwrites your `schema.prisma` (models), but if following this guide from the beginning, no models should exist yet.
 
 ```sh
 npx @better-auth/cli generate
 ```
 
-This overwrites your `schema.prisma` (models), but if following this guide from the beginning, no models should exist yet.
+Modify the `schema.prisma` file with the following changes:
+
+```prisma
+// ..,
+enum Role { // <- Define user roles
+    USER
+    MODERATOR
+    ADMIN
+}
+
+model User {
+    id            String    @id @default(uuid()) // <- Add this to automatically create a unique default ID
+    name          String
+    email         String
+    emailVerified Boolean   @default(false)
+    image         String?
+    createdAt     DateTime  @default(now())
+    updatedAt     DateTime  @default(now()) @updatedAt
+    role          Role      @default(USER) // <- Sets the default role to USER
+    sessions      Session[]
+    accounts      Account[]
+
+    @@unique([email])
+    @@map("user")
+}
+// ...
+```
 
 Then run the migration command:
 
@@ -251,12 +288,14 @@ This will:
 - Apply the migration to your database.
 - Generate Prisma Client in node_modules/.prisma/client.
 
+<br/><br/>
+
 # Configure Project Files (Optional)
 
-Customize project configuration files as needed. For example:
+### **Customize project configuration files as needed. For example:**
 
 <details>
-  <summary><strong>tsconfig.json</strong> — TypeScript Compiler Options</summary>
+<summary><strong>tsconfig.json</strong> — TypeScript Compiler Options</summary>
 
 ```ts
 {
@@ -366,12 +405,12 @@ rules: {
 
 </details>
 
-### Ensure the Following VS Code Extensions Are Installed
+### **Ensure the Following VS Code Extensions Are Installed**
 
 - **ESLint**
 - **Prettier - Code formatter**
 
-### Run Linting and Formatting
+### **Run Linting and Formatting**
 
 Run the following commands to lint and format your code:
 
@@ -385,11 +424,11 @@ npm run format
 
 Resolve all warnings and errors, then proceed.
 
-### Remove Spec Files (Optional)
+### **Remove Spec/Test Files and Scripts (Optional)**
 
 If the generated `.spec.ts` files for testing are unnecessary, remove them.
 
-### Add "no-spec" Setting to `nest-cli.json` (Optional)
+#### **Add "no-spec" Setting to `nest-cli.json`**
 
 Edit `nest-cli.json` and add the following:
 
@@ -405,7 +444,7 @@ Edit `nest-cli.json` and add the following:
 
 This ensures that the output directory is cleaned on each build.
 
-### Remove Test Scripts and Folder (Optional)
+#### **Remove Test Scripts and Folder**
 
 If tests are not planned, remove all test-related scripts from `package.json` and update any remaining scripts or configurations referencing the `test` folder:
 
@@ -426,9 +465,11 @@ npm run format
 
 Confirm no errors or warnings remain.
 
+<br/><br/>
+
 # Develop the Project
 
-### Disable Body Parser
+### **Disable Body Parser**
 
 Disable NestJS's built-in body parser to allow Better Auth to handle the raw request body:
 
@@ -450,7 +491,7 @@ bootstrap().catch((e): void => console.error(e));
 
 </details>
 
-### Import AuthModule
+### **Import AuthModule**
 
 Import the AuthModule in your root module:
 
@@ -470,7 +511,7 @@ export class AppModule {}
 
 </details>
 
-### Create and Set Up a Prisma Service
+### **Create and Set Up a Prisma Service**
 
 [(docs 1)](https://docs.nestjs.com/recipes/prisma#use-prisma-client-in-your-nestjs-services)
 [(docs 2)](https://www.prisma.io/nestjs)
@@ -509,9 +550,340 @@ export class PrismaService
 
 </details>
 
-### Create and Set Up the 'users' Feature
+### **Create and Set Up 'Users' DTOs**
 
-You can generate the feature with a single command:
+Before proceeding, you need to install these packages. They are required to generate DTOs.
+[(docs1)](https://github.com/Brakebein/prisma-generator-nestjs-dto)
+[(docs2)](https://www.prisma.io/blog/nestjs-prisma-relational-data-7D056s1kOabc#define-the-user-entity-and-dto-classes)
+[(docs3)](https://medium.com/@daiki01240/how-to-leverage-swagger-and-class-validator-in-nestjs-api-documentation-and-exporting-type-7577da98768d)
+
+```sh
+npm install --save-dev @brakebein/prisma-generator-nestjs-dto
+```
+
+```sh
+npm install @nestjs/swagger class-validator class-transformer
+```
+
+Update your `schema.prisma` to include the DTO generator. Add following to `prisma/schema.prisma` file:
+
+```prisma
+// ...
+generator nestjsDto {
+    provider                        = "prisma-generator-nestjs-dto"
+    output                          = "../src/generated-dto"
+    prismaClientImportPath          = ""
+    outputToNestJsResourceStructure = "true" // <- organize generated files into a resource-like folder structure (not directly inside your project structure)
+    flatResourceStructure           = "false"
+    exportRelationModifierClasses   = "true"
+    reExport                        = "false"
+    generateFileTypes               = "all"
+    createDtoPrefix                 = "Create"
+    updateDtoPrefix                 = "Update"
+    dtoSuffix                       = "Dto"
+    entityPrefix                    = ""
+    entitySuffix                    = "Entity" // <- add this to mark entity names for easier identification
+    classValidation                 = "true" // <- add class-validator decorators to generated classes
+    fileNamingStyle                 = "camel"
+    noDependencies                  = "false"
+    outputType                      = "class"
+    definiteAssignmentAssertion     = "false"
+    requiredResponseApiProperty     = "true"
+    prettier                        = "false"
+    wrapRelationsAsType             = "false"
+    showDefaultValues               = "false"
+}
+// ...
+```
+
+And run the command to generate DTOs:
+
+```sh
+npx prisma generate
+```
+
+Adjust the files (DTOs, entities) to fit your project’s style. Then run `npm run format` and `npm run lint`, and fix any warnings or errors that may appear.”
+
+The result should include the following files:
+
+<details><summary><strong>`src/generated-dto/dto/connect-user.dto.ts`</strong></summary>
+
+```ts
+export class ConnectUserDto {
+  public id?: string;
+  public email?: string;
+
+  public constructor(data: ConnectUserDto) {
+    if (data.id) {
+      this.id = data.id;
+    }
+    if (data.email) {
+      this.email = data.email;
+    }
+  }
+}
+```
+
+</details>
+
+<br/>
+
+<details><summary><strong>`src/generated-dto/dto/create-user.dto.ts`</strong></summary>
+
+```ts
+import { IsNotEmpty, IsOptional, IsString } from "class-validator";
+
+export class CreateUserDto {
+  @IsNotEmpty()
+  @IsString()
+  public name: string;
+
+  @IsNotEmpty()
+  @IsString()
+  public email: string;
+
+  @IsOptional()
+  @IsString()
+  public image?: string;
+
+  public constructor(data: CreateUserDto) {
+    this.name = data.name;
+    this.email = data.email;
+    if (data.image) {
+      this.image = data.image;
+    }
+  }
+}
+```
+
+</details>
+
+<br/>
+
+<details><summary><strong>`src/generated-dto/dto/update-user.dto.ts`</strong></summary>
+
+```ts
+import { IsOptional, IsString } from "class-validator";
+
+export class UpdateUserDto {
+  @IsOptional()
+  @IsString()
+  public name?: string;
+
+  @IsOptional()
+  @IsString()
+  public email?: string;
+
+  @IsOptional()
+  @IsString()
+  public image?: string;
+
+  public constructor(data: UpdateUserDto) {
+    if (data.image) {
+      this.image = data.image;
+    }
+    if (data.name) {
+      this.name = data.name;
+    }
+    if (data.email) {
+      this.email = data.email;
+    }
+  }
+}
+```
+
+</details>
+
+<br/>
+
+<details><summary><strong>`src/generated-dto/dto/user.dto.ts`</strong></summary>
+
+```ts
+import { Role } from "@prisma/client";
+import { ApiProperty } from "@nestjs/swagger";
+
+export class UserDto {
+  public id: string;
+  public name: string;
+  public email: string;
+  public emailVerified: boolean;
+  public image: string | null;
+
+  @ApiProperty({
+    type: `string`,
+    format: `date-time`,
+  })
+  public createdAt: Date;
+
+  @ApiProperty({
+    type: `string`,
+    format: `date-time`,
+  })
+  public updatedAt: Date;
+
+  @ApiProperty({
+    enum: Role,
+  })
+  public role: Role;
+
+  public constructor(data: UserDto) {
+    this.id = data.id;
+    this.name = data.name;
+    this.email = data.email;
+    this.emailVerified = data.emailVerified;
+    this.image = data.image;
+    this.createdAt = data.createdAt;
+    this.updatedAt = data.updatedAt;
+    this.role = data.role;
+  }
+}
+```
+
+</details>
+
+<br/>
+
+<details><summary><strong>`src/generated-dto/entities/user.entity.ts`</strong></summary>
+
+```ts
+import { Role } from "@prisma/client";
+import { ApiProperty } from "@nestjs/swagger";
+import { Session } from "../../session/entities/session.entity";
+import { Account } from "../../account/entities/account.entity";
+
+export class User {
+  public id: string;
+  public name: string;
+  public email: string;
+  public emailVerified: boolean;
+  public image: string | null;
+
+  @ApiProperty({
+    type: `string`,
+    format: `date-time`,
+  })
+  public createdAt: Date;
+
+  @ApiProperty({
+    type: `string`,
+    format: `date-time`,
+  })
+  public updatedAt: Date;
+
+  @ApiProperty({
+    enum: Role,
+  })
+  public role: Role;
+
+  public sessions?: Session[];
+  public accounts?: Account[];
+
+  public constructor(data: User) {
+    this.id = data.id;
+    this.name = data.name;
+    this.email = data.email;
+    this.emailVerified = data.emailVerified;
+    this.image = data.image;
+    this.createdAt = data.createdAt;
+    this.updatedAt = data.updatedAt;
+    this.role = data.role;
+    this.sessions = data.sessions;
+    this.accounts = data.accounts;
+  }
+}
+```
+
+</details>
+
+<br/>
+
+#### **Enable Validation**
+
+Bind `ValidationPipe` at the application level, thus ensuring all endpoints are protected from receiving incorrect data.
+
+```ts
+import { NestFactory } from "@nestjs/core";
+import { AppModule } from "./app.module";
+import { ValidationPipe } from "@nestjs/common"; // <- here
+
+async function bootstrap(): Promise<void> {
+  const app = await NestFactory.create(AppModule, {
+    bodyParser: false,
+  });
+
+  /* here */
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      // forbidNonWhitelisted: true // <- Optional
+    })
+  );
+
+  await app.listen(process.env.PORT ?? 3000);
+}
+
+bootstrap().catch((e): void => console.error(e));
+```
+
+#### **Enable Transformation**
+
+To enable this behavior globally, set the option on a global pipe:
+
+```ts
+import { NestFactory } from "@nestjs/core";
+import { AppModule } from "./app.module";
+import { ValidationPipe } from "@nestjs/common";
+async function bootstrap(): Promise<void> {
+  const app = await NestFactory.create(AppModule, {
+    bodyParser: false,
+  });
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      // forbidNonWhitelisted: true
+      transform: true, // <- here
+    })
+  );
+
+  await app.listen(process.env.PORT ?? 3000);
+}
+
+bootstrap().catch((e): void => console.error(e));
+```
+
+This can optionally be done at the method level:
+
+```ts
+@Post()
+@UsePipes(new ValidationPipe({ transform: true })) // <- here
+async create(@Body() createCatDto: CreateCatDto) {
+  this.catsService.create(createCatDto);
+}
+```
+
+Alternatively (with auto-transformation disabled), you can explicitly cast values using the ParseIntPipe or ParseBoolPipe:
+
+```ts
+
+@Get(':id')
+findOne(
+  @Param('id', ParseIntPipe) id: number,
+  @Query('sort', ParseBoolPipe) sort: boolean,
+) {
+  console.log(typeof id === 'number'); // true
+  console.log(typeof sort === 'boolean'); // true
+  return 'This action returns a user';
+}
+```
+
+If you need to validate arrays in NestJS, refer to 👉 [the official documentation](https://docs.nestjs.com/techniques/validation#parsing-and-validating-arrays).
+
+### **Create and Set Up the 'users' Feature**
+
+#### **Generate a Resource (Module/Service/Controller)**
+
+You can generate the feature template with a single command:
 
 ```sh
 nest generate resource users
@@ -530,8 +902,6 @@ nest generate service users
 ```sh
 nest generate controller users
 ```
-
-The result should include the following files:
 
 - `users.service.ts` file
 - `users.controller.ts` file
@@ -582,9 +952,9 @@ export class UsersService {
 
 </details>
 
-### Update the controller and service
+### **Update the controller and service**
 
-Add any logic you need. 
+Add any logic you need.
 You can add any logic you need. It is also recommended to include the DTO files. Example files are provided below:
 
 <details>
@@ -599,4 +969,25 @@ You can add any logic you need. It is also recommended to include the DTO files.
   <summary><strong>src/users/users.controller.ts</strong></summary>
 </details>
 
+<br/><br/>
+
+### **Create Auth service**
+
+<details>
+  <summary><strong>src/auth/auth.service.ts</strong></summary>
+</details>
+<details>
+  <summary><strong>src/auth/auth.controller.ts</strong></summary>
+</details>
+
+<br/><br/>
+
 # FAQ
+
+Flow:
+
+- Add model
+- Generate prisma types
+- Create the resource/module
+- Import Prisma service in the module
+- Inject Prisma service in the service
