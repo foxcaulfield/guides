@@ -417,38 +417,38 @@ Make sure that there are no errors or warnings remaining.
 
 # Develop the project
 
-1. Disable Body Parser
+### Disable Body Parser
+
 Disable NestJS's built-in body parser to allow Better Auth to handle the raw request body:
 
 <details>
-	<summary><strong>src/main.ts</strong></summary>
+  <summary><strong>src/main.ts</strong></summary>
 
 ```ts
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 
 async function bootstrap(): Promise<void> {
-	const app = await NestFactory.create(AppModule, {
-		bodyParser: false, // <- Required for Better Auth
-	});
-	await app.listen(process.env.PORT ?? 3000);
+  const app = await NestFactory.create(AppModule, {
+    bodyParser: false, // <- Required for Better Auth
+  });
+  await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap().catch((e): void => console.error(e));
-
-```
+````
 
 </details>
 
-
-2. Import AuthModule
+### Import AuthModule
 
 Import the AuthModule in your root module:
+
 <details>
-	<summary><strong>src/app.module.ts</strong></summary>
+  <summary><strong>src/app.module.ts</strong></summary>
 
 ```ts
-import { Module } from '@nestjs/common';
-import { AuthModule } from '@thallesp/nestjs-better-auth';
+import { Module } from "@nestjs/common";
+import { AuthModule } from "@thallesp/nestjs-better-auth";
 import { auth } from "./auth"; // Your Better Auth instance
 
 @Module({
@@ -460,3 +460,9 @@ export class AppModule {}
 ```
 
 </details>
+
+### Create and set up 'users' feature
+
+`users.service.ts` file
+`users.controller.ts` file
+`users.module.ts` file
