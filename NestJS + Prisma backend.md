@@ -491,7 +491,7 @@ bootstrap().catch((e): void => console.error(e));
 
 </details>
 
-### **Import AuthModule**
+### **Import AuthModule from Better Auth**
 
 Import the AuthModule in your root module:
 
@@ -510,6 +510,27 @@ export class AppModule {}
 ```
 
 </details>
+
+### Set Up a Swagger
+
+`src/main.ts`
+
+```ts
+import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+// ...
+async function bootstrap(): Promise<void> {
+  // ...
+  const config = new DocumentBuilder()
+    .setTitle("Application Title")
+    .setDescription("The Application API Description")
+    .setVersion("1.0")
+    .addTag("app")
+    .build();
+  const documentFactory = (): OpenAPIObject =>
+    SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup("api", app, documentFactory);
+}
+```
 
 ### **Create and Set Up a Prisma Service**
 
@@ -852,7 +873,7 @@ async function bootstrap(): Promise<void> {
 bootstrap().catch((e): void => console.error(e));
 ```
 
-This can optionally be done at the method level:
+This can optionally be done at the method (or controller) level [(docs)](https://docs.nestjs.com/techniques/validation#validation) [(more docs)](https://docs.nestjs.com/pipes#class-validator):
 
 ```ts
 @Post()
@@ -903,9 +924,11 @@ nest generate service users
 nest generate controller users
 ```
 
-- `users.service.ts` file
-- `users.controller.ts` file
-- `users.module.ts` file
+Note: Don’t add any content yet; just ensure the files are created.
+
+- `src/users/users.service.ts` file
+- `src/users/users.controller.ts` file
+- `src/users/users.module.ts` file
 
 <br/>
 
@@ -952,21 +975,167 @@ export class UsersService {
 
 </details>
 
-### **Update the controller and service**
+#### **Update the controller and service**
 
-Add any logic you need.
-You can add any logic you need. It is also recommended to include the DTO files. Example files are provided below:
+And now implement the desired logic. Example resulting files are listed below:
 
 <details>
   <summary><strong>src/users/users.module.ts</strong></summary>
+
+```ts
+import { Module } from "@nestjs/common";
+import { UsersService } from "./users.service";
+import { UsersController } from "./users.controller";
+import { PrismaService } from "src/prisma/prisma.service";
+
+@Module({
+  controllers: [UsersController],
+  providers: [UsersService, PrismaService],
+})
+export class UsersModule {}
+```
+
 </details>
 
 <details>
   <summary><strong>src/users/users.service.ts</strong></summary>
+
+```ts
+import { Injectable } from "@nestjs/common";
+import { CreateUserDto } from "src/generated/nestjs-dto/user/dto/create-user.dto";
+import { UpdateUserDto } from "src/generated/nestjs-dto/user/dto/update-user.dto";
+import { UserDto } from "src/generated/nestjs-dto/user/dto/user.dto";
+import { UserEntity } from "src/generated/nestjs-dto/user/entities/user.entity";
+import { PrismaService } from "src/prisma/prisma.service";
+
+type UserId = UserEntity["id"];
+type UserEmail = UserEntity["email"];
+
+@Injectable()
+export class UsersService {
+  public constructor(private readonly prisma: PrismaService) {}
+
+  public async create(createUserDto: CreateUserDto): Promise<UserDto> {
+    return this.prisma.user.create({ data: createUserDto });
+  }
+
+  public async findAll(): Promise<Array<UserDto>> {
+    return this.prisma.user.findMany();
+  }
+
+  public async findById(id: UserId): Promise<UserDto | null> {
+    return this.prisma.user.findUnique({
+      where: {
+        id,
+      },
+    });
+  }
+
+  public async findByEmail(email: UserEmail): Promise<UserDto | null> {
+    return this.prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+  }
+
+  public async update(
+    id: UserId,
+    updateUserDto: UpdateUserDto
+  ): Promise<UserDto> {
+    return this.prisma.user.update({
+      where: {
+        id,
+      },
+      data: updateUserDto,
+    });
+  }
+
+  public async delete(id: UserId): Promise<UserDto | null> {
+    return this.prisma.user.delete({
+      where: {
+        id,
+      },
+    });
+  }
+}
+```
+
 </details>
 
 <details>
   <summary><strong>src/users/users.controller.ts</strong></summary>
+
+```ts
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  /* ParseArrayPipe, */ Post,
+  Put,
+  UsePipes,
+  ValidationPipe,
+} from "@nestjs/common";
+import { UsersService } from "./users.service";
+import { CreateUserDto } from "src/generated/nestjs-dto/user/dto/create-user.dto";
+import { UserDto } from "src/generated/nestjs-dto/user/dto/user.dto";
+import { UpdateUserDto } from "src/generated/nestjs-dto/user/dto/update-user.dto";
+
+@UsePipes(
+  new ValidationPipe({
+    transform: true,
+    whitelist: true,
+    forbidNonWhitelisted: true,
+  })
+)
+@Controller("users")
+export class UsersController {
+  public constructor(private readonly usersService: UsersService) {}
+
+  @UsePipes(new ValidationPipe({ transform: true }))
+  @Get("by_id/:id")
+  public async findOne(
+    @Param("id" /*, ParseIntPipe*/) id: string
+  ): Promise<UserDto | null> {
+    return this.usersService.findById(id);
+  }
+
+  @Post()
+  public async create(
+    @Body(new ValidationPipe()) createUserDto: CreateUserDto
+  ): Promise<UserDto> {
+    return this.usersService.create(createUserDto);
+  }
+
+  @Put(":id")
+  public async update(
+    @Param("id") id: string,
+    @Body() updateUserDto: UpdateUserDto
+  ): Promise<UserDto> {
+    return this.usersService.update(id, updateUserDto);
+  }
+
+  @Delete()
+  public async delete(@Param("id") id: string): Promise<UserDto | null> {
+    return this.usersService.delete(id);
+  }
+  // @Get()
+  // public async findAll(): Promise<Array<UserDto>> {
+  // 	return this.usersService.findAll();
+  // }
+
+  // @Post()
+  // createBulk(
+  // 	@Body(new ParseArrayPipe({ items: CreateUserDto }))
+  // 	createUserDtos: CreateUserDto[],
+  // ) {
+  // 	return "This action adds new users";
+  // }
+}
+```
+
 </details>
 
 <br/><br/>
