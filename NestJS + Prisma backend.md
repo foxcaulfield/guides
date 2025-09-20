@@ -560,7 +560,7 @@ export class UsersModule {}
 
 </details>
 
- <br/>
+<br/>
 
 Inject the Prisma service into the `UsersService`:
 
@@ -580,6 +580,23 @@ export class UsersService {
 }
 ```
 
+</details>
+
+### Update the controller and service
+
+Add any logic you need. 
+You can add any logic you need. It is also recommended to include the DTO files. Example files are provided below:
+
+<details>
+  <summary><strong>src/users/users.module.ts</strong></summary>
+</details>
+
+<details>
+  <summary><strong>src/users/users.service.ts</strong></summary>
+</details>
+
+<details>
+  <summary><strong>src/users/users.controller.ts</strong></summary>
 </details>
 
 # FAQ
