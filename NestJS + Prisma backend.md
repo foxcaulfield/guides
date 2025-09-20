@@ -500,8 +500,39 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
 
 
-### Create and set up 'users' feature
+### Create and set up the 'users' feature
 
 `users.service.ts` file
 `users.controller.ts` file
 `users.module.ts` file
+
+Register the Prisma service in the `providers` array of the `UsersModule`:
+
+```ts
+import { Module } from "@nestjs/common";
+import { UsersService } from "./users.service";
+import { UsersController } from "./users.controller";
+import { PrismaService } from "src/prisma/prisma.service";
+
+@Module({
+	imports: [],
+	controllers: [UsersController],
+	providers: [UsersService, PrismaService],
+})
+export class UsersModule {}
+```
+Inject the Prisma service into the `UsersService`
+
+```ts
+import { Injectable } from "@nestjs/common";
+import { CreateUserDto } from "./dto/create-user.dto";
+// import { UpdateUserDto } from "./dto/update-user.dto";
+import { PrismaService } from "./../prisma/prisma.service";
+
+@Injectable()
+export class UsersService {
+	public constructor(private readonly prisma: PrismaService) {} // <- Prisma is injected here
+// ... the rest og the file
+```
+
+# FAQ
