@@ -474,10 +474,10 @@ nest generate service prisma
 This creates a Prisma service in the `src/prisma` directory.
 <br/><br/>
 
-Update the generated prisma.service.ts file to extend PrismaClient and implement lifecycle hooks for database connection management.
+Update the generated `prisma.service.ts` file to extend `PrismaClient` and implement lifecycle hooks for database connection management.
 
 <details>
-	<summary>`src/prisma/prisma.service.ts`</summary>
+	<summary><strong>src/prisma/prisma.service.ts</strong></summary>
 
 ```ts
 import { Injectable, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
