@@ -29,11 +29,20 @@ cd path/to/your/directory
 ```sh
 nest new my_project
 ```
+```sh
+cd my_project
+```
 This will create a new folder `my_project` with a ready-to-use NestJS project.
 
 #### Option 2: Create the project in the current folder
 
 If you want to initialize the project in the current folder:
+```sh
+mkdir my_project
+```
+```sh
+cd my_project
+```
 ```sh
 nest new .
 ```
