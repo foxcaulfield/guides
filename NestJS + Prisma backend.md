@@ -216,7 +216,7 @@ Run the command and accept all prompts:
 ```sh
 npx @better-auth/cli generate
 ```
-This will overwrite your `schema.prisma` (models), but if you’ve been following this guide from the beginning, you shouldn’t have any yet.
+This will overwrite your `schema.prisma` (models), but if you’ve been following this guide from the beginning, you shouldn’t have any models yet.
 
 Then run the migration command:
 ```sh
