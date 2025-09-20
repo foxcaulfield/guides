@@ -519,11 +519,23 @@ nest generate resource users
 
 Or you can create the files manually using separate commands.
 
+```sh
+nest generate module users
+```
+
+```sh
+nest generate service users
+```
+
+```sh
+nest generate controller users
+```
+
 The result should include the following files:
 
-`users.service.ts` file
-`users.controller.ts` file
-`users.module.ts` file
+- `users.service.ts` file
+- `users.controller.ts` file
+- `users.module.ts` file
 
 <br/>
 
