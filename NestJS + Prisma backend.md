@@ -1,20 +1,26 @@
 Prerequisites
+
 - Docker
 - Node.js
 - nvm (optional)
 
+<br/><br/>
+
 # Install NestJS CLI
 
-### Install 
+### Install
+
 ```sh
-npm i -g @nestjs/cli
+npm install -g @nestjs/cli
 ```
 
-### Check version
+### Verify the installation
+
 ```sh
 nest --version
 ```
-<hr/>
+
+<br/><br/>
 
 # Set up the project
 
@@ -23,29 +29,37 @@ nest --version
 #### Option 1: Create the project in a new folder
 
 Navigate to the directory where you want to place the project and run:
+
 ```sh
 cd path/to/your/directory
 ```
+
 ```sh
 nest new my_project
 ```
+
 ```sh
 cd my_project
 ```
+
 This will create a new folder `my_project` with a ready-to-use NestJS project.
 
 #### Option 2: Create the project in the current folder
 
 If you want to initialize the project in the current folder:
+
 ```sh
 mkdir my_project
 ```
+
 ```sh
 cd my_project
 ```
+
 ```sh
 nest new .
 ```
+
 ⚠️ Make sure the current folder is empty to avoid conflicts with existing files.
 <br/><br/>
 Then navigate to your project folder (if you don't already).
@@ -53,15 +67,21 @@ Then navigate to your project folder (if you don't already).
 # Install dependencies
 
 ### dotenv [(docs)](https://www.npmjs.com/package/dotenv)
+
 Install
+
 ```sh
 npm install dotenv --save
 ```
+
 Create and configure a `.env`
+
 ```sh
 echo "" > .env
 ```
+
 `.env`
+
 ```env
 DATABASE_HOST=localhost
 DATABASE_PORT=5432
@@ -74,49 +94,52 @@ DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DATABASE_HOST}
 # DATABASE_URL="postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
 ```
 
-
 # Set up the database
 
 Create a `docker-compose.yaml`
+
 ```sh
 echo "" > docker-compose.yaml
 ```
 
 Add the following configuration:
+
 ```yaml
 services:
-    db:
-        image: postgres:17
-        env_file: .env
-        ports:
-            - 5432:5432
-        volumes:
-            - db_data:/var/lib/postgresql/data
-    # ...
+  db:
+    image: postgres:17
+    env_file: .env
+    ports:
+      - 5432:5432
+    volumes:
+      - db_data:/var/lib/postgresql/data
+  # ...
 volumes:
-    db_data:
-        driver: local
+  db_data:
+    driver: local
 ```
 
 Then start the container:
+
 ```sh
 docker compose up -d
 ```
-Or start *just* the `db` service:
+
+Or start _just_ the `db` service:
+
 ```sh
 docker compose up db -d
 ```
 
-
 ### Prisma [(docs)](https://www.prisma.io/docs/getting-started/setup-prisma/start-from-scratch/relational-databases-typescript-postgresql)
 
 ```sh
-npm install prisma 
+npm install prisma
 ```
+
 ```sh
 npx prisma init
 ```
-
 
 ⚠️ Make sure the `output` field is commented out at `shema.prisma` file. Otherwise, you’ll need to take it into account in later configuration steps.
 
@@ -124,7 +147,7 @@ npx prisma init
 
 <details>
   <summary>File: prisma/schema.prisma</summary>
-	
+
 
 ```prisma
 generator client {
@@ -143,11 +166,12 @@ datasource db {
 
 <br/><br/>
 Then run:
+
 ```sh
 npx prisma generate
 ```
 
-### Better Auth  
+### Better Auth
 
 [(docs 1)](https://www.better-auth.com/docs/installation)
 [(docs 2)](https://www.better-auth.com/docs/integrations/nestjs)
@@ -162,6 +186,7 @@ npm install better-auth @thallesp/nestjs-better-auth
 Create a `.env` file (if not perfomed yet)
 
 Add the following environment variables:
+
 ```env
 # ...rest of variables
 BETTER_AUTH_SECRET=your_secret_string
@@ -169,6 +194,7 @@ BETTER_AUTH_URL=http://localhost:5000 # Base URL of your NestJS backend
 ```
 
 Create a file named `auth.ts` in the `src` directory:
+
 ```sh
 echo "" > src/auth.ts
 ```
@@ -186,43 +212,48 @@ import { PrismaClient } from "@prisma/client";
 
 const prismaClient = new PrismaClient();
 export const auth = betterAuth({
-	secret: process.env.BETTER_AUTH_SECRET,
+  secret: process.env.BETTER_AUTH_SECRET,
 
-	database: prismaAdapter(prismaClient, {
-		provider: "postgresql",
-	}),
+  database: prismaAdapter(prismaClient, {
+    provider: "postgresql",
+  }),
 
-	emailAndPassword: {
-		enabled: true,
-	},
+  emailAndPassword: {
+    enabled: true,
+  },
 
-	user: {
-		additionalFields: {
-			role: {
-				fieldName: "role",
-				type: "string",
-			},
-		},
-	},
+  user: {
+    additionalFields: {
+      role: {
+        fieldName: "role",
+        type: "string",
+      },
+    },
+  },
 
-	// Your frontend origin
-	// trustedOrigins: ["http://localhost:5173"],
+  // Your frontend origin
+  // trustedOrigins: ["http://localhost:5173"],
 });
 ```
 
 </details>
 
 Run the command and accept all prompts:
+
 ```sh
 npx @better-auth/cli generate
 ```
+
 This will overwrite your `schema.prisma` (models), but if you’ve been following this guide from the beginning, you shouldn’t have any models yet.
 
 Then run the migration command:
+
 ```sh
 npx prisma migrate dev --name init
 ```
+
 This will:
+
 - Create a new migration in prisma/migrations with the name init.
 - Apply the migration to your database.
 - Generate Prisma Client in node_modules/.prisma/client.
@@ -236,7 +267,7 @@ You can set up the project configuration files to match your preferences. For ex
 		<strong>tsconfig.json</strong> — TypeScript compiler options
 	</summary>
 
- ```ts
+```ts
 {
 	"compilerOptions": {
 		"module": "nodenext",
@@ -294,11 +325,11 @@ You can set up the project configuration files to match your preferences. For ex
 
 ```json
 {
-	"singleQuote": false,
-	"trailingComma": "all",
-	"useTabs": true,
-	"tabWidth": 4,
-	"printWidth": 120
+  "singleQuote": false,
+  "trailingComma": "all",
+  "useTabs": true,
+  "tabWidth": 4,
+  "printWidth": 120
 }
 ```
 
@@ -350,11 +381,8 @@ rules: {
 	
 ### Make sure the following VS Code extensions are installed
 
-
-
 - **ESLint**
 - **Prettier - Code formatter**
-
 
 ### Run linting and formatting
 
@@ -393,6 +421,7 @@ This ensures that the output directory is cleaned on each build.
 ### Remove test scripts and folder (optional)
 
 If you don't plan to write tests for this project, you can remove all test-related scripts from `package.json` **and update any remaining scripts or configuration that reference the `test` folder**.:
+
 ```js
   "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint \"{src,apps,libs}/**/*.ts\" --fix",
@@ -402,6 +431,7 @@ If you don't plan to write tests for this project, you can remove all test-relat
 ̶ ̶ ̶ ̶ ̶"̶t̶e̶s̶t̶:̶d̶e̶b̶u̶g̶"̶:̶ ̶"̶n̶o̶d̶e̶ ̶-̶-̶i̶n̶s̶p̶e̶c̶t̶-̶b̶r̶k̶ ̶-̶r̶ ̶t̶s̶c̶o̶n̶f̶i̶g̶-̶p̶a̶t̶h̶s̶/̶r̶e̶g̶i̶s̶t̶e̶r̶ ̶-̶r̶ ̶t̶s̶-̶n̶o̶d̶e̶/̶r̶e̶g̶i̶s̶t̶e̶r̶ ̶n̶o̶d̶e̶_̶m̶o̶d̶u̶l̶e̶s̶/̶.̶b̶i̶n̶/̶j̶e̶s̶t̶ ̶-̶-̶r̶u̶n̶I̶n̶B̶a̶n̶d̶"̶,̶
 ̶ ̶ ̶ ̶ ̶"̶t̶e̶s̶t̶:̶e̶2̶e̶"̶:̶ ̶"̶j̶e̶s̶t̶ ̶-̶-̶c̶o̶n̶f̶i̶g̶ ̶.̶/̶t̶e̶s̶t̶/̶j̶e̶s̶t̶-̶e̶2̶e̶.̶j̶s̶o̶n̶"̶
 ```
+
 ### Run linting and formatting one more time
 
 ```sh
@@ -413,7 +443,6 @@ npm run format
 ```
 
 Make sure that there are no errors or warnings remaining.
-
 
 # Develop the project
 
@@ -435,7 +464,7 @@ async function bootstrap(): Promise<void> {
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap().catch((e): void => console.error(e));
-````
+```
 
 </details>
 
@@ -452,25 +481,24 @@ import { AuthModule } from "@thallesp/nestjs-better-auth";
 import { auth } from "./auth"; // Your Better Auth instance
 
 @Module({
-  imports: [
-    AuthModule.forRoot(auth),
-  ],
+  imports: [AuthModule.forRoot(auth)],
 })
 export class AppModule {}
 ```
 
 </details>
 
-### Create and set up a Prisma service 
+### Create and set up a Prisma service
 
 [(docs 1)](https://docs.nestjs.com/recipes/prisma#use-prisma-client-in-your-nestjs-services)
 [(docs 2)](https://www.prisma.io/nestjs)
 
-
 Run the following command to generate a Prisma service:
+
 ```sh
 nest generate service prisma
 ```
+
 This creates a Prisma service in the `src/prisma` directory.
 <br/><br/>
 
@@ -484,21 +512,21 @@ import { Injectable, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
 import { PrismaClient } from "@prisma/client";
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
-	public async onModuleInit(): Promise<void> {
-		await this.$connect();
-	}
+export class PrismaService
+  extends PrismaClient
+  implements OnModuleInit, OnModuleDestroy
+{
+  public async onModuleInit(): Promise<void> {
+    await this.$connect();
+  }
 
-	public async onModuleDestroy(): Promise<void> {
-		await this.$disconnect();
-	}
+  public async onModuleDestroy(): Promise<void> {
+    await this.$disconnect();
+  }
 }
-
 ```
 
 </details>
-
-
 
 ### Create and set up the 'users' feature
 
@@ -515,12 +543,13 @@ import { UsersController } from "./users.controller";
 import { PrismaService } from "src/prisma/prisma.service";
 
 @Module({
-	imports: [],
-	controllers: [UsersController],
-	providers: [UsersService, PrismaService],
+  imports: [],
+  controllers: [UsersController],
+  providers: [UsersService, PrismaService],
 })
 export class UsersModule {}
 ```
+
 Inject the Prisma service into the `UsersService`
 
 ```ts
