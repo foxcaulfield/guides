@@ -30,7 +30,9 @@ nest --version
 
 #### Option 1: Create the Project in a New Folder
 
-Navigate to the directory where you want to place the project and run:
+Navigate to the directory where you want to place the project and run.
+
+<!-- _Note: Add the `--no-spec` flag if you don’t want test files to be generated._ -->
 
 ```sh
 cd path/to/your/directory
@@ -40,6 +42,8 @@ cd path/to/your/directory
 nest new my_project
 ```
 
+<!-- nest new my_project . --no-spec -->
+
 ```sh
 cd my_project
 ```
@@ -48,7 +52,7 @@ This creates a new folder `my_project` with a ready-to-use NestJS project.
 
 #### Option 2: Create the Project in the Current Folder
 
-If you want to initialize the project in the current folder:
+Alternatively, if you want to initialize the project in the current folder:
 
 ```sh
 mkdir my_project
@@ -61,6 +65,8 @@ cd my_project
 ```sh
 nest new .
 ```
+
+<!-- nest new . --no-spec -->
 
 ⚠️ Ensure the current folder is empty to avoid conflicts with existing files.
 
@@ -168,7 +174,9 @@ datasource db {
 
 </details>
 
-Then run:
+<br/>
+
+Then run the following command (this will also install `@prisma/client` automatically):
 
 ```sh
 npx prisma generate
@@ -205,7 +213,7 @@ echo "" > src/auth.ts
 In this file, import Better Auth and create your auth instance (include the `prismaAdapter`).
 
 <details>
-  <summary>File: src/auth.ts</summary>
+  <summary><strong>File: src/auth.ts</strong></summary>
 
 ```ts
 import { betterAuth } from "better-auth";
@@ -241,6 +249,8 @@ export const auth = betterAuth({
 
 </details>
 
+<br/>
+
 Run the command and accept all prompts.
 This overwrites your `schema.prisma` (models), but if following this guide from the beginning, no models should exist yet.
 
@@ -249,6 +259,9 @@ npx @better-auth/cli generate
 ```
 
 Modify the `schema.prisma` file with the following changes:
+
+<details>
+<summary><strong>prisma/schema.prisma</strong></summary>
 
 ```prisma
 // ..,
@@ -275,6 +288,10 @@ model User {
 }
 // ...
 ```
+
+</details>
+
+<br/>
 
 Then run the migration command:
 
@@ -410,6 +427,39 @@ rules: {
 - **ESLint**
 - **Prettier - Code formatter**
 
+### **Remove Spec/Test Files and Scripts (Optional)**
+
+You can remove `.spec.ts` files if you don’t plan to use them.
+
+```sh
+find ./src -type f -name "*.spec.ts" -exec rm -i {} \; && rm -rf ./test;
+```
+
+#### **Add "no-spec" Setting to `nest-cli.json`**
+
+Edit `nest-cli.json` and add the following to disable test file generation globally:
+
+```js
+{
+	// ...
+	"generateOptions": {
+		"spec": false
+	}
+	// ...
+}
+```
+
+This way you won’t need to use the --no-spec flag every time you generate a new file.
+
+#### **Remove Test Scripts and Folder**
+
+If tests are not planned, remove all test-related scripts from `package.json` and update any remaining scripts or configurations referencing the `test` folder:
+
+```js
+	"format": "prettier --write \"src/**/*.ts\"",
+	"lint": "eslint \"{src,apps,libs}/**/*.ts\" --fix",
+```
+
 ### **Run Linting and Formatting**
 
 Run the following commands to lint and format your code:
@@ -423,47 +473,6 @@ npm run format
 ```
 
 Resolve all warnings and errors, then proceed.
-
-### **Remove Spec/Test Files and Scripts (Optional)**
-
-If the generated `.spec.ts` files for testing are unnecessary, remove them.
-
-#### **Add "no-spec" Setting to `nest-cli.json`**
-
-Edit `nest-cli.json` and add the following:
-
-```js
-{
-	// ...
-	"generateOptions": {
-		"spec": false
-	}
-	// ...
-}
-```
-
-This ensures that the output directory is cleaned on each build.
-
-#### **Remove Test Scripts and Folder**
-
-If tests are not planned, remove all test-related scripts from `package.json` and update any remaining scripts or configurations referencing the `test` folder:
-
-```js
-	"format": "prettier --write \"src/**/*.ts\"",
-	"lint": "eslint \"{src,apps,libs}/**/*.ts\" --fix",
-```
-
-### Run Linting and Formatting One More Time
-
-```sh
-npm run lint
-```
-
-```sh
-npm run format
-```
-
-Confirm no errors or warnings remain.
 
 <br/><br/>
 
@@ -511,12 +520,19 @@ export class AppModule {}
 
 </details>
 
-### Set Up a Swagger
+### Set Up a Swagger (Optional)
 
-`src/main.ts`
+```sh
+npm install @nestjs/swagger
+```
+
+Once the installation process is complete, open the `main.ts` file and initialize Swagger using the `SwaggerModule` class [(docs)](https://docs.nestjs.com/openapi/introduction#bootstrap).
+
+<details>
+  <summary><strong>src/main.ts</strong></summary>
 
 ```ts
-import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import { DocumentBuilder, OpenAPIObject, SwaggerModule } from "@nestjs/swagger";
 // ...
 async function bootstrap(): Promise<void> {
   // ...
@@ -532,18 +548,22 @@ async function bootstrap(): Promise<void> {
 }
 ```
 
+</details>
+
+<br/>
+
 ### **Create and Set Up a Prisma Service**
 
 [(docs 1)](https://docs.nestjs.com/recipes/prisma#use-prisma-client-in-your-nestjs-services)
 [(docs 2)](https://www.prisma.io/nestjs)
 
-Run the following command to generate a Prisma service:
+Run the following command to generate a NestJS service (_for further working with Prisma_):
 
 ```sh
 nest generate service prisma
 ```
 
-This creates a Prisma service in the `src/prisma` directory.
+This creates a service in the `src/prisma` directory.
 
 Update the generated `prisma.service.ts` file to extend `PrismaClient` and implement lifecycle hooks for database connection management.
 
@@ -588,13 +608,16 @@ npm install @nestjs/swagger class-validator class-transformer
 
 Update your `schema.prisma` to include the DTO generator. Add following to `prisma/schema.prisma` file:
 
+<details>
+  <summary><strong>prisma/schema.prisma</strong></summary>
+
 ```prisma
 // ...
 generator nestjsDto {
     provider                        = "prisma-generator-nestjs-dto"
     output                          = "../src/generated-dto"
     prismaClientImportPath          = ""
-    outputToNestJsResourceStructure = "true" // <- organize generated files into a resource-like folder structure (not directly inside your project structure)
+    outputToNestJsResourceStructure = "true" // <- organizes generated files into a resource-like folder structure (not directly inside your project structure)
     flatResourceStructure           = "false"
     exportRelationModifierClasses   = "true"
     reExport                        = "false"
@@ -603,19 +626,24 @@ generator nestjsDto {
     updateDtoPrefix                 = "Update"
     dtoSuffix                       = "Dto"
     entityPrefix                    = ""
-    entitySuffix                    = "Entity" // <- add this to mark entity names for easier identification
-    classValidation                 = "true" // <- add class-validator decorators to generated classes
+    entitySuffix                    = "Entity" // <- adds mark to entity names for easier identification
+    classValidation                 = "true" // <- adds class-validator decorators to generated classes
     fileNamingStyle                 = "camel"
     noDependencies                  = "false"
     outputType                      = "class"
-    definiteAssignmentAssertion     = "false"
+    definiteAssignmentAssertion     = "true" // <- adds ! to required fields to satisfy strict property checks
     requiredResponseApiProperty     = "true"
     prettier                        = "false"
     wrapRelationsAsType             = "false"
     showDefaultValues               = "false"
 }
+
 // ...
 ```
+
+</details>
+
+<br/>
 
 And run the command to generate DTOs:
 
@@ -873,7 +901,7 @@ async function bootstrap(): Promise<void> {
 bootstrap().catch((e): void => console.error(e));
 ```
 
-This can optionally be done at the method (or controller) level [(docs)](https://docs.nestjs.com/techniques/validation#validation) [(more docs)](https://docs.nestjs.com/pipes#class-validator):
+Later, this can optionally be done at the method (or controller) level [(docs)](https://docs.nestjs.com/techniques/validation#validation) [(more docs)](https://docs.nestjs.com/pipes#class-validator):
 
 ```ts
 @Post()
@@ -1002,10 +1030,10 @@ export class UsersModule {}
 
 ```ts
 import { Injectable } from "@nestjs/common";
-import { CreateUserDto } from "src/generated/nestjs-dto/user/dto/create-user.dto";
-import { UpdateUserDto } from "src/generated/nestjs-dto/user/dto/update-user.dto";
-import { UserDto } from "src/generated/nestjs-dto/user/dto/user.dto";
-import { UserEntity } from "src/generated/nestjs-dto/user/entities/user.entity";
+import { CreateUserDto } from "src/generated-dto/user/dto/create-user.dto";
+import { UpdateUserDto } from "src/generated-dto/user/dto/update-user.dto";
+import { UserDto } from "src/generated-dto/user/dto/user.dto";
+import { UserEntity } from "src/generated-dto/user/entities/user.entity";
 import { PrismaService } from "src/prisma/prisma.service";
 
 type UserId = UserEntity["id"];
@@ -1079,9 +1107,9 @@ import {
   ValidationPipe,
 } from "@nestjs/common";
 import { UsersService } from "./users.service";
-import { CreateUserDto } from "src/generated/nestjs-dto/user/dto/create-user.dto";
-import { UserDto } from "src/generated/nestjs-dto/user/dto/user.dto";
-import { UpdateUserDto } from "src/generated/nestjs-dto/user/dto/update-user.dto";
+import { CreateUserDto } from "src/generated-dto/user/dto/create-user.dto";
+import { UserDto } from "src/generated-dto/user/dto/user.dto";
+import { UpdateUserDto } from "src/generated-dto/user/dto/update-user.dto";
 
 @UsePipes(
   new ValidationPipe({
