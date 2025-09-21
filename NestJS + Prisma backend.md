@@ -143,22 +143,29 @@ Or start only the `db` service:
 docker compose up db -d
 ```
 
-### Prisma [(docs)](https://www.prisma.io/docs/getting-started/setup-prisma/start-from-scratch/relational-databases-typescript-postgresql)
+### Prisma
+
+_You can check the official NestJS docs [here](https://docs.nestjs.com/recipes/prisma#use-prisma-client-in-your-nestjs-services) and the Prisma docs [here](https://www.prisma.io/docs/getting-started/setup-prisma/start-from-scratch/relational-databases-typescript-postgresql)._
 
 ```sh
-npm install prisma
+npm install prisma --save-dev
 ```
+
+Now create your initial Prisma setup using the `init` command of the Prisma CLI:
 
 ```sh
 npx prisma init
 ```
 
+This command creates a new prisma directory with the following contents:
+
+- `schema.prisma`: Specifies your database connection and contains the database schema
+- `.env`: A dotenv file, typically used to store your database credentials in a group of environment variables
+
 ⚠️ Ensure the `output` field is commented out in the `schema.prisma` file. Otherwise, account for it in later configuration steps.
 
-#### Prisma Schema File Example
-
 <details>
-  <summary>File: prisma/schema.prisma</summary>
+  <summary><strong>prisma/schema.prisma</strong></summary>
 
 ```prisma
 generator client {
@@ -184,9 +191,10 @@ npx prisma generate
 
 ### Better Auth
 
-[(docs 1)](https://www.better-auth.com/docs/installation)
-[(docs 2)](https://www.better-auth.com/docs/integrations/nestjs)
-[(docs 3)](https://github.com/ThallesP/nestjs-better-auth)
+[(Better Auth - General Installation)](https://www.better-auth.com/docs/installation)
+[(Better Auth - NestJS Integration)](https://www.better-auth.com/docs/integrations/nestjs)
+[(Better Auth - Official Repo)](https://github.com/better-auth/better-auth)
+[(NestJS Better Auth Integration - Repo)](https://github.com/thallesp/nestjs-better-auth)
 
 #### Better Auth Instance Configuration
 
@@ -520,7 +528,7 @@ export class AppModule {}
 
 </details>
 
-### Set Up a Swagger (Optional)
+### **Set Up a Swagger (Optional)**
 
 ```sh
 npm install @nestjs/swagger
@@ -533,6 +541,9 @@ Once the installation process is complete, open the `main.ts` file and initializ
 
 ```ts
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from "@nestjs/swagger";
+import { writeFileSync } from "node:fs";
+import { join } from "node:path";
+
 // ...
 async function bootstrap(): Promise<void> {
   // ...
@@ -544,7 +555,14 @@ async function bootstrap(): Promise<void> {
     .build();
   const documentFactory = (): OpenAPIObject =>
     SwaggerModule.createDocument(app, config);
+
+  // Setup SwaggerUI
   SwaggerModule.setup("api", app, documentFactory);
+
+  // Save OpenAPI File
+  const outputPath = join(process.cwd(), "swagger-spec.json");
+  writeFileSync(outputPath, JSON.stringify(document, null, 2));
+  // ...
 }
 ```
 
@@ -863,7 +881,7 @@ Adjust the files (DTOs) to fit your project’s style.
 
 _A quick note:_
 
-> In order to make the class properties visible to the `SwaggerModule`, you need to annotate them with the `@ApiProperty()` decorator.
+> In order to make the class properties visible to the `SwaggerModule`, you need to annotate them with the `@ApiProperty()` decorator [(docs)](https://docs.nestjs.com/openapi/types-and-parameters#types-and-parameters).
 
 Then run `npm run format` and `npm run lint`, and fix any warnings or errors that may appear.”
 
@@ -1078,7 +1096,15 @@ export class LoginUserDto {
 
 #### **Update the controller and service**
 
-And now implement the desired logic. Example resulting files are listed below:
+Now implement the desired logic using the full power of `class-validator`, `@nestjs/swagger`, `better-auth`, and more.
+
+[(Better Auth decorators)](https://github.com/ThallesP/nestjs-better-auth)
+[(OpenAPI/Swagger general decorators)](https://docs.nestjs.com/openapi/decorators)
+[(OpenAPI/Swagger response decorators)](https://docs.nestjs.com/openapi/operations#responses)
+[(NestJS validation pipes)](https://docs.nestjs.com/techniques/validation)
+[(NestJS class-validator decorators)](https://github.com/typestack/class-validator#validation-decorators)
+
+Example resulting files are listed below:
 
 <details>
   <summary><strong>src/users/users.module.ts</strong></summary>
@@ -1196,6 +1222,7 @@ import {
   Param,
   /* ParseArrayPipe, */ Post,
   Put,
+  UseGuards,
   UsePipes,
   ValidationPipe,
 } from "@nestjs/common";
@@ -1203,7 +1230,14 @@ import { UsersService } from "./users.service";
 import { ResponseUserDto } from "./dto/response-user.dto";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
+import {
+  AuthGuard,
+  Public,
+  Session,
+  type UserSession,
+} from "@thallesp/nestjs-better-auth";
 
+@UseGuards(AuthGuard)
 @UsePipes(
   new ValidationPipe({
     transform: true,
@@ -1213,7 +1247,10 @@ import { UpdateUserDto } from "./dto/update-user.dto";
 )
 @Controller("users")
 export class UsersController {
-  public constructor(private readonly usersService: UsersService) {}
+  public constructor(
+    // private authService: AuthService<typeof auth>,
+    private readonly usersService: UsersService
+  ) {}
 
   @UsePipes(new ValidationPipe({ transform: true }))
   @Get("by_id/:id")
@@ -1223,6 +1260,7 @@ export class UsersController {
     return this.usersService.findById(id);
   }
 
+  @Public() // Mark this route as public (no authentication required)
   @Post()
   public async create(
     @Body(new ValidationPipe()) createUserDto: CreateUserDto
@@ -1256,10 +1294,23 @@ export class UsersController {
   // ) {
   // 	return "This action adds new users";
   // }
+
+  @UseGuards(AuthGuard)
+  @Get("me")
+  public getProfile(@Session() session: UserSession): ResponseUserDto {
+    return {
+      id: session.user.id,
+      name: session.user.name,
+      email: session.user.email,
+    };
+  }
 }
 ```
 
 </details>
+
+You can optionally add a response validator (like [here](https://medium.com/@kuba.2001/reponse-validation-in-nestjs-0db70b955a6a) and [here](https://www.reddit.com/r/nestjs/comments/1knaeze/comment/mssircd/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button)
+), but it’s usually not needed as long as you clearly pick which fields/properties to return from the ORM in your service.
 
 <br/><br/>
 
