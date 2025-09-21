@@ -74,6 +74,45 @@ Then navigate to your project folder (if not already there).
 
 <br/><br/>
 
+# Add debug config (optional)
+
+<details><summary><strong>.vscode/launch.json</strong><summary>
+
+```JavaScript
+{
+	// Use IntelliSense to learn about possible attributes.
+	// Hover to view descriptions of existing attributes.
+	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "Debug NestJS",
+			"runtimeArgs": ["-r", "ts-node/register", "-r", "tsconfig-paths/register"],
+			"args": ["-r", "tsconfig-paths/register", "src/main.ts"],
+			"console": "integratedTerminal",
+			"sourceMaps": true,
+			"env": {
+				"PORT": "3000" // Set your desired port here
+			}
+		},
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "Alt. Debug NestJS",
+			"runtimeExecutable": "npm",
+			"runtimeArgs": ["run", "start:debug", "--", "--inspect-brk"],
+			"console": "integratedTerminal",
+			"restart": true,
+			"autoAttachChildProcesses": true
+		}
+	]
+}
+```
+
+</details>
+
 # Install and Configure Dependencies
 
 ### dotenv [(docs)](https://www.npmjs.com/package/dotenv)
@@ -561,7 +600,7 @@ async function bootstrap(): Promise<void> {
 
   // Save OpenAPI File
   const outputPath = join(process.cwd(), "swagger-spec.json");
-  writeFileSync(outputPath, JSON.stringify(document, null, 2));
+  writeFileSync(outputPath, JSON.stringify(documentFactory(), null, 2));
   // ...
 }
 ```
@@ -891,7 +930,13 @@ The result should include the following files:
 
 ```ts
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsString, MaxLength, MinLength } from "class-validator";
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  MaxLength,
+  MinLength,
+} from "class-validator";
 
 export class CreateUserDto {
   @ApiProperty({
@@ -900,17 +945,18 @@ export class CreateUserDto {
     minLength: 2,
     maxLength: 50,
   })
+  @IsNotEmpty()
   @IsString()
   @MinLength(2)
   @MaxLength(50)
-  public name: string;
+  public name!: string;
 
   @ApiProperty({
     description: "User email address",
     example: "user@example.com",
   })
   @IsEmail()
-  public email: string;
+  public email!: string;
 
   @ApiProperty({
     description: "User password",
@@ -919,7 +965,7 @@ export class CreateUserDto {
   })
   @IsString()
   @MinLength(6)
-  public password: string;
+  public password!: string;
 
   // @ApiProperty({
   // 	description: "User profile image URL",
@@ -940,9 +986,9 @@ export class CreateUserDto {
   // @IsString()
   // role?: "USER" | "MODERATOR" | "ADMIN";
   public constructor(data: CreateUserDto) {
-    this.name = data.name;
-    this.email = data.email;
-    this.password = data.password;
+    if (data?.name) this.name = data.name;
+    if (data?.email) this.email = data.email;
+    if (data?.password) this.password = data.password;
     // if (data.image) {
     // 	this.image = data.image;
     // }
@@ -971,10 +1017,10 @@ export class UpdateUserDto {
   @IsString()
   @MinLength(2)
   @MaxLength(50)
-  public name: string;
+  public name!: string;
 
   public constructor(data: UpdateUserDto) {
-    this.name = data.name;
+    if (data?.name) this.name = data.name;
     // super(data);
   }
 }
@@ -995,19 +1041,19 @@ export class ResponseUserDto {
     description: "User ID",
     example: "00000000-0000-0000-0000-000000000000",
   })
-  public id: string;
+  public id!: string;
 
   @ApiProperty({
     description: "User name",
     example: "John Doe",
   })
-  public name: string;
+  public name!: string;
 
   @ApiProperty({
     description: "User email address",
     example: "user@example.com",
   })
-  public email: string;
+  public email!: string;
 
   // @ApiProperty({
   // 	description: "Whether email is verified",
@@ -1051,9 +1097,9 @@ export class ResponseUserDto {
   // public accounts: any[];
 
   public constructor(data: ResponseUserDto) {
-    this.id = data.id;
-    this.name = data.name;
-    this.email = data.email;
+    if (data?.id) this.id = data.id;
+    if (data?.name) this.name = data.name;
+    if (data?.email) this.email = data.email;
 
     // Object.assign(this, partial);
   }
@@ -1152,7 +1198,7 @@ export class UsersService {
 
   public async create(createUserDto: CreateUserDto): Promise<ResponseUserDto> {
     const result = await this.prisma.user.create({
-      data: createUserDto,
+      data: { name: createUserDto.name, email: createUserDto.email },
       select: safeUserResponseProps,
     });
     return result;
@@ -1252,7 +1298,7 @@ export class UsersController {
     private readonly usersService: UsersService
   ) {}
 
-  @UsePipes(new ValidationPipe({ transform: true }))
+  /* EXAMPLE */
   @Get("by_id/:id")
   public async findOne(
     @Param("id" /*, ParseIntPipe*/) id: string
@@ -1260,15 +1306,17 @@ export class UsersController {
     return this.usersService.findById(id);
   }
 
+  /* EXAMPLE */
   @Public() // Mark this route as public (no authentication required)
-  @Post()
+  @Post("create")
   public async create(
     @Body(new ValidationPipe()) createUserDto: CreateUserDto
   ): Promise<ResponseUserDto> {
     return this.usersService.create(createUserDto);
   }
 
-  @Put(":id")
+  /* EXAMPLE */
+  @Put("update/:id")
   public async update(
     @Param("id") id: string,
     @Body() updateUserDto: UpdateUserDto
@@ -1276,12 +1324,14 @@ export class UsersController {
     return this.usersService.update(id, updateUserDto);
   }
 
-  @Delete()
+  /* EXAMPLE */
+  @Delete("delete/:id")
   public async delete(
     @Param("id") id: string
   ): Promise<ResponseUserDto | null> {
     return this.usersService.delete(id);
   }
+
   // @Get()
   // public async findAll(): Promise<Array<ResponseUserDto>> {
   // 	return this.usersService.findAll();
@@ -1295,7 +1345,9 @@ export class UsersController {
   // 	return "This action adds new users";
   // }
 
+  @UsePipes(new ValidationPipe({ transform: true }))
   @UseGuards(AuthGuard)
+  @Public()
   @Get("me")
   public getProfile(@Session() session: UserSession): ResponseUserDto {
     return {
@@ -1327,6 +1379,7 @@ You can optionally add a response validator (like [here](https://medium.com/@kub
 
 # FAQ
 
+[(better-auth endpoints)](https://www.better-auth.com/docs/plugins/username#usage)
 Flow:
 
 - Add model
