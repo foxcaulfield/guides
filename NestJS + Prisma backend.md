@@ -76,7 +76,7 @@ Then navigate to your project folder (if not already there).
 
 # Add debug config (optional)
 
-<details><summary><strong>.vscode/launch.json</strong><summary>
+<details><summary><strong>.vscode/launch.json</strong></summary>
 
 ```JavaScript
 {
@@ -112,6 +112,8 @@ Then navigate to your project folder (if not already there).
 ```
 
 </details>
+
+<br/><br/>
 
 # Install and Configure Dependencies
 
@@ -199,7 +201,7 @@ npx prisma init
 This command creates a new prisma directory with the following contents:
 
 - `schema.prisma`: Specifies your database connection and contains the database schema
-- `.env`: A dotenv file, typically used to store your database credentials in a group of environment variables
+- `.env`: A dotenv file (if not already present), typically used to store your database credentials in a group of environment variables
 
 ⚠️ Ensure the `output` field is commented out in the `schema.prisma` file. Otherwise, account for it in later configuration steps.
 
@@ -334,6 +336,30 @@ model User {
     @@map("user")
 }
 // ...
+```
+
+</details>
+
+In addition to the models generated above, add the following one manually.
+This model is provided **for demonstration purposes only** and will later be used to demonstrate how to apply decorators.
+
+<details><summary><strong>prisma/schema.prisma</strong></summary>
+
+```prisma
+// ...
+model Note {
+    id      Int     @id @default(autoincrement())
+    title   String
+    content String?
+    source  String?
+
+    priority   Int      @default(0)
+    isArchived Boolean?
+
+    createdAt DateTime @default(now())
+
+    @@map("notes")
+}
 ```
 
 </details>
@@ -736,7 +762,7 @@ async function bootstrap(): Promise<void> {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
-      // forbidNonWhitelisted: true // <- Optional
+      // forbidNonWhitelisted: true, // <- Optional
     })
   );
 
@@ -762,7 +788,7 @@ async function bootstrap(): Promise<void> {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
-      // forbidNonWhitelisted: true
+      // forbidNonWhitelisted: true,
       transform: true, // <- here
     })
   );
@@ -808,95 +834,93 @@ If you need to validate arrays in NestJS, refer to [the official documentation](
 
 <br/>
 
-### **Create and Set Up the 'users' Feature**
+### **Create and Set Up the 'notes' Feature**
 
 #### **Generate a Resource (Module/Service/Controller/DTOs)**
 
 You can generate the feature template with a single command and make a few adjustments:
 
 ```sh
-nest generate resource users
+nest generate resource notes
 ```
 
 ```sh
-rm -rf ./src/users/entities
+rm -rf ./src/notes/entities
 ```
 
 ```sh
-echo "" > ./src/users/dto/response-user.dto.ts
+echo "" > ./src/notes/dto/response-note.dto.ts
 ```
 
 Or you can create the files manually using separate commands.
 
 ```sh
-nest generate module users
+nest generate module notes
 ```
 
 ```sh
-nest generate service users
+nest generate service notes
 ```
 
 ```sh
-nest generate controller users
+nest generate controller notes
 ```
 
 ```sh
-nest generate class users/dto/create-user.dto --flat
+nest generate class notes/dto/create-note.dto --flat
 ```
 
 ```sh
-nest generate class users/dto/update-user.dto --flat
+nest generate class notes/dto/update-note.dto --flat
 ```
 
 ```sh
-nest generate class users/dto/response-user.dto --flat
+nest generate class notes/dto/response-note.dto --flat
 ```
 
 Note: Don’t add any content yet; just ensure the files are created.
 
-- `src/users/users.service.ts` file
-- `src/users/users.controller.ts` file
-- `src/users/users.module.ts` file
-- `src/users/dto/create-user.dto.ts` file
-- `src/users/dto/update-user.dto.ts` file
-- `src/users/dto/response-user.dto.ts` file
+- `src/notes/notes.service.ts` file
+- `src/notes/notes.controller.ts` file
+- `src/notes/notes.module.ts` file
+- `src/notes/dto/create-note.dto.ts` file
+- `src/notes/dto/update-note.dto.ts` file
+- `src/notes/dto/response-note.dto.ts` file
 
 <br/>
 
-Register the Prisma service in the `providers` array of the Users module:
+Register the Prisma service in the `providers` array of the Notes module:
 
 <details>
-  <summary><strong>src/users/users.module.ts</strong></summary>
+  <summary><strong>src/notes/notes.module.ts</strong></summary>
 
 ```ts
 import { Module } from "@nestjs/common";
-import { UsersService } from "./users.service";
-import { UsersController } from "./users.controller";
+import { NotesService } from "./notes.service";
+import { NotesController } from "./notes.controller";
 import { PrismaService } from "src/prisma/prisma.service";
 
 @Module({
-  imports: [],
-  controllers: [UsersController],
-  providers: [UsersService, PrismaService], // <-
+  controllers: [NotesController],
+  providers: [NotesService, PrismaService], // <-
 })
-export class UsersModule {}
+export class NotesModule {}
 ```
 
 </details>
 
 <br/>
 
-Inject the Prisma service into the `UsersService`:
+Inject the Prisma service into the `NotesService`:
 
 <details>
-  <summary><strong>src/users/users.service.ts</strong></summary>
+  <summary><strong>src/notes/notes.service.ts</strong></summary>
 
 ```ts
-import { Injectable } from "@nestjs/common";
-import { PrismaService } from "./../prisma/prisma.service";
+import { PrismaService } from "src/prisma/prisma.service";
 
 @Injectable()
-export class UsersService {
+export class NotesService {
   public constructor(private readonly prisma: PrismaService) {} // <- Prisma is injected here
   // ... the rest of the file
 }
@@ -904,7 +928,19 @@ export class UsersService {
 
 </details>
 
-#### **Adjust DTOs**
+#### **Adjust `Swagger` and DTOs**
+
+_A quick note:_
+
+> Usually, in order to make the class properties visible to the `SwaggerModule`, you need to annotate them with the `@ApiProperty()` decorator [(docs)](https://docs.nestjs.com/openapi/types-and-parameters#types-and-parameters). Alternatively, you can use the appropriate plugin [(Swagger/CLI plugin)](https://docs.nestjs.com/openapi/cli-plugin).
+
+The NestJS OpenAPI (Swagger) CLI plugin will automatically:
+
+- Annotate DTO properties with `@ApiProperty` and set `required`, `type`, and `default`.
+- Apply validation rules from `class-validator` (if `classValidatorShim` is enabled).
+- Add response decorators to endpoints with proper status and types.
+- Generate descriptions and examples from comments (if `introspectComments` is enabled).
+- Generate and update Swagger (OpenAPI) documentation for your project.
 
 Before proceeding, make sure these packages are installed.
 
@@ -916,82 +952,99 @@ They are required to generate DTOs.
 npm install @nestjs/swagger class-validator class-transformer
 ```
 
+<!-- {
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "src",
+  "compilerOptions": {
+    "plugins": ["@nestjs/swagger"]
+  }
+} -->
+
+To [enable]() the plugin, open `nest-cli.json` and add the following plugins configuration. You can also use the options property to customize the behavior of the plugin.
+
+<details><summary><strong>nest-cli.json</strong></summary>
+
+```JavaScript
+{
+// ...
+  "compilerOptions": {
+	// ...
+    "plugins": [
+      {
+        "name": "@nestjs/swagger",
+        "options": {
+          "classValidatorShim": true,
+          "introspectComments": true,
+          "skipAutoHttpCode": true
+        }
+      }
+    ]
+	// ...
+  }
+}
+```
+
+</details>
+
+<br/><br/>
+
 Adjust the files (DTOs) to fit your project’s style.
 
-_A quick note:_
-
-> In order to make the class properties visible to the `SwaggerModule`, you need to annotate them with the `@ApiProperty()` decorator [(docs)](https://docs.nestjs.com/openapi/types-and-parameters#types-and-parameters).
+[(NestJS class-validator decorators)](https://github.com/typestack/class-validator#validation-decorators)
 
 Then run `npm run format` and `npm run lint`, and fix any warnings or errors that may appear.”
 
 The result should include the following files:
 
-<details><summary><strong>src/users/dto/create-user.dto.ts</strong></summary>
+<details><summary><strong>src/notes/dto/create-note.dto.ts</strong></summary>
 
 ```ts
-import { ApiProperty } from "@nestjs/swagger";
+// import { ApiProperty } from "@nestjs/swagger";
 import {
-  IsEmail,
   IsNotEmpty,
+  IsNumber,
+  IsOptional,
   IsString,
+  Length,
+  Max,
   MaxLength,
+  Min,
   MinLength,
 } from "class-validator";
 
-export class CreateUserDto {
-  @ApiProperty({
-    description: "User name",
-    example: "John Doe",
-    minLength: 2,
-    maxLength: 50,
-  })
+export class CreateNoteDto {
+  // @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  @MinLength(2)
-  @MaxLength(50)
-  public name!: string;
+  @MinLength(3)
+  @MaxLength(20)
+  public title!: string;
 
-  @ApiProperty({
-    description: "User email address",
-    example: "user@example.com",
-  })
-  @IsEmail()
-  public email!: string;
-
-  @ApiProperty({
-    description: "User password",
-    example: "strongPassword123",
-    minLength: 6,
-  })
+  // @ApiProperty()
+  @IsOptional()
   @IsString()
-  @MinLength(6)
-  public password!: string;
+  @Length(5, 50)
+  public content?: string;
 
-  // @ApiProperty({
-  // 	description: "User profile image URL",
-  // 	required: false,
-  // 	example: "https://example.com/avatar.jpg",
-  // })
-  // @IsOptional()
-  // @IsString()
-  // public image?: string;
+  // @ApiProperty()
+  @IsOptional()
+  @IsString()
+  @Length(1, 30)
+  public source?: string;
 
-  // @ApiProperty({
-  // 	description: "User role",
-  // 	enum: ["USER", "MODERATOR", "ADMIN"],
-  // 	required: false,
-  // 	default: "USER",
-  // })
-  // @IsOptional()
-  // @IsString()
-  // role?: "USER" | "MODERATOR" | "ADMIN";
-  public constructor(data: CreateUserDto) {
-    if (data?.name) this.name = data.name;
-    if (data?.email) this.email = data.email;
-    if (data?.password) this.password = data.password;
-    // if (data.image) {
-    // 	this.image = data.image;
-    // }
+  // @ApiProperty()
+  @IsOptional()
+  @IsNumber()
+  // @IsPositive()
+  @Min(0)
+  @Max(5)
+  public priority?: number;
+
+  public constructor(data: CreateNoteDto) {
+    if (data?.title != null) this.title = data?.title;
+    if (data?.content != null) this.content = data?.content;
+    if (data?.source != null) this.source = data?.source;
+    if (data?.priority != null) this.priority = data?.priority;
   }
 }
 ```
@@ -1000,7 +1053,7 @@ export class CreateUserDto {
 
 <br/>
 
-<details><summary><strong>`src/users/dto/update-user.dto.ts`</strong></summary>
+<details><summary><strong>`src/notes/dto/update-note.dto.ts`</strong></summary>
 
 ```ts
 import { ApiProperty } from "@nestjs/swagger";
@@ -1030,7 +1083,7 @@ export class UpdateUserDto {
 
 <br/>
 
-<details><summary><strong>`src/users/dto/response-user.dto.ts`</strong></summary>
+<details><summary><strong>`src/notes/dto/response-note.dto.ts`</strong></summary>
 
 ```ts
 import { ApiProperty } from "@nestjs/swagger";
@@ -1107,7 +1160,7 @@ export class ResponseUserDto {
 ```
 
 <!-- ```ts
-// src/users/dto/login-user.dto.ts
+// src/notes/dto/login-note.dto.ts
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEmail, IsString, MinLength } from "class-validator";
 
@@ -1153,12 +1206,12 @@ Now implement the desired logic using the full power of `class-validator`, `@nes
 Example resulting files are listed below:
 
 <details>
-  <summary><strong>src/users/users.module.ts</strong></summary>
+  <summary><strong>src/notes/notes.module.ts</strong></summary>
 
 ```ts
 import { Module } from "@nestjs/common";
-import { UsersService } from "./users.service";
-import { UsersController } from "./users.controller";
+import { UsersService } from "./notes.service";
+import { UsersController } from "./notes.controller";
 import { PrismaService } from "src/prisma/prisma.service";
 
 @Module({
@@ -1171,14 +1224,14 @@ export class UsersModule {}
 </details>
 
 <details>
-  <summary><strong>src/users/users.service.ts</strong></summary>
+  <summary><strong>src/notes/notes.service.ts</strong></summary>
 
 ```ts
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
-import { CreateUserDto } from "./dto/create-user.dto";
-import { UpdateUserDto } from "./dto/update-user.dto";
-import { ResponseUserDto } from "./dto/response-user.dto";
+import { CreateUserDto } from "./dto/create-note.dto";
+import { UpdateUserDto } from "./dto/update-note.dto";
+import { ResponseUserDto } from "./dto/response-note.dto";
 import { User } from "@prisma/client";
 
 type UserId = User["id"];
@@ -1257,7 +1310,7 @@ export class UsersService {
 </details>
 
 <details>
-  <summary><strong>src/users/users.controller.ts</strong></summary>
+  <summary><strong>src/notes/notes.controller.ts</strong></summary>
 
 ```ts
 import {
@@ -1272,10 +1325,10 @@ import {
   UsePipes,
   ValidationPipe,
 } from "@nestjs/common";
-import { UsersService } from "./users.service";
-import { ResponseUserDto } from "./dto/response-user.dto";
-import { CreateUserDto } from "./dto/create-user.dto";
-import { UpdateUserDto } from "./dto/update-user.dto";
+import { UsersService } from "./notes.service";
+import { ResponseUserDto } from "./dto/response-note.dto";
+import { CreateUserDto } from "./dto/create-note.dto";
+import { UpdateUserDto } from "./dto/update-note.dto";
 import {
   AuthGuard,
   Public,
@@ -1291,7 +1344,7 @@ import {
     forbidNonWhitelisted: true,
   })
 )
-@Controller("users")
+@Controller("notes")
 export class UsersController {
   public constructor(
     // private authService: AuthService<typeof auth>,
@@ -1342,7 +1395,7 @@ export class UsersController {
   // 	@Body(new ParseArrayPipe({ items: CreateUserDto }))
   // 	createUserDtos: CreateUserDto[],
   // ) {
-  // 	return "This action adds new users";
+  // 	return "This action adds new notes";
   // }
 
   @UsePipes(new ValidationPipe({ transform: true }))
