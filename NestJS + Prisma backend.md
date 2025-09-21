@@ -591,7 +591,7 @@ export class PrismaService
 
 </details>
 
-### **Create and Set Up 'Users' DTOs**
+<!-- ### **Create and Set Up 'Users' DTOs** (deprecated)
 
 Before proceeding, you need to install these packages. They are required to generate DTOs.
 [(docs1)](https://github.com/Brakebein/prisma-generator-nestjs-dto)
@@ -653,200 +653,15 @@ npx prisma generate
 
 Adjust the files (DTOs, entities) to fit your project’s style. Then run `npm run format` and `npm run lint`, and fix any warnings or errors that may appear.”
 
-The result should include the following files:
+**dtos were here**
 
-<details><summary><strong>`src/generated-dto/dto/connect-user.dto.ts`</strong></summary>
-
-```ts
-export class ConnectUserDto {
-  public id?: string;
-  public email?: string;
-
-  public constructor(data: ConnectUserDto) {
-    if (data.id) {
-      this.id = data.id;
-    }
-    if (data.email) {
-      this.email = data.email;
-    }
-  }
-}
-```
-
-</details>
+</details> -->
 
 <br/>
 
-<details><summary><strong>`src/generated-dto/dto/create-user.dto.ts`</strong></summary>
+### **Enable Validation and Transformation**
 
-```ts
-import { IsNotEmpty, IsOptional, IsString } from "class-validator";
-
-export class CreateUserDto {
-  @IsNotEmpty()
-  @IsString()
-  public name: string;
-
-  @IsNotEmpty()
-  @IsString()
-  public email: string;
-
-  @IsOptional()
-  @IsString()
-  public image?: string;
-
-  public constructor(data: CreateUserDto) {
-    this.name = data.name;
-    this.email = data.email;
-    if (data.image) {
-      this.image = data.image;
-    }
-  }
-}
-```
-
-</details>
-
-<br/>
-
-<details><summary><strong>`src/generated-dto/dto/update-user.dto.ts`</strong></summary>
-
-```ts
-import { IsOptional, IsString } from "class-validator";
-
-export class UpdateUserDto {
-  @IsOptional()
-  @IsString()
-  public name?: string;
-
-  @IsOptional()
-  @IsString()
-  public email?: string;
-
-  @IsOptional()
-  @IsString()
-  public image?: string;
-
-  public constructor(data: UpdateUserDto) {
-    if (data.image) {
-      this.image = data.image;
-    }
-    if (data.name) {
-      this.name = data.name;
-    }
-    if (data.email) {
-      this.email = data.email;
-    }
-  }
-}
-```
-
-</details>
-
-<br/>
-
-<details><summary><strong>`src/generated-dto/dto/user.dto.ts`</strong></summary>
-
-```ts
-import { Role } from "@prisma/client";
-import { ApiProperty } from "@nestjs/swagger";
-
-export class UserDto {
-  public id: string;
-  public name: string;
-  public email: string;
-  public emailVerified: boolean;
-  public image: string | null;
-
-  @ApiProperty({
-    type: `string`,
-    format: `date-time`,
-  })
-  public createdAt: Date;
-
-  @ApiProperty({
-    type: `string`,
-    format: `date-time`,
-  })
-  public updatedAt: Date;
-
-  @ApiProperty({
-    enum: Role,
-  })
-  public role: Role;
-
-  public constructor(data: UserDto) {
-    this.id = data.id;
-    this.name = data.name;
-    this.email = data.email;
-    this.emailVerified = data.emailVerified;
-    this.image = data.image;
-    this.createdAt = data.createdAt;
-    this.updatedAt = data.updatedAt;
-    this.role = data.role;
-  }
-}
-```
-
-</details>
-
-<br/>
-
-<details><summary><strong>`src/generated-dto/entities/user.entity.ts`</strong></summary>
-
-```ts
-import { Role } from "@prisma/client";
-import { ApiProperty } from "@nestjs/swagger";
-import { Session } from "../../session/entities/session.entity";
-import { Account } from "../../account/entities/account.entity";
-
-export class User {
-  public id: string;
-  public name: string;
-  public email: string;
-  public emailVerified: boolean;
-  public image: string | null;
-
-  @ApiProperty({
-    type: `string`,
-    format: `date-time`,
-  })
-  public createdAt: Date;
-
-  @ApiProperty({
-    type: `string`,
-    format: `date-time`,
-  })
-  public updatedAt: Date;
-
-  @ApiProperty({
-    enum: Role,
-  })
-  public role: Role;
-
-  public sessions?: Session[];
-  public accounts?: Account[];
-
-  public constructor(data: User) {
-    this.id = data.id;
-    this.name = data.name;
-    this.email = data.email;
-    this.emailVerified = data.emailVerified;
-    this.image = data.image;
-    this.createdAt = data.createdAt;
-    this.updatedAt = data.updatedAt;
-    this.role = data.role;
-    this.sessions = data.sessions;
-    this.accounts = data.accounts;
-  }
-}
-```
-
-</details>
-
-<br/>
-
-#### **Enable Validation**
+#### **Validation**
 
 Bind `ValidationPipe` at the application level, thus ensuring all endpoints are protected from receiving incorrect data.
 
@@ -874,7 +689,7 @@ async function bootstrap(): Promise<void> {
 bootstrap().catch((e): void => console.error(e));
 ```
 
-#### **Enable Transformation**
+#### **Transformation**
 
 To enable this behavior globally, set the option on a global pipe:
 
@@ -901,6 +716,10 @@ async function bootstrap(): Promise<void> {
 bootstrap().catch((e): void => console.error(e));
 ```
 
+#### **Alternatively**
+
+<details><summary><strong>👉 Alternatively</strong></summary>
+
 Later, this can optionally be done at the method (or controller) level [(docs)](https://docs.nestjs.com/techniques/validation#validation) [(more docs)](https://docs.nestjs.com/pipes#class-validator):
 
 ```ts
@@ -911,7 +730,7 @@ async create(@Body() createCatDto: CreateCatDto) {
 }
 ```
 
-Alternatively (with auto-transformation disabled), you can explicitly cast values using the ParseIntPipe or ParseBoolPipe:
+Or (with auto-transformation disabled), you can explicitly cast values using the ParseIntPipe or ParseBoolPipe:
 
 ```ts
 
@@ -926,16 +745,28 @@ findOne(
 }
 ```
 
-If you need to validate arrays in NestJS, refer to 👉 [the official documentation](https://docs.nestjs.com/techniques/validation#parsing-and-validating-arrays).
+If you need to validate arrays in NestJS, refer to [the official documentation](https://docs.nestjs.com/techniques/validation#parsing-and-validating-arrays).
+
+</details>
+
+<br/>
 
 ### **Create and Set Up the 'users' Feature**
 
-#### **Generate a Resource (Module/Service/Controller)**
+#### **Generate a Resource (Module/Service/Controller/DTOs)**
 
-You can generate the feature template with a single command:
+You can generate the feature template with a single command and make a few adjustments:
 
 ```sh
 nest generate resource users
+```
+
+```sh
+rm -rf ./src/users/entities
+```
+
+```sh
+echo "" > ./src/users/dto/response-user.dto.ts
 ```
 
 Or you can create the files manually using separate commands.
@@ -952,11 +783,26 @@ nest generate service users
 nest generate controller users
 ```
 
+```sh
+nest generate class users/dto/create-user.dto --flat
+```
+
+```sh
+nest generate class users/dto/update-user.dto --flat
+```
+
+```sh
+nest generate class users/dto/response-user.dto --flat
+```
+
 Note: Don’t add any content yet; just ensure the files are created.
 
 - `src/users/users.service.ts` file
 - `src/users/users.controller.ts` file
 - `src/users/users.module.ts` file
+- `src/users/dto/create-user.dto.ts` file
+- `src/users/dto/update-user.dto.ts` file
+- `src/users/dto/response-user.dto.ts` file
 
 <br/>
 
@@ -990,8 +836,6 @@ Inject the Prisma service into the `UsersService`:
 
 ```ts
 import { Injectable } from "@nestjs/common";
-import { CreateUserDto } from "./dto/create-user.dto";
-// import { UpdateUserDto } from "./dto/update-user.dto";
 import { PrismaService } from "./../prisma/prisma.service";
 
 @Injectable()
@@ -1002,6 +846,235 @@ export class UsersService {
 ```
 
 </details>
+
+#### **Adjust DTOs**
+
+Before proceeding, make sure these packages are installed.
+
+They are required to generate DTOs.
+[(docs1)](https://www.prisma.io/blog/nestjs-prisma-relational-data-7D056s1kOabc#define-the-user-entity-and-dto-classes)
+[(docs2)](https://medium.com/@daiki01240/how-to-leverage-swagger-and-class-validator-in-nestjs-api-documentation-and-exporting-type-7577da98768d)
+
+```sh
+npm install @nestjs/swagger class-validator class-transformer
+```
+
+Adjust the files (DTOs) to fit your project’s style.
+
+_A quick note:_
+
+> In order to make the class properties visible to the `SwaggerModule`, you need to annotate them with the `@ApiProperty()` decorator.
+
+Then run `npm run format` and `npm run lint`, and fix any warnings or errors that may appear.”
+
+The result should include the following files:
+
+<details><summary><strong>src/users/dto/create-user.dto.ts</strong></summary>
+
+```ts
+import { ApiProperty } from "@nestjs/swagger";
+import { IsEmail, IsString, MaxLength, MinLength } from "class-validator";
+
+export class CreateUserDto {
+  @ApiProperty({
+    description: "User name",
+    example: "John Doe",
+    minLength: 2,
+    maxLength: 50,
+  })
+  @IsString()
+  @MinLength(2)
+  @MaxLength(50)
+  public name: string;
+
+  @ApiProperty({
+    description: "User email address",
+    example: "user@example.com",
+  })
+  @IsEmail()
+  public email: string;
+
+  @ApiProperty({
+    description: "User password",
+    example: "strongPassword123",
+    minLength: 6,
+  })
+  @IsString()
+  @MinLength(6)
+  public password: string;
+
+  // @ApiProperty({
+  // 	description: "User profile image URL",
+  // 	required: false,
+  // 	example: "https://example.com/avatar.jpg",
+  // })
+  // @IsOptional()
+  // @IsString()
+  // public image?: string;
+
+  // @ApiProperty({
+  // 	description: "User role",
+  // 	enum: ["USER", "MODERATOR", "ADMIN"],
+  // 	required: false,
+  // 	default: "USER",
+  // })
+  // @IsOptional()
+  // @IsString()
+  // role?: "USER" | "MODERATOR" | "ADMIN";
+  public constructor(data: CreateUserDto) {
+    this.name = data.name;
+    this.email = data.email;
+    this.password = data.password;
+    // if (data.image) {
+    // 	this.image = data.image;
+    // }
+  }
+}
+```
+
+</details>
+
+<br/>
+
+<details><summary><strong>`src/users/dto/update-user.dto.ts`</strong></summary>
+
+```ts
+import { ApiProperty } from "@nestjs/swagger";
+import { IsString, MaxLength, MinLength } from "class-validator";
+
+// export class UpdateUserDto extends PartialType(CreateUserDto) {
+export class UpdateUserDto {
+  @ApiProperty({
+    description: "User name",
+    example: "John Smith",
+    minLength: 2,
+    maxLength: 50,
+  })
+  @IsString()
+  @MinLength(2)
+  @MaxLength(50)
+  public name: string;
+
+  public constructor(data: UpdateUserDto) {
+    this.name = data.name;
+    // super(data);
+  }
+}
+```
+
+</details>
+
+<br/>
+
+<details><summary><strong>`src/users/dto/response-user.dto.ts`</strong></summary>
+
+```ts
+import { ApiProperty } from "@nestjs/swagger";
+// import { Exclude } from "class-transformer";
+
+export class ResponseUserDto {
+  @ApiProperty({
+    description: "User ID",
+    example: "00000000-0000-0000-0000-000000000000",
+  })
+  public id: string;
+
+  @ApiProperty({
+    description: "User name",
+    example: "John Doe",
+  })
+  public name: string;
+
+  @ApiProperty({
+    description: "User email address",
+    example: "user@example.com",
+  })
+  public email: string;
+
+  // @ApiProperty({
+  // 	description: "Whether email is verified",
+  // 	example: false,
+  // })
+  // public emailVerified: boolean;
+
+  // @ApiProperty({
+  // 	description: "User profile image URL",
+  // 	required: false,
+  // 	example: "https://example.com/avatar.jpg",
+  // })
+  // public image?: string;
+
+  // @ApiProperty({
+  // 	description: "User creation date",
+  // 	example: "2023-01-01T00:00:00.000Z",
+  // })
+  // public createdAt: Date;
+
+  // @ApiProperty({
+  // 	description: "User last update date",
+  // 	example: "2023-01-01T00:00:00.000Z",
+  // })
+  // public updatedAt: Date;
+
+  // @ApiProperty({
+  // 	description: "User role",
+  // 	enum: ["USER", "MODERATOR", "ADMIN"],
+  // 	example: "USER",
+  // })
+  // public role: "USER" | "MODERATOR" | "ADMIN";
+
+  // @Exclude()
+  // public password: string;
+
+  // @Exclude()
+  // public sessions: any[];
+
+  // @Exclude()
+  // public accounts: any[];
+
+  public constructor(data: ResponseUserDto) {
+    this.id = data.id;
+    this.name = data.name;
+    this.email = data.email;
+
+    // Object.assign(this, partial);
+  }
+}
+```
+
+<!-- ```ts
+// src/users/dto/login-user.dto.ts
+import { ApiProperty } from "@nestjs/swagger";
+import { IsEmail, IsString, MinLength } from "class-validator";
+
+export class LoginUserDto {
+	@ApiProperty({
+		description: "User email address",
+		example: "user@example.com",
+	})
+	@IsEmail()
+	public email: string;
+
+	@ApiProperty({
+		description: "User password",
+		example: "strongPassword123",
+		minLength: 6,
+	})
+	@IsString()
+	@MinLength(6)
+	public password: string;
+
+	public constructor(data: LoginUserDto) {
+		this.email = data.email;
+		this.password = data.password;
+	}
+}
+
+``` -->
+
+</details>
+
+<br/>
 
 #### **Update the controller and service**
 
@@ -1030,60 +1103,80 @@ export class UsersModule {}
 
 ```ts
 import { Injectable } from "@nestjs/common";
-import { CreateUserDto } from "src/generated-dto/user/dto/create-user.dto";
-import { UpdateUserDto } from "src/generated-dto/user/dto/update-user.dto";
-import { UserDto } from "src/generated-dto/user/dto/user.dto";
-import { UserEntity } from "src/generated-dto/user/entities/user.entity";
 import { PrismaService } from "src/prisma/prisma.service";
+import { CreateUserDto } from "./dto/create-user.dto";
+import { UpdateUserDto } from "./dto/update-user.dto";
+import { ResponseUserDto } from "./dto/response-user.dto";
+import { User } from "@prisma/client";
 
-type UserId = UserEntity["id"];
-type UserEmail = UserEntity["email"];
+type UserId = User["id"];
+type UserEmail = User["email"];
+
+type FlagsOf<T> = { [K in keyof T]: boolean };
+
+const safeUserResponseProps = {
+  id: true,
+  name: true,
+  email: true,
+} satisfies FlagsOf<ResponseUserDto>;
 
 @Injectable()
 export class UsersService {
   public constructor(private readonly prisma: PrismaService) {}
 
-  public async create(createUserDto: CreateUserDto): Promise<UserDto> {
-    return this.prisma.user.create({ data: createUserDto });
+  public async create(createUserDto: CreateUserDto): Promise<ResponseUserDto> {
+    const result = await this.prisma.user.create({
+      data: createUserDto,
+      select: safeUserResponseProps,
+    });
+    return result;
+    // You could also do, but it's redundant
+    // return new ResponseUserDto(result);
   }
 
-  public async findAll(): Promise<Array<UserDto>> {
-    return this.prisma.user.findMany();
+  public async findAll(): Promise<Array<ResponseUserDto>> {
+    return this.prisma.user.findMany({ select: safeUserResponseProps });
   }
 
-  public async findById(id: UserId): Promise<UserDto | null> {
-    return this.prisma.user.findUnique({
+  public async findById(id: UserId): Promise<ResponseUserDto | null> {
+    const result = await this.prisma.user.findUnique({
       where: {
         id,
       },
+      select: safeUserResponseProps,
     });
+
+    return result;
   }
 
-  public async findByEmail(email: UserEmail): Promise<UserDto | null> {
+  public async findByEmail(email: UserEmail): Promise<ResponseUserDto | null> {
     return this.prisma.user.findUnique({
       where: {
         email,
       },
+      select: safeUserResponseProps,
     });
   }
 
   public async update(
     id: UserId,
     updateUserDto: UpdateUserDto
-  ): Promise<UserDto> {
+  ): Promise<ResponseUserDto> {
     return this.prisma.user.update({
       where: {
         id,
       },
       data: updateUserDto,
+      select: safeUserResponseProps,
     });
   }
 
-  public async delete(id: UserId): Promise<UserDto | null> {
+  public async delete(id: UserId): Promise<ResponseUserDto | null> {
     return this.prisma.user.delete({
       where: {
         id,
       },
+      select: safeUserResponseProps,
     });
   }
 }
@@ -1107,9 +1200,9 @@ import {
   ValidationPipe,
 } from "@nestjs/common";
 import { UsersService } from "./users.service";
-import { CreateUserDto } from "src/generated-dto/user/dto/create-user.dto";
-import { UserDto } from "src/generated-dto/user/dto/user.dto";
-import { UpdateUserDto } from "src/generated-dto/user/dto/update-user.dto";
+import { ResponseUserDto } from "./dto/response-user.dto";
+import { CreateUserDto } from "./dto/create-user.dto";
+import { UpdateUserDto } from "./dto/update-user.dto";
 
 @UsePipes(
   new ValidationPipe({
@@ -1126,14 +1219,14 @@ export class UsersController {
   @Get("by_id/:id")
   public async findOne(
     @Param("id" /*, ParseIntPipe*/) id: string
-  ): Promise<UserDto | null> {
+  ): Promise<ResponseUserDto | null> {
     return this.usersService.findById(id);
   }
 
   @Post()
   public async create(
     @Body(new ValidationPipe()) createUserDto: CreateUserDto
-  ): Promise<UserDto> {
+  ): Promise<ResponseUserDto> {
     return this.usersService.create(createUserDto);
   }
 
@@ -1141,16 +1234,18 @@ export class UsersController {
   public async update(
     @Param("id") id: string,
     @Body() updateUserDto: UpdateUserDto
-  ): Promise<UserDto> {
+  ): Promise<ResponseUserDto> {
     return this.usersService.update(id, updateUserDto);
   }
 
   @Delete()
-  public async delete(@Param("id") id: string): Promise<UserDto | null> {
+  public async delete(
+    @Param("id") id: string
+  ): Promise<ResponseUserDto | null> {
     return this.usersService.delete(id);
   }
   // @Get()
-  // public async findAll(): Promise<Array<UserDto>> {
+  // public async findAll(): Promise<Array<ResponseUserDto>> {
   // 	return this.usersService.findAll();
   // }
 
