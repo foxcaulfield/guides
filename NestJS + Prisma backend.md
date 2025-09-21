@@ -1053,28 +1053,58 @@ export class CreateNoteDto {
 
 <br/>
 
-<details><summary><strong>`src/notes/dto/update-note.dto.ts`</strong></summary>
+<details>
+	<summary><strong>src/notes/dto/update-note.dto.ts</strong></summary>
 
 ```ts
-import { ApiProperty } from "@nestjs/swagger";
-import { IsString, MaxLength, MinLength } from "class-validator";
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Length,
+  Max,
+  MaxLength,
+  Min,
+  MinLength,
+} from "class-validator";
 
-// export class UpdateUserDto extends PartialType(CreateUserDto) {
-export class UpdateUserDto {
-  @ApiProperty({
-    description: "User name",
-    example: "John Smith",
-    minLength: 2,
-    maxLength: 50,
-  })
+export class UpdateNoteDto {
+  @IsOptional()
+  @IsNotEmpty()
   @IsString()
-  @MinLength(2)
-  @MaxLength(50)
-  public name!: string;
+  @MinLength(3)
+  @MaxLength(20)
+  public title?: string;
 
-  public constructor(data: UpdateUserDto) {
-    if (data?.name) this.name = data.name;
-    // super(data);
+  @IsOptional()
+  @IsString()
+  @Length(5, 50)
+  public content?: string;
+
+  @IsOptional()
+  @IsString()
+  @Length(1, 30)
+  public source?: string;
+
+  @IsOptional()
+  @IsNumber()
+  // @IsPositive()
+  @Min(0)
+  @Max(5)
+  public priority?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  public isArchived?: boolean;
+
+  public constructor(data: UpdateNoteDto) {
+    if (data?.title != null) this.title = data?.title;
+    if (data?.content != null) this.content = data?.content;
+    if (data?.source != null) this.source = data?.source;
+    if (data?.priority != null) this.priority = data?.priority;
+    if (data?.isArchived != null) this.isArchived = data?.isArchived;
   }
 }
 ```
@@ -1083,78 +1113,18 @@ export class UpdateUserDto {
 
 <br/>
 
-<details><summary><strong>`src/notes/dto/response-note.dto.ts`</strong></summary>
+<details><summary><strong>src/notes/dto/response-note.dto.ts</strong></summary>
 
 ```ts
-import { ApiProperty } from "@nestjs/swagger";
-// import { Exclude } from "class-transformer";
-
-export class ResponseUserDto {
-  @ApiProperty({
-    description: "User ID",
-    example: "00000000-0000-0000-0000-000000000000",
-  })
+export class ResponseNoteDto {
   public id!: string;
+  public title!: string;
+  public content?: string;
 
-  @ApiProperty({
-    description: "User name",
-    example: "John Doe",
-  })
-  public name!: string;
-
-  @ApiProperty({
-    description: "User email address",
-    example: "user@example.com",
-  })
-  public email!: string;
-
-  // @ApiProperty({
-  // 	description: "Whether email is verified",
-  // 	example: false,
-  // })
-  // public emailVerified: boolean;
-
-  // @ApiProperty({
-  // 	description: "User profile image URL",
-  // 	required: false,
-  // 	example: "https://example.com/avatar.jpg",
-  // })
-  // public image?: string;
-
-  // @ApiProperty({
-  // 	description: "User creation date",
-  // 	example: "2023-01-01T00:00:00.000Z",
-  // })
-  // public createdAt: Date;
-
-  // @ApiProperty({
-  // 	description: "User last update date",
-  // 	example: "2023-01-01T00:00:00.000Z",
-  // })
-  // public updatedAt: Date;
-
-  // @ApiProperty({
-  // 	description: "User role",
-  // 	enum: ["USER", "MODERATOR", "ADMIN"],
-  // 	example: "USER",
-  // })
-  // public role: "USER" | "MODERATOR" | "ADMIN";
-
-  // @Exclude()
-  // public password: string;
-
-  // @Exclude()
-  // public sessions: any[];
-
-  // @Exclude()
-  // public accounts: any[];
-
-  public constructor(data: ResponseUserDto) {
-    if (data?.id) this.id = data.id;
-    if (data?.name) this.name = data.name;
-    if (data?.email) this.email = data.email;
-
-    // Object.assign(this, partial);
+  public constructor(data: ResponseNoteDto) {
+    if (data?.id != null) this.id = data?.id;
+    if (data?.title != null) this.title = data?.title;
+    if (data?.content != null) this.content = data?.content;
   }
 }
 ```
@@ -1193,15 +1163,198 @@ export class LoginUserDto {
 
 <br/>
 
-#### **Update the controller and service**
+#### **Update the Controller and Service, Add Pipes**
 
 Now implement the desired logic using the full power of `class-validator`, `@nestjs/swagger`, `better-auth`, and more.
 
-[(Better Auth decorators)](https://github.com/ThallesP/nestjs-better-auth)
-[(OpenAPI/Swagger general decorators)](https://docs.nestjs.com/openapi/decorators)
-[(OpenAPI/Swagger response decorators)](https://docs.nestjs.com/openapi/operations#responses)
-[(NestJS validation pipes)](https://docs.nestjs.com/techniques/validation)
-[(NestJS class-validator decorators)](https://github.com/typestack/class-validator#validation-decorators)
+- [(NestJS validation pipes)](https://docs.nestjs.com/techniques/validation)
+- [(Better Auth decorators)](https://github.com/ThallesP/nestjs-better-auth)
+- [(OpenAPI/Swagger general decorators)](https://docs.nestjs.com/openapi/decorators)
+- [(OpenAPI/Swagger response decorators)](https://docs.nestjs.com/openapi/operations#responses)
+
+<details>
+<summary><strong>**How to use `class-validator` validation pipes**</strong></summary>
+
+`сlass-validator` pipes can be enabled in the following ways:
+
+- Globally: In `src/main.ts`, apply the pipe to the entire application:
+
+```TypeScript
+ app.useGlobalPipes(new ValidationPipe({ transform: true }));
+```
+
+<br/>
+
+- At the controller level: Apply the pipe to an entire controller:
+
+```TypeScript
+@UsePipes(new ValidationPipe({ transform: true }))
+@Controller("notes")
+export class NotesController {}
+```
+
+<br/>
+
+- At the method level: Use the `@UsePipes` decorator for a specific method:
+
+```TypeScript
+@Post()
+@UsePipes(new ValidationPipe({ transform: true }))
+async create(/* ... */) {}
+```
+
+<br/>
+
+Pipes are used in these scenarios
+
+- When a DTO is provided as an argument value. If a `ValidationPipe` is enabled (globally, at the controller, or method level), it will automatically validate the DTO.
+
+```TypeScript
+create(@Body() createUserDto: CreateUserDto) {}
+```
+
+<br/>
+
+- Explicitly inside `@Param()` or `@Query()` decorators. A separate pipe is used for each, so `ValidationPipe` is not needed for them to work:
+
+```TypeScript
+@Get(':id')
+findOne(
+  @Param('id', ParseIntPipe) id: number,
+  @Query('sort', ParseBoolPipe) sort: boolean,
+) {}
+```
+
+<br/>
+
+<details><summary><strong>Auto-transformation of primitives</strong></summary>
+
+> With the auto-transformation option enabled, the ValidationPipe will also perform primitive type conversion. For example, the findOne() method below takes an id path parameter and automatically converts its type to a number.
+
+```TypeScript
+@Get(':id')
+findOne(@Param('id') id: number) {
+  console.log(typeof id === 'number'); // true
+  return 'This action returns a user';
+}
+```
+
+</details>
+
+</details>
+
+<br/><br/>
+
+<details><summary><strong>**How to use `Better Auth` validation pipes**</strong></summary>
+
+To use Better Auth validation pipes:
+
+You need to import the module. However, simply importing it is not enough to enable it, so keep reading for the next step.
+
+```TypeScript
+@Module({
+  imports: [
+    AuthModule.forRoot(auth),
+  ],
+})
+export class AppModule {}
+```
+
+Now you can choose on what level to protect your app:
+
+- Controller Level:
+  Use `@UseGuards(AuthGuard)` to protect all routes within a controller.
+
+```TypeScript
+import { Controller, Get, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@thallesp/nestjs-better-auth';
+
+@Controller('users')
+@UseGuards(AuthGuard) // <- Apply to all routes in this controller
+export class UserController {}
+```
+
+- Global Level:
+  For application-wide protection, register the guard as a global provider.
+
+```TypeScript
+import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthModule, AuthGuard } from '@thallesp/nestjs-better-auth';
+import { auth } from "./auth";
+
+@Module({
+  imports: [
+    AuthModule.forRoot(auth),
+  ],
+  providers: [
+    {
+      provide: APP_GUARD, // <-
+      useClass: AuthGuard, // <-
+    },
+  ],
+})
+export class AppModule {}
+```
+
+- Method Level:
+  Use `@UseGuards(AuthGuard)` to protect a single, specific route.
+
+```TypeScript
+@Controller("notes")
+export class NotesController {
+	public constructor(private readonly notesService: NotesService) {}
+
+	@UseGuards(AuthGuard) // <-
+	@Get("by_id/:id")
+	public async findOne(@Param("id", ParseUUIDPipe) id: string): Promise<ResponseNoteDto | null> {
+		return this.notesService.findById(id);
+	}
+}
+```
+
+**Available Decorators**
+
+Here are some of the available decorators:
+
+- **`@Session()`** (parameter level)
+- **`@Public()`** (controller level / method level)
+- **`@Optional()`** (controller level / method level)
+- ...and others, such as `@Hook()`, `@Request()`, etc.
+
+The main difference between `@Public()` and `@Optional()` is that `@Optional()` allows access to the session, which may be empty or null, while `@Public()` does not.
+
+<!-- </details> -->
+<br/>
+
+<details><summary>AuthService<summary>
+
+The `AuthService` is automatically provided by the `AuthModule` and can be injected into your controllers to access the Better Auth instance and its API endpoints.
+
+```TypeScript
+
+@Controller('users')
+@UseGuards(AuthGuard)
+export class UsersController {
+  constructor(private authService: AuthService<typeof auth>) {}
+
+  @Get('accounts')
+  async getAccounts(@Request() req: ExpressRequest) {
+    // Pass the request headers to the auth API
+    const accounts = await this.authService.api.listUserAccounts({
+      headers: fromNodeHeaders(req.headers),
+    });
+
+    return { accounts };
+  }
+}
+```
+
+</details>
+
+</details>
+
+<br/><br/>
 
 Example resulting files are listed below:
 
@@ -1210,15 +1363,15 @@ Example resulting files are listed below:
 
 ```ts
 import { Module } from "@nestjs/common";
-import { UsersService } from "./notes.service";
-import { UsersController } from "./notes.controller";
+import { NotesService } from "./notes.service";
+import { NotesController } from "./notes.controller";
 import { PrismaService } from "src/prisma/prisma.service";
 
 @Module({
-  controllers: [UsersController],
-  providers: [UsersService, PrismaService],
+  controllers: [NotesController],
+  providers: [NotesService, PrismaService],
 })
-export class UsersModule {}
+export class NotesModule {}
 ```
 
 </details>
@@ -1228,81 +1381,77 @@ export class UsersModule {}
 
 ```ts
 import { Injectable } from "@nestjs/common";
+import { CreateNoteDto } from "./dto/create-note.dto";
+import { UpdateNoteDto } from "./dto/update-note.dto";
 import { PrismaService } from "src/prisma/prisma.service";
-import { CreateUserDto } from "./dto/create-note.dto";
-import { UpdateUserDto } from "./dto/update-note.dto";
-import { ResponseUserDto } from "./dto/response-note.dto";
-import { User } from "@prisma/client";
+import { Note } from "@prisma/client";
+import { ResponseNoteDto } from "./dto/response-note.dto";
 
-type UserId = User["id"];
-type UserEmail = User["email"];
+type NoteId = Note["id"];
 
 type FlagsOf<T> = { [K in keyof T]: boolean };
 
-const safeUserResponseProps = {
+const safeNoteResponseProps = {
   id: true,
-  name: true,
-  email: true,
-} satisfies FlagsOf<ResponseUserDto>;
+  title: true,
+  content: true,
+} satisfies FlagsOf<ResponseNoteDto>;
 
 @Injectable()
-export class UsersService {
-  public constructor(private readonly prisma: PrismaService) {}
-
-  public async create(createUserDto: CreateUserDto): Promise<ResponseUserDto> {
-    const result = await this.prisma.user.create({
-      data: { name: createUserDto.name, email: createUserDto.email },
-      select: safeUserResponseProps,
+export class NotesService {
+  public constructor(private readonly prisma: PrismaService) {} // <- Prisma is injected here
+  // ... the rest of the file
+  public async create(createNoteDto: CreateNoteDto): Promise<ResponseNoteDto> {
+    const result = await this.prisma.note.create({
+      data: createNoteDto,
+      select: safeNoteResponseProps,
     });
     return result;
     // You could also do, but it's redundant
-    // return new ResponseUserDto(result);
+    // return new ResponseNoteDto(result);
   }
 
-  public async findAll(): Promise<Array<ResponseUserDto>> {
-    return this.prisma.user.findMany({ select: safeUserResponseProps });
-  }
-
-  public async findById(id: UserId): Promise<ResponseUserDto | null> {
-    const result = await this.prisma.user.findUnique({
+  public async findById(id: NoteId): Promise<ResponseNoteDto | null> {
+    const result = await this.prisma.note.findUnique({
       where: {
         id,
       },
-      select: safeUserResponseProps,
+      select: safeNoteResponseProps,
     });
 
     return result;
   }
 
-  public async findByEmail(email: UserEmail): Promise<ResponseUserDto | null> {
-    return this.prisma.user.findUnique({
-      where: {
-        email,
-      },
-      select: safeUserResponseProps,
-    });
-  }
-
   public async update(
-    id: UserId,
-    updateUserDto: UpdateUserDto
-  ): Promise<ResponseUserDto> {
-    return this.prisma.user.update({
+    id: NoteId,
+    updateNoteDto: UpdateNoteDto
+  ): Promise<ResponseNoteDto | null> {
+    const result = await this.prisma.note.update({
       where: {
         id,
       },
-      data: updateUserDto,
-      select: safeUserResponseProps,
+      data: updateNoteDto,
+      select: safeNoteResponseProps,
     });
+
+    return result;
   }
 
-  public async delete(id: UserId): Promise<ResponseUserDto | null> {
-    return this.prisma.user.delete({
+  public async remove(id: NoteId): Promise<NoteId | null> {
+    const result = await this.prisma.note.delete({
       where: {
         id,
       },
-      select: safeUserResponseProps,
+      select: {
+        id: true,
+      },
     });
+
+    return result.id;
+  }
+
+  public async findAll(): Promise<Array<ResponseNoteDto>> {
+    return this.prisma.note.findMany({ select: safeNoteResponseProps });
   }
 }
 ```
@@ -1314,112 +1463,187 @@ export class UsersService {
 
 ```ts
 import {
-  Body,
   Controller,
-  Delete,
   Get,
+  Post,
+  Body,
+  Patch,
   Param,
-  /* ParseArrayPipe, */ Post,
-  Put,
-  UseGuards,
+  Delete,
+  ParseUUIDPipe,
   UsePipes,
   ValidationPipe,
+  UseGuards,
+  Request,
 } from "@nestjs/common";
-import { UsersService } from "./notes.service";
-import { ResponseUserDto } from "./dto/response-note.dto";
-import { CreateUserDto } from "./dto/create-note.dto";
-import { UpdateUserDto } from "./dto/update-note.dto";
+import { NotesService } from "./notes.service";
+import { CreateNoteDto } from "./dto/create-note.dto";
+import { UpdateNoteDto } from "./dto/update-note.dto";
+import { ResponseNoteDto } from "./dto/response-note.dto";
+import { Note } from "@prisma/client";
 import {
   AuthGuard,
+  AuthService,
+  Optional,
   Public,
   Session,
   type UserSession,
 } from "@thallesp/nestjs-better-auth";
+import { auth } from "src/auth";
+import { fromNodeHeaders } from "better-auth/node";
+import type { Request as ExpressRequest } from "express";
 
-@UseGuards(AuthGuard)
 @UsePipes(
   new ValidationPipe({
-    transform: true,
     whitelist: true,
     forbidNonWhitelisted: true,
+    transform: true, // <- here
+    forbidUnknownValues: true,
+    // disableErrorMessages: true,
   })
 )
 @Controller("notes")
-export class UsersController {
+@UseGuards(AuthGuard)
+export class NotesController {
   public constructor(
-    // private authService: AuthService<typeof auth>,
-    private readonly usersService: UsersService
+    private readonly notesService: NotesService,
+    private authService: AuthService<typeof auth>
   ) {}
 
-  /* EXAMPLE */
-  @Get("by_id/:id")
-  public async findOne(
-    @Param("id" /*, ParseIntPipe*/) id: string
-  ): Promise<ResponseUserDto | null> {
-    return this.usersService.findById(id);
-  }
-
-  /* EXAMPLE */
-  @Public() // Mark this route as public (no authentication required)
+  @UseGuards(AuthGuard) // <- Just example
   @Post("create")
   public async create(
-    @Body(new ValidationPipe()) createUserDto: CreateUserDto
-  ): Promise<ResponseUserDto> {
-    return this.usersService.create(createUserDto);
+    @Body() createNoteDto: CreateNoteDto,
+    @Session() session: UserSession
+  ): Promise<ResponseNoteDto> {
+    console.log("User id " + session.user.id);
+    return this.notesService.create(createNoteDto);
   }
 
-  /* EXAMPLE */
-  @Put("update/:id")
+  @Get("by_id/:id")
+  public async findOne(
+    @Param("id", ParseUUIDPipe) id: string
+  ): Promise<ResponseNoteDto | null> {
+    return this.notesService.findById(id);
+  }
+
+  @Patch("update/:id")
   public async update(
-    @Param("id") id: string,
-    @Body() updateUserDto: UpdateUserDto
-  ): Promise<ResponseUserDto> {
-    return this.usersService.update(id, updateUserDto);
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body() updateNoteDto: UpdateNoteDto
+  ): Promise<ResponseNoteDto | null> {
+    return this.notesService.update(id, updateNoteDto);
   }
 
-  /* EXAMPLE */
   @Delete("delete/:id")
-  public async delete(
-    @Param("id") id: string
-  ): Promise<ResponseUserDto | null> {
-    return this.usersService.delete(id);
+  public async remove(
+    @Param("id", ParseUUIDPipe) id: string
+  ): Promise<Note["id"] | null> {
+    return this.notesService.remove(id);
   }
 
-  // @Get()
-  // public async findAll(): Promise<Array<ResponseUserDto>> {
-  // 	return this.usersService.findAll();
-  // }
-
-  // @Post()
-  // createBulk(
-  // 	@Body(new ParseArrayPipe({ items: CreateUserDto }))
-  // 	createUserDtos: CreateUserDto[],
-  // ) {
-  // 	return "This action adds new notes";
-  // }
-
-  @UsePipes(new ValidationPipe({ transform: true }))
-  @UseGuards(AuthGuard)
   @Public()
-  @Get("me")
-  public getProfile(@Session() session: UserSession): ResponseUserDto {
+  @Get("all")
+  public async findAll(
+    @Session() session: UserSession
+  ): Promise<Array<ResponseNoteDto>> {
+    console.log(session);
+    return this.notesService.findAll();
+  }
+
+  // Common examples
+  @Optional() // <- Just example
+  @Get("news")
+  public getNews(@Session() session: UserSession): {
+    message: string;
+    user?: string;
+  } {
+    if (session) {
+      return {
+        message: "Welcome!",
+        user: session.user.email,
+      };
+    }
+
     return {
-      id: session.user.id,
-      name: session.user.name,
-      email: session.user.email,
+      message: "No news",
     };
+  }
+
+  @Get("accounts")
+  public async getAccounts(@Request() req: ExpressRequest): Promise<{
+    accounts: {
+      id: string;
+      providerId: string;
+      createdAt: Date;
+      updatedAt: Date;
+      accountId: string;
+      scopes: string[];
+    }[];
+  }> {
+    const accounts = await this.authService.api.listUserAccounts({
+      headers: fromNodeHeaders(req.headers), // This is required to be authenticated
+    });
+
+    return { accounts };
   }
 }
 ```
 
 </details>
 
-You can optionally add a response validator (like [here](https://medium.com/@kuba.2001/reponse-validation-in-nestjs-0db70b955a6a) and [here](https://www.reddit.com/r/nestjs/comments/1knaeze/comment/mssircd/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button)
-), but it’s usually not needed as long as you clearly pick which fields/properties to return from the ORM in your service.
+> You can optionally add a response validator (like [here](https://medium.com/@kuba.2001/reponse-validation-in-nestjs-0db70b955a6a) and [here](https://www.reddit.com/r/nestjs/comments/1knaeze/comment/mssircd/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button)), but it's typically unnecessary if you explicitly select the fields to return from your ORM in the service layer.
 
 <br/><br/>
 
-### **Create Auth service**
+<details><summary><strong>content of `src/main.ts`</strong></summary>
+
+```ts
+import { NestFactory } from "@nestjs/core";
+import { AppModule } from "./app.module";
+import { DocumentBuilder, OpenAPIObject, SwaggerModule } from "@nestjs/swagger";
+import { join } from "node:path";
+import { writeFileSync } from "node:fs";
+import { ValidationPipe } from "@nestjs/common";
+
+async function bootstrap(): Promise<void> {
+  const app = await NestFactory.create(AppModule, {
+    bodyParser: false,
+  });
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true, // <- here
+      forbidUnknownValues: true,
+      // disableErrorMessages: true,
+    })
+  );
+
+  const config = new DocumentBuilder()
+    .setTitle("Application Title")
+    .setDescription("The Application API Description")
+    .setVersion("1.0")
+    .addTag("app")
+    .build();
+  const documentFactory = (): OpenAPIObject =>
+    SwaggerModule.createDocument(app, config);
+
+  // Setup SwaggerUI
+  SwaggerModule.setup("api", app, documentFactory);
+
+  // Save OpenAPI File
+  const outputPath = join(process.cwd(), "swagger-spec.json");
+  writeFileSync(outputPath, JSON.stringify(documentFactory(), null, 2));
+
+  await app.listen(process.env.PORT ?? 3000);
+}
+bootstrap().catch((e): void => console.error(e));
+```
+
+</details>
+<!-- ### **Create Auth service**
 
 <details>
   <summary><strong>src/auth/auth.service.ts</strong></summary>
@@ -1428,11 +1652,12 @@ You can optionally add a response validator (like [here](https://medium.com/@kub
   <summary><strong>src/auth/auth.controller.ts</strong></summary>
 </details>
 
-<br/><br/>
+<br/><br/> -->
 
 # FAQ
 
 [(better-auth endpoints)](https://www.better-auth.com/docs/plugins/username#usage)
+
 Flow:
 
 - Add model
