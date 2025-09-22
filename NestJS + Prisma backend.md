@@ -74,7 +74,11 @@ Then navigate to your project folder (if not already there).
 
 <br/><br/>
 
-# Add debug config (optional)
+# Add and Customize Configs (optional)
+
+**Customize project configuration files as needed. For example:**
+
+### VS Code Debug config
 
 <details><summary><strong>.vscode/launch.json</strong></summary>
 
@@ -112,6 +116,175 @@ Then navigate to your project folder (if not already there).
 ```
 
 </details>
+
+### TypeScript Compiler Config
+
+<details>
+<summary><strong>tsconfig.json</strong> — TypeScript Compiler Options</summary>
+
+```ts
+{
+	"compilerOptions": {
+		"module": "nodenext",
+		"moduleResolution": "nodenext",
+		"resolvePackageJsonExports": true,
+		"esModuleInterop": true,
+		"isolatedModules": true,
+		"declaration": true,
+		"removeComments": true,
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
+		"allowSyntheticDefaultImports": true,
+		"target": "ES2023",
+		"sourceMap": true,
+		"outDir": "./dist",
+		"baseUrl": "./",
+		"incremental": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+
+		// Strict Checks
+		"alwaysStrict": true,
+		"noImplicitAny": true,
+		"strictNullChecks": true,
+		"strictPropertyInitialization": true,
+		"strictFunctionTypes": true,
+		"noImplicitThis": true,
+		"strictBindCallApply": true,
+		// "noPropertyAccessFromIndexSignature": true,
+		"noUncheckedIndexedAccess": true,
+
+		// Linter Checks
+		"noImplicitReturns": true, // https://eslint.org/docs/rules/consistent-return ?
+		"noFallthroughCasesInSwitch": true, // https://eslint.org/docs/rules/no-fallthrough
+		"noUnusedLocals": true, // https://eslint.org/docs/rules/no-unused-vars
+		"noUnusedParameters": true, // https://eslint.org/docs/rules/no-unused-vars#args
+		"allowUnreachableCode": false, // https://eslint.org/docs/rules/no-unreachable ?
+		"allowUnusedLabels": false, // https://eslint.org/docs/rules/no-unused-labels
+
+		// Base Strict Checks
+		"noImplicitUseStrict": false,
+		"suppressExcessPropertyErrors": false,
+		"suppressImplicitAnyIndexErrors": false,
+		"noStrictGenericChecks": false
+	}
+}
+```
+
+</details>
+
+### Prettier Plugin Config
+
+<details>
+  <summary><strong>.prettierrc</strong> — Prettier Formatting Options</summary>
+
+```json
+{
+  "singleQuote": false,
+  "trailingComma": "all",
+  "useTabs": true,
+  "tabWidth": 4,
+  "printWidth": 120
+}
+```
+
+</details>
+
+### ESLint Plugin Config
+
+<details>
+  <summary><strong>.eslint.config.mjs</strong> — ESLint Rules and Formatting</summary>
+
+```ts
+//...
+rules: {
+			// ... existing rules
+			"@typescript-eslint/no-explicit-any": "off",
+			"@typescript-eslint/no-floating-promises": "warn",
+			"@typescript-eslint/no-unsafe-argument": "warn",
+			"prettier/prettier": [
+				"error",
+				{
+					// endOfLine: "auto",
+					printWidth: 120,
+					// trailingComma: "es5",
+					// semi: false,
+					doubleQuote: true,
+					// jsxSingleQuote: true,
+					singleQuote: false,
+					useTabs: true,
+					// tabWidth: 4,
+				},
+			],
+			"@typescript-eslint/explicit-member-accessibility": ["error", { accessibility: "explicit" }],
+			"@typescript-eslint/explicit-function-return-type": [
+				"error",
+				{
+					allowExpressions: false,
+					allowTypedFunctionExpressions: false,
+					allowHigherOrderFunctions: false,
+					allowDirectConstAssertionInArrowFunctions: false,
+					allowConciseArrowFunctionExpressionsStartingWithVoid: false,
+				},
+			],
+			// ... existing rules
+		},
+// ...
+```
+
+</details>
+
+### **Remove Spec/Test Files and Scripts**
+
+You can remove `.spec.ts` files if you don’t plan to use them.
+
+```sh
+find ./src -type f -name "*.spec.ts" -exec rm -i {} \; && rm -rf ./test;
+```
+
+#### **Add "no-spec" Setting to `nest-cli.json`**
+
+Edit `nest-cli.json` and add the following to disable test file generation globally:
+
+```js
+{
+	// ...
+	"generateOptions": {
+		"spec": false
+	}
+	// ...
+}
+```
+
+This way you won’t need to use the --no-spec flag every time you generate a new file.
+
+#### **Remove Test Scripts and Folder**
+
+If tests are not planned, remove all test-related scripts from `package.json` and update any remaining scripts or configurations referencing the `test` folder:
+
+```js
+	"format": "prettier --write \"src/**/*.ts\"",
+	"lint": "eslint \"{src,apps,libs}/**/*.ts\" --fix",
+```
+
+### **Ensure the Following VS Code Extensions Are Installed**
+
+- **ESLint**
+- **Prettier - Code formatter**
+
+### **Run Linting and Formatting**
+
+Run the following commands to lint and format your code:
+
+```sh
+npm run lint
+```
+
+```sh
+npm run format
+```
+
+Resolve all warnings and errors, then proceed.
 
 <br/><br/>
 
@@ -375,175 +548,6 @@ This will:
 - Create a new migration in prisma/migrations named init.
 - Apply the migration to your database.
 - Generate Prisma Client in node_modules/.prisma/client.
-
-<br/><br/>
-
-# Configure Project Files (Optional)
-
-### **Customize project configuration files as needed. For example:**
-
-<details>
-<summary><strong>tsconfig.json</strong> — TypeScript Compiler Options</summary>
-
-```ts
-{
-	"compilerOptions": {
-		"module": "nodenext",
-		"moduleResolution": "nodenext",
-		"resolvePackageJsonExports": true,
-		"esModuleInterop": true,
-		"isolatedModules": true,
-		"declaration": true,
-		"removeComments": true,
-		"emitDecoratorMetadata": true,
-		"experimentalDecorators": true,
-		"allowSyntheticDefaultImports": true,
-		"target": "ES2023",
-		"sourceMap": true,
-		"outDir": "./dist",
-		"baseUrl": "./",
-		"incremental": true,
-		"skipLibCheck": true,
-		"forceConsistentCasingInFileNames": true,
-
-		// Strict Checks
-		"alwaysStrict": true,
-		"noImplicitAny": true,
-		"strictNullChecks": true,
-		"strictPropertyInitialization": true,
-		"strictFunctionTypes": true,
-		"noImplicitThis": true,
-		"strictBindCallApply": true,
-		// "noPropertyAccessFromIndexSignature": true,
-		"noUncheckedIndexedAccess": true,
-
-		// Linter Checks
-		"noImplicitReturns": true, // https://eslint.org/docs/rules/consistent-return ?
-		"noFallthroughCasesInSwitch": true, // https://eslint.org/docs/rules/no-fallthrough
-		"noUnusedLocals": true, // https://eslint.org/docs/rules/no-unused-vars
-		"noUnusedParameters": true, // https://eslint.org/docs/rules/no-unused-vars#args
-		"allowUnreachableCode": false, // https://eslint.org/docs/rules/no-unreachable ?
-		"allowUnusedLabels": false, // https://eslint.org/docs/rules/no-unused-labels
-
-		// Base Strict Checks
-		"noImplicitUseStrict": false,
-		"suppressExcessPropertyErrors": false,
-		"suppressImplicitAnyIndexErrors": false,
-		"noStrictGenericChecks": false
-	}
-}
-```
-
-</details>
-
-<details>
-  <summary><strong>.prettierrc</strong> — Prettier Formatting Options</summary>
-
-```json
-{
-  "singleQuote": false,
-  "trailingComma": "all",
-  "useTabs": true,
-  "tabWidth": 4,
-  "printWidth": 120
-}
-```
-
-</details>
-
-<details>
-  <summary><strong>.eslint.config.mjs</strong> — ESLint Rules and Formatting</summary>
-
-```ts
-//...
-rules: {
-			// ... existing rules
-			"@typescript-eslint/no-explicit-any": "off",
-			"@typescript-eslint/no-floating-promises": "warn",
-			"@typescript-eslint/no-unsafe-argument": "warn",
-			"prettier/prettier": [
-				"error",
-				{
-					// endOfLine: "auto",
-					printWidth: 120,
-					// trailingComma: "es5",
-					// semi: false,
-					doubleQuote: true,
-					// jsxSingleQuote: true,
-					singleQuote: false,
-					useTabs: true,
-					// tabWidth: 4,
-				},
-			],
-			"@typescript-eslint/explicit-member-accessibility": ["error", { accessibility: "explicit" }],
-			"@typescript-eslint/explicit-function-return-type": [
-				"error",
-				{
-					allowExpressions: false,
-					allowTypedFunctionExpressions: false,
-					allowHigherOrderFunctions: false,
-					allowDirectConstAssertionInArrowFunctions: false,
-					allowConciseArrowFunctionExpressionsStartingWithVoid: false,
-				},
-			],
-			// ... existing rules
-		},
-// ...
-```
-
-</details>
-
-### **Ensure the Following VS Code Extensions Are Installed**
-
-- **ESLint**
-- **Prettier - Code formatter**
-
-### **Remove Spec/Test Files and Scripts (Optional)**
-
-You can remove `.spec.ts` files if you don’t plan to use them.
-
-```sh
-find ./src -type f -name "*.spec.ts" -exec rm -i {} \; && rm -rf ./test;
-```
-
-#### **Add "no-spec" Setting to `nest-cli.json`**
-
-Edit `nest-cli.json` and add the following to disable test file generation globally:
-
-```js
-{
-	// ...
-	"generateOptions": {
-		"spec": false
-	}
-	// ...
-}
-```
-
-This way you won’t need to use the --no-spec flag every time you generate a new file.
-
-#### **Remove Test Scripts and Folder**
-
-If tests are not planned, remove all test-related scripts from `package.json` and update any remaining scripts or configurations referencing the `test` folder:
-
-```js
-	"format": "prettier --write \"src/**/*.ts\"",
-	"lint": "eslint \"{src,apps,libs}/**/*.ts\" --fix",
-```
-
-### **Run Linting and Formatting**
-
-Run the following commands to lint and format your code:
-
-```sh
-npm run lint
-```
-
-```sh
-npm run format
-```
-
-Resolve all warnings and errors, then proceed.
 
 <br/><br/>
 
