@@ -8,7 +8,11 @@
 
 <br/><br/>
 
-# Install NestJS CLI
+<!-- === === === === === -->
+<!-- === === === === === -->
+<!-- === === === === === -->
+
+# 1. Install NestJS CLI
 
 ### Install
 
@@ -24,9 +28,11 @@ nest --version
 
 <br/><br/>
 
-# Set Up the Project
+<!-- === === === === === -->
+<!-- === === === === === -->
+<!-- === === === === === -->
 
-### Navigate to Your Project Directory
+# 2. Set Up the Project
 
 #### Option 1: Create the Project in a New Folder
 
@@ -50,6 +56,8 @@ cd my_project
 
 This creates a new folder `my_project` with a ready-to-use NestJS project.
 
+</br>
+
 #### Option 2: Create the Project in the Current Folder
 
 Alternatively, if you want to initialize the project in the current folder:
@@ -66,6 +74,8 @@ cd my_project
 nest new .
 ```
 
+</br>
+
 <!-- nest new . --no-spec -->
 
 ⚠️ Ensure the current folder is empty to avoid conflicts with existing files.
@@ -74,13 +84,22 @@ Then navigate to your project folder (if not already there).
 
 <br/><br/>
 
-# Add and Customize Configs (optional)
+<!-- === === === === === -->
+<!-- === === === === === -->
+<!-- === === === === === -->
 
-**Customize project configuration files as needed. For example:**
+# 3. Add and Customize Configs (optional)
 
-### VS Code Debug config
+### Customize Configs
 
-<details><summary><strong>.vscode/launch.json</strong></summary>
+Customize project configuration files as needed. For example:
+
+<br/>
+
+<!-- **VS Code Debug config** -->
+
+<details>
+<summary>.vscode/launch.json — VS Code Debugger Options</summary>
 
 ```JavaScript
 {
@@ -117,10 +136,12 @@ Then navigate to your project folder (if not already there).
 
 </details>
 
-### TypeScript Compiler Config
+<br/>
+
+<!-- **TypeScript Compiler Config** -->
 
 <details>
-<summary><strong>tsconfig.json</strong> — TypeScript Compiler Options</summary>
+<summary>tsconfig.json — TypeScript Compiler Options</summary>
 
 ```ts
 {
@@ -173,10 +194,12 @@ Then navigate to your project folder (if not already there).
 
 </details>
 
-### Prettier Plugin Config
+<br/>
+
+<!-- **Prettier Plugin Config** -->
 
 <details>
-  <summary><strong>.prettierrc</strong> — Prettier Formatting Options</summary>
+<summary>.prettierrc — Prettier Formatting Options</summary>
 
 ```json
 {
@@ -190,10 +213,12 @@ Then navigate to your project folder (if not already there).
 
 </details>
 
-### ESLint Plugin Config
+<br/>
+
+<!-- **ESLint Plugin Config** -->
 
 <details>
-  <summary><strong>.eslint.config.mjs</strong> — ESLint Rules and Formatting</summary>
+<summary>.eslint.config.mjs — ESLint Rules and Formatting</summary>
 
 ```ts
 //...
@@ -234,7 +259,13 @@ rules: {
 
 </details>
 
+<br/>
+
 ### **Remove Spec/Test Files and Scripts**
+
+<details>
+<summary>Settings</summary>
+</dl></dd>
 
 You can remove `.spec.ts` files if you don’t plan to use them.
 
@@ -267,10 +298,17 @@ If tests are not planned, remove all test-related scripts from `package.json` an
 	"lint": "eslint \"{src,apps,libs}/**/*.ts\" --fix",
 ```
 
+</dd></dl>
+</details>
+
+<br/>
+
 ### **Ensure the Following VS Code Extensions Are Installed**
 
 - **ESLint**
 - **Prettier - Code formatter**
+
+<br/>
 
 ### **Run Linting and Formatting**
 
@@ -288,9 +326,17 @@ Resolve all warnings and errors, then proceed.
 
 <br/><br/>
 
-# Install and Configure Dependencies
+<!-- === === === === === -->
+<!-- === === === === === -->
+<!-- === === === === === -->
+
+# 4. Install and Configure Dependencies
 
 ### dotenv [(docs)](https://www.npmjs.com/package/dotenv)
+
+<details>
+<summary>Settings</summary>
+<dl><dd>
 
 Install:
 
@@ -304,9 +350,14 @@ Create and configure a `.env` file:
 echo "" > .env
 ```
 
-<br/><br/>
+</dd></dl>
+</details>
 
 ### Docker + PostgreSQL
+
+<details>
+<summary>Settings</summary>
+<dl><dd>
 
 Update the `.env` file
 
@@ -359,7 +410,14 @@ Or start only the `db` service:
 docker compose up db -d
 ```
 
+</dd></dl>
+</details>
+
 ### Prisma
+
+<details>
+<summary>Settings</summary>
+<dl><dd>
 
 _You can check the official NestJS docs [here](https://docs.nestjs.com/recipes/prisma#use-prisma-client-in-your-nestjs-services) and the Prisma docs [here](https://www.prisma.io/docs/getting-started/setup-prisma/start-from-scratch/relational-databases-typescript-postgresql)._
 
@@ -405,7 +463,14 @@ Then run the following command (this will also install `@prisma/client` automati
 npx prisma generate
 ```
 
+</dd></dl>
+</details>
+
 ### Better Auth
+
+<details>
+<summary>Settings</summary>
+<dl><dd>
 
 [(Better Auth - General Installation)](https://www.better-auth.com/docs/installation)
 [(Better Auth - NestJS Integration)](https://www.better-auth.com/docs/integrations/nestjs)
@@ -437,7 +502,7 @@ echo "" > src/auth.ts
 In this file, import Better Auth and create your auth instance (include the `prismaAdapter`).
 
 <details>
-  <summary><strong>File: src/auth.ts</strong></summary>
+<summary><strong>File: src/auth.ts</strong></summary>
 
 ```ts
 import { betterAuth } from "better-auth";
@@ -518,7 +583,8 @@ model User {
 In addition to the models generated above, add the following one manually.
 This model is provided **for demonstration purposes only** and will later be used to demonstrate how to apply decorators.
 
-<details><summary><strong>prisma/schema.prisma</strong></summary>
+<details>
+<summary><strong>prisma/schema.prisma</strong></summary>
 
 ```prisma
 // ...
@@ -551,16 +617,29 @@ This will:
 - Apply the migration to your database.
 - Generate Prisma Client in node_modules/.prisma/client.
 
+</dd></dl>
+</details>
+
 <br/><br/>
 
-# Develop the Project
+<!-- === === === === === -->
+<!-- === === === === === -->
+<!-- === === === === === -->
+
+# Set Up the Project
+
+## Better Auth
+
+<details><summary>Settings</summary>
+
+<dl><dd>
 
 ### **Disable Body Parser**
 
 Disable NestJS's built-in body parser to allow Better Auth to handle the raw request body:
 
 <details>
-  <summary><strong>src/main.ts</strong></summary>
+  <summary>src/main.ts</summary>
 
 ```ts
 import { NestFactory } from "@nestjs/core";
@@ -595,18 +674,28 @@ import { auth } from "./auth"; // Your Better Auth instance
 export class AppModule {}
 ```
 
+</dd></dl>
+
+</details>
 </details>
 
-### **Set Up a Swagger (Optional)**
+## Swagger (optional)
+
+<details><summary>Settings</summary>
+<dl><dd>
+
+<!-- ```sh
+npm install @nestjs/swagger
+``` -->
 
 ```sh
-npm install @nestjs/swagger
+npm install @nestjs/swagger class-validator class-transformer
 ```
 
 Once the installation process is complete, open the `main.ts` file and initialize Swagger using the `SwaggerModule` class [(docs)](https://docs.nestjs.com/openapi/introduction#bootstrap).
 
 <details>
-  <summary><strong>src/main.ts</strong></summary>
+<summary><strong>src/main.ts</strong></summary>
 
 ```ts
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from "@nestjs/swagger";
@@ -639,6 +728,68 @@ async function bootstrap(): Promise<void> {
 
 <br/>
 
+**Adjust `Swagger`**
+
+> _A quick note:_
+> Usually, in order to make the class properties visible to the `SwaggerModule`, you need to annotate them with the `@ApiProperty()` decorator [(docs)](https://docs.nestjs.com/openapi/types-and-parameters#types-and-parameters).
+
+Alternatively, you can use the appropriate plugin, as described below. [(Swagger/CLI plugin)](https://docs.nestjs.com/openapi/cli-plugin) [(docs1)](https://www.prisma.io/blog/nestjs-prisma-relational-data-7D056s1kOabc#define-the-user-entity-and-dto-classes) [(docs2)](https://medium.com/@daiki01240/how-to-leverage-swagger-and-class-validator-in-nestjs-api-documentation-and-exporting-type-7577da98768d).
+
+<!-- Before proceeding, make sure these packages are installed. -->
+
+<!-- {
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "src",
+  "compilerOptions": {
+    "plugins": ["@nestjs/swagger"]
+  }
+} -->
+
+To [enable]() the plugin, open `nest-cli.json` and add the following plugins configuration. You can also use the options property to customize the behavior of the plugin.
+
+<details><summary><strong>nest-cli.json</strong></summary>
+
+```JavaScript
+{
+// ...
+  "compilerOptions": {
+	// ...
+    "plugins": [
+      {
+        "name": "@nestjs/swagger",
+        "options": {
+          "classValidatorShim": true,
+          "introspectComments": true,
+          "skipAutoHttpCode": true
+        }
+      }
+    ]
+	// ...
+  }
+}
+```
+
+</details>
+
+<br/>
+
+The NestJS OpenAPI (Swagger) CLI plugin will automatically:
+
+- Annotate DTO properties with `@ApiProperty` and set `required`, `type`, and `default`.
+- Apply validation rules from `class-validator` (if `classValidatorShim` is enabled).
+- Add response decorators to endpoints with proper status and types.
+- Generate descriptions and examples from comments (if `introspectComments` is enabled).
+- Generate and update Swagger (OpenAPI) documentation for your project.
+
+</dd></dl>
+</details>
+
+## Prisma
+
+<details>
+<summary>Settings</summary>
+<dl><dd>
+
 ### **Create and Set Up a Prisma Service**
 
 [(docs 1)](https://docs.nestjs.com/recipes/prisma#use-prisma-client-in-your-nestjs-services)
@@ -655,7 +806,7 @@ This creates a service in the `src/prisma` directory.
 Update the generated `prisma.service.ts` file to extend `PrismaClient` and implement lifecycle hooks for database connection management.
 
 <details>
-  <summary><strong>src/prisma/prisma.service.ts</strong></summary>
+<summary><strong>src/prisma/prisma.service.ts</strong></summary>
 
 ```ts
 import { Injectable, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
@@ -676,6 +827,9 @@ export class PrismaService
 }
 ```
 
+</details>
+
+</dd></dl>
 </details>
 
 <!-- ### **Create and Set Up 'Users' DTOs** (deprecated)
@@ -744,103 +898,20 @@ Adjust the files (DTOs, entities) to fit your project’s style. Then run `npm r
 
 </details> -->
 
-<br/>
-
-### **Enable Validation and Transformation**
-
-#### **Validation**
-
-Bind `ValidationPipe` at the application level, thus ensuring all endpoints are protected from receiving incorrect data.
-
-```ts
-import { NestFactory } from "@nestjs/core";
-import { AppModule } from "./app.module";
-import { ValidationPipe } from "@nestjs/common"; // <- here
-
-async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule, {
-    bodyParser: false,
-  });
-
-  /* here */
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      // forbidNonWhitelisted: true, // <- Optional
-    })
-  );
-
-  await app.listen(process.env.PORT ?? 3000);
-}
-
-bootstrap().catch((e): void => console.error(e));
-```
-
-#### **Transformation**
-
-To enable this behavior globally, set the option on a global pipe:
-
-```ts
-import { NestFactory } from "@nestjs/core";
-import { AppModule } from "./app.module";
-import { ValidationPipe } from "@nestjs/common";
-async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule, {
-    bodyParser: false,
-  });
-
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      // forbidNonWhitelisted: true,
-      transform: true, // <- here
-    })
-  );
-
-  await app.listen(process.env.PORT ?? 3000);
-}
-
-bootstrap().catch((e): void => console.error(e));
-```
-
-#### **Alternatively**
-
-<details><summary><strong>👉 Alternatively</strong></summary>
-
-Later, this can optionally be done at the method (or controller) level [(docs)](https://docs.nestjs.com/techniques/validation#validation) [(more docs)](https://docs.nestjs.com/pipes#class-validator):
-
-```ts
-@Post()
-@UsePipes(new ValidationPipe({ transform: true })) // <- here
-async create(@Body() createCatDto: CreateCatDto) {
-  this.catsService.create(createCatDto);
-}
-```
-
-Or (with auto-transformation disabled), you can explicitly cast values using the ParseIntPipe or ParseBoolPipe:
-
-```ts
-
-@Get(':id')
-findOne(
-  @Param('id', ParseIntPipe) id: number,
-  @Query('sort', ParseBoolPipe) sort: boolean,
-) {
-  console.log(typeof id === 'number'); // true
-  console.log(typeof sort === 'boolean'); // true
-  return 'This action returns a user';
-}
-```
-
-If you need to validate arrays in NestJS, refer to [the official documentation](https://docs.nestjs.com/techniques/validation#parsing-and-validating-arrays).
-
+</dd></dd>
 </details>
 
-<br/>
+<br/><br/>
 
-### **Create and Set Up the 'notes' Feature**
+# **Create and Set Up the Feature**
 
-#### **Generate a Resource (Module/Service/Controller/DTOs)**
+    🏁 From now on, adding a new feature will involve pretty much the same set of steps. 🏁
+
+### **Generate a Resource (Module/Service/Controller/DTOs)**
+
+<details>
+<summary><strong>Info</strong></summary>
+<dl><dd>
 
 You can generate the feature template with a single command and make a few adjustments:
 
@@ -891,12 +962,21 @@ Note: Don’t add any content yet; just ensure the files are created.
 - `src/notes/dto/update-note.dto.ts` file
 - `src/notes/dto/response-note.dto.ts` file
 
+</dd></dl>
+</details>
+
 <br/>
 
-Register the Prisma service in the `providers` array of the Notes module:
+<!-- ### Adjust the files (DTOs) to fit your project’s style. -->
+
+### Register the Prisma Service in the `providers` Array of the Feature Module
 
 <details>
-  <summary><strong>src/notes/notes.module.ts</strong></summary>
+<summary><strong>Info</strong></summary>
+<dl><dd>
+
+<details>
+<summary><strong>src/notes/notes.module.ts</strong></summary>
 
 ```ts
 import { Module } from "@nestjs/common";
@@ -913,12 +993,19 @@ export class NotesModule {}
 
 </details>
 
+</dd></dl>
+</details>
+
 <br/>
 
-Inject the Prisma service into the `NotesService`:
+### Inject the Prisma Service into the Feature Service
 
 <details>
-  <summary><strong>src/notes/notes.service.ts</strong></summary>
+<summary><strong>Info</strong></summary>
+<dl><dd>
+
+<details>
+<summary><strong>src/notes/notes.service.ts</strong></summary>
 
 ```ts
 import { PrismaService } from "src/prisma/prisma.service";
@@ -932,71 +1019,20 @@ export class NotesService {
 
 </details>
 
-#### **Adjust `Swagger` and DTOs**
-
-_A quick note:_
-
-> Usually, in order to make the class properties visible to the `SwaggerModule`, you need to annotate them with the `@ApiProperty()` decorator [(docs)](https://docs.nestjs.com/openapi/types-and-parameters#types-and-parameters). Alternatively, you can use the appropriate plugin [(Swagger/CLI plugin)](https://docs.nestjs.com/openapi/cli-plugin).
-
-The NestJS OpenAPI (Swagger) CLI plugin will automatically:
-
-- Annotate DTO properties with `@ApiProperty` and set `required`, `type`, and `default`.
-- Apply validation rules from `class-validator` (if `classValidatorShim` is enabled).
-- Add response decorators to endpoints with proper status and types.
-- Generate descriptions and examples from comments (if `introspectComments` is enabled).
-- Generate and update Swagger (OpenAPI) documentation for your project.
-
-Before proceeding, make sure these packages are installed.
-
-They are required to generate DTOs.
-[(docs1)](https://www.prisma.io/blog/nestjs-prisma-relational-data-7D056s1kOabc#define-the-user-entity-and-dto-classes)
-[(docs2)](https://medium.com/@daiki01240/how-to-leverage-swagger-and-class-validator-in-nestjs-api-documentation-and-exporting-type-7577da98768d)
-
-```sh
-npm install @nestjs/swagger class-validator class-transformer
-```
-
-<!-- {
-  "collection": "@nestjs/schematics",
-  "sourceRoot": "src",
-  "compilerOptions": {
-    "plugins": ["@nestjs/swagger"]
-  }
-} -->
-
-To [enable]() the plugin, open `nest-cli.json` and add the following plugins configuration. You can also use the options property to customize the behavior of the plugin.
-
-<details><summary><strong>nest-cli.json</strong></summary>
-
-```JavaScript
-{
-// ...
-  "compilerOptions": {
-	// ...
-    "plugins": [
-      {
-        "name": "@nestjs/swagger",
-        "options": {
-          "classValidatorShim": true,
-          "introspectComments": true,
-          "skipAutoHttpCode": true
-        }
-      }
-    ]
-	// ...
-  }
-}
-```
-
-</details>
-
-<br/><br/>
-
-Adjust the files (DTOs) to fit your project’s style.
-
 [(NestJS class-validator decorators)](https://github.com/typestack/class-validator#validation-decorators)
 
-Then run `npm run format` and `npm run lint`, and fix any warnings or errors that may appear.”
+</dd></dl>
+</details>
+
+<br/>
+
+### Add Decorators to DTOs
+
+<details>
+<summary><strong>Info</strong></summary>
+<dl><dd>
+
+Add any decorators you need, then run `npm run format` and `npm run lint`, and fix any warnings or errors that may appear.”
 
 The result should include the following files:
 
@@ -1165,73 +1201,133 @@ export class LoginUserDto {
 
 </details>
 
+</dd></dl>
+</details>
+
 <br/>
 
-#### **Update the Controller and Service, Add Pipes**
-
-Now implement the desired logic using the full power of `class-validator`, `@nestjs/swagger`, `better-auth`, and more.
-
-- [(NestJS validation pipes)](https://docs.nestjs.com/techniques/validation)
-- [(Better Auth decorators)](https://github.com/ThallesP/nestjs-better-auth)
-- [(OpenAPI/Swagger general decorators)](https://docs.nestjs.com/openapi/decorators)
-- [(OpenAPI/Swagger response decorators)](https://docs.nestjs.com/openapi/operations#responses)
+### Add `ValidationPipe` (+Transformation)
 
 <details>
-<summary><strong>**How to use `class-validator` validation pipes**</strong></summary>
+<summary><strong>Info</strong></summary>
+<dl><dd>
 
-`сlass-validator` pipes can be enabled in the following ways:
+<!-- **Update the Controller and Service, Add Pipes** -->
 
-- Globally: In `src/main.ts`, apply the pipe to the entire application:
+#### **Validation and Transformation**
+
+ <!-- (and others `сlass-validator` pipes)  -->
+
+Validation and transformation can be enabled in the following ways:
+
+<details>
+<summary>Globally: In `src/main.ts`, apply the `ValidationPipe` to the entire application</summary>
 
 ```TypeScript
- app.useGlobalPipes(new ValidationPipe({ transform: true }));
+import { NestFactory } from "@nestjs/core";
+import { AppModule } from "./app.module";
+import { ValidationPipe } from "@nestjs/common"; // <- here
+
+async function bootstrap(): Promise<void> {
+  const app = await NestFactory.create(AppModule, {
+    bodyParser: false,
+  });
+
+  /* here */
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true,
+      forbidUnknownValues: true,
+      // disableErrorMessages: true,
+    })
+  );
+
+  await app.listen(process.env.PORT ?? 3000);
+}
+
+bootstrap().catch((e): void => console.error(e));
 ```
 
-<br/>
+</details>
 
-- At the controller level: Apply the pipe to an entire controller:
+<details>
+<summary>At the controller level: apply `ValidationPipe` using the `@UsePipes` decorator.</summary>
+
+Use the `@UsePipes` to apply the `ValidationPipe` to an entire controller
 
 ```TypeScript
-@UsePipes(new ValidationPipe({ transform: true }))
+@UsePipes(
+	new ValidationPipe({
+		whitelist: true,
+		transform: true,
+		forbidNonWhitelisted: true,
+		forbidUnknownValues: true,
+		// disableErrorMessages: true,
+	})
+)
 @Controller("notes")
 export class NotesController {}
 ```
 
-<br/>
+</details>
 
-- At the method level: Use the `@UsePipes` decorator for a specific method:
+<details>
+<summary>At the method level: apply `ValidationPipe` using the `@UsePipes` decorator.</summary>
 
 ```TypeScript
 @Post()
-@UsePipes(new ValidationPipe({ transform: true }))
+@UsePipes(
+	new ValidationPipe({
+		whitelist: true,
+		transform: true,
+		forbidNonWhitelisted: true,
+		forbidUnknownValues: true,
+		// disableErrorMessages: true,
+	})
+)
 async create(/* ... */) {}
 ```
 
+</details>
+
+<details>
+<summary>At the parameter level: use `ParseIntPipe` or `ParseBoolPipe` to cast values explicitly</summary>
+
+<br/>
+You can explicitly cast values using the `ParseIntPipe` or `ParseBoolPipe` inside `@Param()` or `@Query()` decorators. A separate pipe is used for each, so `ValidationPipe` is not needed for them to work:
+
+```ts
+
+@Get(':id')
+findOne(
+  @Param('id', ParseIntPipe) id: number,
+  @Query('sort', ParseBoolPipe) sort: boolean,
+) {
+  console.log(typeof id === 'number'); // true
+  console.log(typeof sort === 'boolean'); // true
+  return 'This action returns a user';
+}
+```
+
+</details>
+
+<!-- </details> -->
+
+<!-- <details>
+<summary><strong>**How to use `class-validator` validation pipes**</strong></summary> -->
+
 <br/>
 
-Pipes are used in these scenarios
-
-- When a DTO is provided as an argument value. If a `ValidationPipe` is enabled (globally, at the controller, or method level), it will automatically validate the DTO.
+> **How do pipes work?**
+> If a ValidationPipe is enabled (globally, at the controller, or method level), it automatically validates the DTO passed as an argument.
 
 ```TypeScript
 create(@Body() createUserDto: CreateUserDto) {}
 ```
 
 <br/>
-
-- Explicitly inside `@Param()` or `@Query()` decorators. A separate pipe is used for each, so `ValidationPipe` is not needed for them to work:
-
-```TypeScript
-@Get(':id')
-findOne(
-  @Param('id', ParseIntPipe) id: number,
-  @Query('sort', ParseBoolPipe) sort: boolean,
-) {}
-```
-
-<br/>
-
-<details><summary><strong>Auto-transformation of primitives</strong></summary>
 
 > With the auto-transformation option enabled, the ValidationPipe will also perform primitive type conversion. For example, the findOne() method below takes an id path parameter and automatically converts its type to a number.
 
@@ -1243,15 +1339,27 @@ findOne(@Param('id') id: number) {
 }
 ```
 
+<br/>
+
+📝 If you need to validate arrays in NestJS, refer to [the official documentation](https://docs.nestjs.com/techniques/validation#parsing-and-validating-arrays).
+
+<!-- Now implement the desired logic using the full power of `class-validator`, `@nestjs/swagger`, `better-auth`, and more. -->
+
+**Docs:**
+
+- [(NestJS validation pipes)](https://docs.nestjs.com/techniques/validation)
+- [(Better Auth decorators)](https://github.com/ThallesP/nestjs-better-auth)
+- [(OpenAPI/Swagger general decorators)](https://docs.nestjs.com/openapi/decorators)
+- [(OpenAPI/Swagger response decorators)](https://docs.nestjs.com/openapi/operations#responses)
+- [(docs)](https://docs.nestjs.com/techniques/validation#validation)
+- [(more docs)](https://docs.nestjs.com/pipes#class-validator)
 </details>
 
-</details>
+<br/>
 
-<br/><br/>
+### Add `Better Auth` Authentication Guard
 
-<details><summary><strong>**How to use `Better Auth` validation pipes**</strong></summary>
-
-To use Better Auth validation pipes:
+<!-- To use Better Auth validation pipes:
 
 You need to import the module. However, simply importing it is not enough to enable it, so keep reading for the next step.
 
@@ -1262,24 +1370,21 @@ You need to import the module. However, simply importing it is not enough to ena
   ],
 })
 export class AppModule {}
-```
+``` -->
 
-Now you can choose on what level to protect your app:
+<details>
+<summary>Info</summary>
+<dl><dd>
 
-- Controller Level:
-  Use `@UseGuards(AuthGuard)` to protect all routes within a controller.
+You can protect specific parts of your application with the `AuthGuard` from Better Auth.
 
-```TypeScript
-import { Controller, Get, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@thallesp/nestjs-better-auth';
+<!-- Now you can choose on what level to protect your app: -->
 
-@Controller('users')
-@UseGuards(AuthGuard) // <- Apply to all routes in this controller
-export class UserController {}
-```
+<details>
+<summary>Global Level</summary>
+<dl><dd>
 
-- Global Level:
-  For application-wide protection, register the guard as a global provider.
+For application-wide protection, register the guard as a global provider.
 
 ```TypeScript
 import { Module } from '@nestjs/common';
@@ -1301,8 +1406,32 @@ import { auth } from "./auth";
 export class AppModule {}
 ```
 
-- Method Level:
-  Use `@UseGuards(AuthGuard)` to protect a single, specific route.
+</dd></dl>
+</details>
+
+<details>
+<summary>Controller Level</summary>
+<dl><dd>
+
+Use `@UseGuards(AuthGuard)` to protect all routes within a controller.
+
+```TypeScript
+import { Controller, Get, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@thallesp/nestjs-better-auth';
+
+@Controller('users')
+@UseGuards(AuthGuard) // <- Apply to all routes in this controller
+export class UserController {}
+```
+
+</dd></dl>
+</details>
+
+<details>
+<summary>Method Level</summary>
+<dl><dd>
+
+Use `@UseGuards(AuthGuard)` to protect a single, specific route.
 
 ```TypeScript
 @Controller("notes")
@@ -1317,7 +1446,14 @@ export class NotesController {
 }
 ```
 
-**Available Decorators**
+</dd></dl>
+</details>
+
+<br/>
+
+<details>
+<summary>Other Available Decorators</summary>
+<dl><dd>
 
 Here are some of the available decorators:
 
@@ -1328,10 +1464,11 @@ Here are some of the available decorators:
 
 The main difference between `@Public()` and `@Optional()` is that `@Optional()` allows access to the session, which may be empty or null, while `@Public()` does not.
 
-<!-- </details> -->
-<br/>
+</dd></dl>
+</details>
 
-<details><summary>AuthService<summary>
+<details><summary>AuthService</summary>
+<dl><dd>
 
 The `AuthService` is automatically provided by the `AuthModule` and can be injected into your controllers to access the Better Auth instance and its API endpoints.
 
@@ -1354,13 +1491,14 @@ export class UsersController {
 }
 ```
 
+</dd></dl>
+</details>
+</dd></dl>
 </details>
 
-</details>
+<br/>
 
-<br/><br/>
-
-Example resulting files are listed below:
+# Example resulting files are listed below:
 
 <details>
   <summary><strong>src/notes/notes.module.ts</strong></summary>
@@ -1646,17 +1784,21 @@ async function bootstrap(): Promise<void> {
 bootstrap().catch((e): void => console.error(e));
 ```
 
-</details>
-<!-- ### **Create Auth service**
+<!-- </details> -->
+<!-- ### **Create Auth service** -->
 
-<details>
-  <summary><strong>src/auth/auth.service.ts</strong></summary>
-</details>
-<details>
-  <summary><strong>src/auth/auth.controller.ts</strong></summary>
-</details>
+<!-- <details> -->
+  <!-- <summary><strong>src/auth/auth.service.ts</strong></summary> -->
+<!-- </details> -->
+<!-- <details> -->
+  <!-- <summary><strong>src/auth/auth.controller.ts</strong></summary> -->
+<!-- </details> -->
 
-<br/><br/> -->
+<br/><br/>
+
+<!-- === === === === === -->
+<!-- === === === === === -->
+<!-- === === === === === -->
 
 # FAQ
 
