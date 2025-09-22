@@ -304,6 +304,12 @@ Create and configure a `.env` file:
 echo "" > .env
 ```
 
+<br/><br/>
+
+### Docker + PostgreSQL
+
+Update the `.env` file
+
 `.env`
 
 ```env
@@ -317,10 +323,6 @@ POSTGRES_DB=customdb
 DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DATABASE_HOST}:${DATABASE_PORT}/${POSTGRES_DB}?schema=public
 # DATABASE_URL="postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
 ```
-
-<br/><br/>
-
-### Docker + PostgreSQL
 
 Create a `docker-compose.yaml` file:
 
