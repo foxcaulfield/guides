@@ -348,15 +348,13 @@ This model is provided **for demonstration purposes only** and will later be use
 ```prisma
 // ...
 model Note {
-    id      Int     @id @default(autoincrement())
-    title   String
-    content String?
-    source  String?
-
+    id         String   @id @default(uuid())
+    title      String
+    content    String?
+    source     String?
     priority   Int      @default(0)
     isArchived Boolean?
-
-    createdAt DateTime @default(now())
+    createdAt  DateTime @default(now())
 
     @@map("notes")
 }
@@ -1658,6 +1656,7 @@ bootstrap().catch((e): void => console.error(e));
 
 [(better-auth endpoints)](https://www.better-auth.com/docs/plugins/username#usage)
 
+[(better-auth email auth)](https://www.better-auth.com/docs/authentication/email-pa)
 Flow:
 
 - Add model
