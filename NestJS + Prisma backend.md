@@ -626,7 +626,7 @@ This will:
 <!-- === === === === === -->
 <!-- === === === === === -->
 
-# Set Up the Project
+# 5. Set Up the Project
 
 ## Better Auth
 
@@ -903,11 +903,17 @@ Adjust the files (DTOs, entities) to fit your project’s style. Then run `npm r
 
 <br/><br/>
 
-# **Create and Set Up the Feature**
+# 6. Create and Set Up the Feature
 
     🏁 From now on, adding a new feature will involve pretty much the same set of steps. 🏁
 
-### **Generate a Resource (Module/Service/Controller/DTOs)**
+<!-- ### Add Prisma Model
+
+### Perform Prisma Migration
+
+<br/> -->
+
+### Generate a Feature (Module/Service/Controller/DTOs)
 
 <details>
 <summary><strong>Info</strong></summary>
@@ -1159,7 +1165,7 @@ export class UpdateNoteDto {
 export class ResponseNoteDto {
   public id!: string;
   public title!: string;
-  public content?: string;
+  public content?: string | null;
 
   public constructor(data: ResponseNoteDto) {
     if (data?.id != null) this.id = data?.id;
@@ -1498,10 +1504,232 @@ export class UsersController {
 
 <br/>
 
+### Create and Add Role Access Guard
+
+<details>
+<summary>Info</summary>
+<dl><dd>
+
+[(docs)](https://docs.nestjs.com/security/authorization)
+
+1. Create the decorator
+
+```sh
+nest generate decorator decorators/roles --flat
+```
+
+<details>
+<summary>src/decorators/roles.decorator.ts</summary>
+<dl><dd>
+
+```ts
+import { CustomDecorator, SetMetadata } from "@nestjs/common";
+
+export const ROLES_KEY = "roles";
+export const Roles = (...args: string[]): CustomDecorator =>
+  SetMetadata(ROLES_KEY, args);
+```
+
+</dd></dl>
+</details>
+
+<br/>
+
+2. Create the guard
+
+```sh
+nest generate guard guards/roles --flat
+```
+
+<details>
+<summary>src/guards/roles.guard.ts</summary>
+<dl><dd>
+
+```ts
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+} from "@nestjs/common";
+import { Reflector } from "@nestjs/core";
+import { ROLES_KEY } from "../decorators/roles.decorator";
+import { UserSession } from "@thallesp/nestjs-better-auth";
+import { Role } from "@prisma/client";
+import { IncomingMessage } from "node:http";
+// import { Request } from "express";
+
+interface AuthenticatedRequest extends UserSession, IncomingMessage {
+  user: UserSession["user"] & {
+    role?: Role;
+  };
+}
+
+@Injectable()
+export class RolesGuard implements CanActivate {
+  public constructor(private reflector: Reflector) {}
+
+  public canActivate(context: ExecutionContext): boolean {
+    const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    if (!requiredRoles || requiredRoles.length === 0) {
+      return true;
+    }
+
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
+    const user = request.user;
+
+    if (!user) {
+      throw new ForbiddenException("User is not authenticated");
+    }
+
+    const hasRole = user?.role && requiredRoles.includes(user?.role);
+    if (!hasRole) {
+      throw new ForbiddenException("Insufficient permissions");
+    }
+
+    return true;
+  }
+}
+```
+
+</dd></dl>
+</details>
+
+<br/>
+
+3. Apply the guard:
+
+<details>
+<summary>Globally</summary>
+<dl><dd>
+
+```ts
+// app.module.ts
+import { Module } from "@nestjs/common";
+import { APP_GUARD } from "@nestjs/core";
+import { RolesGuard } from "./guards/roles.guard";
+
+@Module({
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
+})
+export class AppModule {}
+```
+
+</dd></dl>
+</details>
+
+<details>
+<summary>On the controller level</summary>
+<dl><dd>
+
+```ts
+import { Controller, UseGuards } from "@nestjs/common";
+import { RolesGuard } from "../guards/roles.guard";
+import { Roles } from "../decorators/roles.decorator";
+
+@UseGuards(RolesGuard)
+@Controller("users")
+export class UsersController {
+  // ...
+}
+```
+
+</dd></dl>
+</details>
+
+<details>
+<summary>On the method level</summary>
+<dl><dd>
+
+```ts
+import { Controller, UseGuards } from "@nestjs/common";
+import { RolesGuard } from "../guards/roles.guard";
+import { Roles } from "../decorators/roles.decorator";
+
+@Controller("users")
+export class UsersController {
+  // ...
+  @UseGuards(RolesGuard)
+  @Post("create")
+  public async create(/* ... */) {}
+  // ...
+}
+```
+
+</dd></dl>
+</details>
+
+<br/>
+
+4. Restrict access using the `@Roles` decorator in the controller or in methods
+
+<details>
+<summary>Example</summary>
+<dl><dd>
+
+```ts
+import { Controller, Get } from "@nestjs/common";
+import { Roles } from "../decorators/roles.decorator";
+import { Session } from "@thallesp/nestjs-better-auth";
+
+@Roles(Role.ADMIN)
+@Controller("admin")
+export class AdminController {
+  @Roles(Role.ADMIN) // Accessible only to administrators
+  @Get("dashboard")
+  getDashboard(@Session() session: UserSession) {
+    return { message: "Welcome to the admin dashboard!", user: session.user };
+  }
+}
+```
+
+</dd></dl>
+</details>
+
+<br/>
+
+📝 You can combine it with other guards (such as `AuthGuard`) and specify multiple roles:
+
+<details>
+<summary>Multiple guards and roles</summary>
+<dl><dd>
+
+```ts
+import { Controller, UseGuards } from "@nestjs/common";
+import { RolesGuard } from "../guards/roles.guard";
+import { Roles } from "../decorators/roles.decorator";
+
+@Controller("users")
+export class UsersController {
+  // ...
+  @UsePipes(new ValidationPipe())
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.USER, Role.ADMIN)
+  @Post("create")
+  public async create(/* ... */) {}
+  // ...
+}
+```
+
+</dd></dl>
+</details>
+
+</dd></dl>
+</details>
+
 # Example resulting files are listed below:
 
 <details>
-  <summary><strong>src/notes/notes.module.ts</strong></summary>
+<summary><strong>src/notes/notes.module.ts</strong></summary>
 
 ```ts
 import { Module } from "@nestjs/common";
@@ -1519,7 +1747,7 @@ export class NotesModule {}
 </details>
 
 <details>
-  <summary><strong>src/notes/notes.service.ts</strong></summary>
+<summary><strong>src/notes/notes.service.ts</strong></summary>
 
 ```ts
 import { Injectable } from "@nestjs/common";
@@ -1601,7 +1829,7 @@ export class NotesService {
 </details>
 
 <details>
-  <summary><strong>src/notes/notes.controller.ts</strong></summary>
+<summary><strong>src/notes/notes.controller.ts</strong></summary>
 
 ```ts
 import {
@@ -1622,7 +1850,7 @@ import { NotesService } from "./notes.service";
 import { CreateNoteDto } from "./dto/create-note.dto";
 import { UpdateNoteDto } from "./dto/update-note.dto";
 import { ResponseNoteDto } from "./dto/response-note.dto";
-import { Note } from "@prisma/client";
+import { Note, Role } from "@prisma/client";
 import {
   AuthGuard,
   AuthService,
@@ -1634,6 +1862,8 @@ import {
 import { auth } from "src/auth";
 import { fromNodeHeaders } from "better-auth/node";
 import type { Request as ExpressRequest } from "express";
+import { RolesGuard } from "src/guards/roles.guard";
+import { Roles } from "src/decorators/roles.decorator";
 
 @UsePipes(
   new ValidationPipe({
@@ -1644,15 +1874,17 @@ import type { Request as ExpressRequest } from "express";
     // disableErrorMessages: true,
   })
 )
-@Controller("notes")
 @UseGuards(AuthGuard)
+@Controller("notes")
 export class NotesController {
   public constructor(
     private readonly notesService: NotesService,
     private authService: AuthService<typeof auth>
   ) {}
 
-  @UseGuards(AuthGuard) // <- Just example
+  @UsePipes(new ValidationPipe())
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.USER, Role.ADMIN)
   @Post("create")
   public async create(
     @Body() createNoteDto: CreateNoteDto,
