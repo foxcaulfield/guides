@@ -1726,6 +1726,8 @@ export class UsersController {
 </dd></dl>
 </details>
 
+<br/><br/>
+
 # Example resulting files are listed below:
 
 <details>
