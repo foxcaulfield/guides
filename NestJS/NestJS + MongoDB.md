@@ -1,5 +1,103 @@
 # 4. Install and Configure Dependencies
 
+### dotenv [(docs)](https://www.npmjs.com/package/dotenv)
+
+<details>
+<summary>Settings</summary>
+<dl><dd>
+
+Install:
+
+```sh
+npm install dotenv --save
+```
+
+Create and configure a `.env` file:
+
+```sh
+echo "" > .env
+```
+
+</dd></dl>
+</details>
+
+### Docker + MongoDB
+
+<details>
+<summary>Settings</summary>
+<dl><dd>
+
+Update the `.env` file
+
+`.env`
+
+```env
+MONGO_INITDB_ROOT_USERNAME=root
+MONGO_INITDB_ROOT_PASSWORD=example
+MONGO_INITDB_DATABASE=default_db
+
+MONGO_HOST=0.0.0.0
+MONGO_PORT=27017
+```
+
+Create a `docker-compose.yaml` file:
+
+```sh
+echo "" > docker-compose.yaml
+```
+
+Add the following configuration:
+
+```yaml
+services:
+  mongo:
+    image: mongo:8-noble
+    restart: always
+    container_name: mongo_container
+    env_file: ./.env
+    ports:
+      - 27017:27017
+    volumes:
+      - ./mongo-data:/data/db
+    command: --wiredTigerCacheSizeGB 1.5
+    # networks:
+    #     - backend-network
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    env_file: ./.env
+    depends_on:
+      - mongo
+
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+      ME_CONFIG_BASICAUTH_ENABLED: true
+      ME_CONFIG_BASICAUTH_USERNAME: root
+      ME_CONFIG_BASICAUTH_PASSWORD: example
+# networks:
+#     backend-network:
+```
+
+Then start the container:
+
+```sh
+docker compose up -d
+```
+
+Or start only the `db` service:
+
+```sh
+docker compose up db -d
+```
+
+</dd></dl>
+</details>
+
+### ...
+
 For validation and documentation
 
 ```sh
