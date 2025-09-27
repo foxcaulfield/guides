@@ -1175,6 +1175,10 @@ export class ResponseNoteDto {
 }
 ```
 
+</details>
+
+<br/>
+
 <!-- ```ts
 // src/notes/dto/login-note.dto.ts
 import { ApiProperty } from "@nestjs/swagger";
@@ -1204,8 +1208,6 @@ export class LoginUserDto {
 }
 
 ``` -->
-
-</details>
 
 </dd></dl>
 </details>
