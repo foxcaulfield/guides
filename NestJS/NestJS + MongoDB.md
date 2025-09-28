@@ -1,3 +1,7 @@
+Perform commont settings
+
+---
+
 # 4. Install and Configure Dependencies
 
 ### dotenv [(docs)](https://www.npmjs.com/package/dotenv)
@@ -112,10 +116,6 @@ npm install @nestjs/config
 npm install @nestjs/mongoose mongoose
 ```
 
-```sh
-npm install class-validator class-transformer
-```
-
 **Update main.ts**
 
 Add the swagger configuration and setup the global validation pipe at `main.ts`
@@ -133,7 +133,7 @@ import { ValidationPipe } from "@nestjs/common";
 
 async function bootstrap(): Promise<void> {
 	const app = await NestFactory.create(AppModule, {
-		bodyParser: false,
+		// bodyParser: false,
 	});
 
 	app.useGlobalPipes(
@@ -184,6 +184,7 @@ import { MongooseModule, MongooseModuleFactoryOptions } from "@nestjs/mongoose";
 	imports: [
 		ConfigModule.forRoot({
 			isGlobal: true,
+			envFilePath: "./.env",
 		}),
 		// MongooseModule.forRoot("mongodb://root:example@localhost:27017/default_db"),
 		MongooseModule.forRootAsync({
@@ -386,6 +387,13 @@ export class Note {
 
 	@Prop({ type: Boolean })
 	public isArchieved!: boolean;
+
+	/* Example */
+	// @Prop({ type: Types.ObjectId, ref: Room.name, required: true })
+	// public room!: Types.ObjectId;
+
+	// @Prop({ type: Date })
+	// public reservationDate!: Date;
 }
 
 export type NoteDocument = HydratedDocument<Note>;
@@ -493,6 +501,14 @@ export class CreateNoteDto {
   @Min(0)
   @Max(5)
   public priority?: number;
+
+  /* Example */
+  // @IsDate()
+  // public reservationDate!: Date;
+
+  /* Example */
+  // @IsMongoId()
+  // public room!: string;
 
   public constructor(data: CreateNoteDto) {
     if (data?.title != null) this.title = data?.title;
@@ -788,6 +804,8 @@ findOne(@Param('id') id: number) {
 </details>
 
 <br/>
+
+### Do the rest (CRUD, service, controller, etc.)
 
 # Example resulting files are listed below:
 
