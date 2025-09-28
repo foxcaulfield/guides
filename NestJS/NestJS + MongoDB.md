@@ -284,75 +284,149 @@ The NestJS OpenAPI (Swagger) CLI plugin will automatically:
 ### Generate a Feature (Module/Service/Controller/DTOs)
 
 <details>
-<summary><strong>Info</strong></summary>
+<summary><strong>Generate rooms feature</strong></summary>
 <dl><dd>
 
 You can generate the feature template with a single command and make a few adjustments:
 
 ```sh
-nest generate resource notes
+nest generate resource rooms
 ```
 
 ```sh
-rm -rf ./src/notes/entities
+rm -rf ./src/rooms/entities
 ```
 
 ```sh
-echo "" > ./src/notes/dto/response-note.dto.ts
+echo "" > ./src/rooms/dto/response-room.dto.ts
 ```
 
 ```sh
-echo "" > ./src/notes/note.model.ts
+echo "" > ./src/rooms/room.model.ts
 ```
 
 ```sh
-echo "" > ./src/notes/dto/filter-note.dto.ts
+echo "" > ./src/rooms/dto/filter-room.dto.ts
 ```
 
 Or you can create the files manually using separate commands.
 
 ```sh
-nest generate module notes
+nest generate module rooms
 ```
 
 ```sh
-nest generate service notes
+nest generate service rooms
 ```
 
 ```sh
-nest generate controller notes
+nest generate controller rooms
 ```
 
 ```sh
-nest generate class notes/dto/create-note.dto --flat
+nest generate class rooms/dto/create-room.dto --flat
 ```
 
 ```sh
-nest generate class notes/dto/update-note.dto --flat
+nest generate class rooms/dto/update-room.dto --flat
 ```
 
 ```sh
-nest generate class notes/dto/response-note.dto --flat
+nest generate class rooms/dto/response-room.dto --flat
 ```
 
 ```sh
-echo "" > ./src/notes/note.model.ts
+echo "" > ./src/rooms/room.model.ts
 ```
 
 ```sh
-nest generate class notes/dto/filter-note.dto --flat
+nest generate class rooms/dto/filter-room.dto --flat
 ```
 
-Note: Don’t add any content yet; just ensure the files are created.
+room: Don’t add any content yet; just ensure the files are created.
 
-- `src/notes/notes.service.ts` file
-- `src/notes/notes.controller.ts` file
-- `src/notes/notes.module.ts` file
-- `src/notes/dto/create-note.dto.ts` file
-- `src/notes/dto/update-note.dto.ts` file
-- `src/notes/dto/response-note.dto.ts` file
-- `src/notes/note.model.ts` file
-- `src/notes/dto/filter-note.dto.ts` file
+- `src/rooms/rooms.service.ts` file
+- `src/rooms/rooms.controller.ts` file
+- `src/rooms/rooms.module.ts` file
+- `src/rooms/dto/create-room.dto.ts` file
+- `src/rooms/dto/update-room.dto.ts` file
+- `src/rooms/dto/response-room.dto.ts` file
+- `src/rooms/room.model.ts` file
+- `src/rooms/dto/filter-room.dto.ts` file
+
+</dd></dl>
+</details>
+
+<details>
+<summary><strong>Generate reservations feature</strong></summary>
+<dl><dd>
+
+You can generate the feature template with a single command and make a few adjustments:
+
+```sh
+nest generate resource reservations
+```
+
+```sh
+rm -rf ./src/reservations/entities
+```
+
+```sh
+echo "" > ./src/reservations/dto/response-reservation.dto.ts
+```
+
+```sh
+echo "" > ./src/reservations/reservation.model.ts
+```
+
+```sh
+echo "" > ./src/reservations/dto/filter-reservation.dto.ts
+```
+
+Or you can create the files manually using separate commands.
+
+```sh
+nest generate module reservations
+```
+
+```sh
+nest generate service reservations
+```
+
+```sh
+nest generate controller reservations
+```
+
+```sh
+nest generate class reservations/dto/create-reservation.dto --flat
+```
+
+```sh
+nest generate class reservations/dto/update-reservation.dto --flat
+```
+
+```sh
+nest generate class reservations/dto/response-reservation.dto --flat
+```
+
+```sh
+echo "" > ./src/reservations/reservation.model.ts
+```
+
+```sh
+nest generate class reservations/dto/filter-reservation.dto --flat
+```
+
+reservation: Don’t add any content yet; just ensure the files are created.
+
+- `src/reservations/reservations.service.ts` file
+- `src/reservations/reservations.controller.ts` file
+- `src/reservations/reservations.module.ts` file
+- `src/reservations/dto/create-reservation.dto.ts` file
+- `src/reservations/dto/update-reservation.dto.ts` file
+- `src/reservations/dto/response-reservation.dto.ts` file
+- `src/reservations/reservation.model.ts` file
+- `src/reservations/dto/filter-reservation.dto.ts` file
 
 </dd></dl>
 </details>
@@ -362,65 +436,418 @@ Note: Don’t add any content yet; just ensure the files are created.
 ### Create the model, schema, document
 
 <details>
-<summary>src/notes/note.model.ts</summary>
+<summary>src/rooms/room.model.ts</summary>
 
 ```TypeScript
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { HydratedDocument } from "mongoose";
+import { HydratedDocument, Model } from "mongoose";
+
+export enum RoomType {
+	STANDARD_ROOM = "STANDARD_ROOM",
+	DELUXE_ROOM = "DELUXE_ROOM",
+	STUDIO_ROOM = "STUDIO_ROOM",
+	SUITE = "SUITE",
+	FAMILY_ROOM = "FAMILY_ROOM",
+}
+
+export enum RoomStatus {
+	AVAILABLE = "AVAILABLE",
+	OCCUPIED = "OCCUPIED",
+	MAINTENANCE = "MAINTENANCE",
+	CLEANING = "CLEANING",
+}
+
+// Nested schema
+@Schema({ _id: false })
+export class Amenity {
+	@Prop({ required: true, trim: true })
+	public name!: string;
+
+	@Prop({ default: false })
+	public isPremium?: boolean;
+
+	@Prop()
+	public description?: string;
+}
+
+// Main schema
+@Schema({ _id: false })
+export class Pricing {
+	@Prop({ required: true, min: 0 })
+	public basePrice!: number;
+
+	@Prop({ min: 0 })
+	public weekendSurcharge?: number;
+
+	@Prop({ min: 0 })
+	public seasonSurcharge?: number;
+}
 
 @Schema({
 	strict: true,
 	timestamps: true,
+	toJSON: {
+		virtuals: false,
+	},
 })
-export class Note {
-	@Prop(String)
-	public title!: string;
+export class Room {
+	@Prop({
+		type: Number,
+		unique: true,
+		required: true,
+		min: 1,
+		max: 1000,
+		index: true,
+	})
+	public roomNumber!: number;
 
-	@Prop({ required: false })
-	public content!: string;
+	@Prop({
+		type: String,
+		enum: RoomType,
+		default: RoomType.STANDARD_ROOM,
+	})
+	public roomType!: RoomType;
 
-	@Prop({ required: false })
-	public source!: string;
+	@Prop({
+		type: String,
+		enum: RoomStatus,
+		default: RoomStatus.AVAILABLE,
+	})
+	public status!: RoomStatus;
 
-	@Prop({ type: Number, default: 0 })
-	public priority!: number;
+	@Prop(Boolean)
+	public hasSeaView!: boolean;
 
-	@Prop({ type: Boolean })
-	public isArchieved!: boolean;
+	@Prop({
+		type: Number,
+		min: 1,
+		max: 6,
+	})
+	public maxOccupancy!: number;
 
-	/* Example */
-	// @Prop({ type: Types.ObjectId, ref: Room.name, required: true })
-	// public room!: Types.ObjectId;
+	@Prop({
+		type: [Amenity],
+		validate: {
+			validator: (arr: Amenity[]): boolean => arr.length <= 5,
+			message: "Amenity limit is 5",
+		},
+	})
+	public amenities!: Amenity[];
 
-	// @Prop({ type: Date })
-	// public reservationDate!: Date;
+	@Prop({ type: Pricing, required: true })
+	public pricing!: Pricing;
+
+	@Prop({ type: Date })
+	public lastMaintenance?: Date;
+
+	@Prop({ type: Date, default: Date.now })
+	public nextMaintenance!: Date;
+
+	/* Virtual fields */
+	public get displayName(): string {
+		return `Room ${this.roomNumber} (${this.roomType})`;
+	}
+	public get isAvailable(): boolean {
+		return this.status === RoomStatus.AVAILABLE;
+	}
+
+	/* Methods */
+	public hasAmenity(amenityName: string): boolean {
+		return this.amenities?.some((a): boolean => a.name === amenityName) ?? false;
+	}
+
+	/* Static */
+	public static async findByType(this: RoomModelType, roomType: RoomType): Promise<RoomDocument[]> {
+		return this.find({ roomType }).exec();
+	}
 }
-
-export type NoteDocument = HydratedDocument<Note>;
-export const NoteSchema = SchemaFactory.createForClass(Note);
+export type RoomModelType = Model<RoomDocument> & typeof Room;
+export type RoomDocument = HydratedDocument<Room>;
+export const RoomSchema = SchemaFactory.createForClass(Room);
 
 ```
 
 </details>
 
-### Register the MongooseModule `forFeature` in the `mports` Array of the Feature Module
+### Add DTOs
+
+#### CreateDto
+
+<details>
+<summary>src/rooms/dto/create-room.dto.ts</summary>
+
+```ts
+import {
+  IsEnum,
+  IsInt,
+  IsBoolean,
+  IsArray,
+  ValidateNested,
+  Min,
+  Max,
+  IsOptional,
+  IsDate,
+  IsNumber,
+} from "class-validator";
+import { Type } from "class-transformer";
+import { RoomStatus, RoomType } from "../room.model";
+
+export class AmenityDto {
+  @IsBoolean()
+  @IsOptional()
+  public isPremium?: boolean;
+
+  @IsOptional()
+  public description?: string;
+}
+
+export class PricingDto {
+  @IsNumber()
+  @Min(0)
+  public basePrice!: number;
+
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  public weekendSurcharge?: number;
+
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  public seasonSurcharge?: number;
+}
+
+export class CreateRoomDto {
+  @IsInt()
+  @Min(1)
+  @Max(1000)
+  public roomNumber!: number;
+
+  @IsEnum(RoomType)
+  public roomType!: RoomType;
+
+  @IsEnum(RoomStatus)
+  @IsOptional()
+  public status?: RoomStatus;
+
+  @IsBoolean()
+  @IsOptional()
+  public hasSeaView?: boolean;
+
+  @IsInt()
+  @Min(1)
+  @Max(6)
+  public maxOccupancy!: number;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type((): typeof AmenityDto => AmenityDto)
+  @IsOptional()
+  public amenities?: AmenityDto[];
+
+  @ValidateNested()
+  @Type((): typeof PricingDto => PricingDto)
+  public pricing!: PricingDto;
+
+  @IsDate()
+  @Type((): typeof Date => Date)
+  @IsOptional()
+  public lastMaintenance?: Date;
+
+  @IsDate()
+  @Type((): typeof Date => Date)
+  @IsOptional()
+  public nextMaintenance?: Date;
+}
+```
+
+</details>
+
+#### UpdateDto
+
+<details>
+<summary>src/rooms/dto/update-room.dto.ts</summary>
+
+```ts
+import { PartialType } from "@nestjs/mapped-types";
+import { CreateRoomDto } from "./create-room.dto";
+
+export class UpdateRoomDto extends PartialType(CreateRoomDto) {}
+```
+
+</details>
+
+#### ResponseDto
+
+<details>
+<summary>src/rooms/dto/response-room.dto.ts</summary>
+
+```ts
+import { Exclude, Expose, Transform } from "class-transformer";
+import { RoomStatus, RoomType } from "../room.model";
+// import { RoomType, RoomStatus } from "../schemas/room.schema";
+
+export class AmenityResponseDto {
+  @Expose()
+  public name!: string;
+
+  @Expose()
+  public isPremium?: boolean;
+
+  @Expose()
+  public description?: string;
+}
+
+export class PricingResponseDto {
+  @Expose()
+  public basePrice!: number;
+
+  @Expose()
+  public weekendSurcharge?: number;
+
+  @Expose()
+  public seasonSurcharge?: number;
+}
+
+export class RoomResponseDto {
+  @Expose()
+  public id!: string;
+
+  @Expose()
+  public roomNumber!: number;
+
+  @Expose()
+  public roomType!: RoomType;
+
+  @Expose()
+  public status!: RoomStatus;
+
+  @Expose()
+  public hasSeaView!: boolean;
+
+  @Expose()
+  public maxOccupancy!: number;
+
+  @Expose()
+  @Transform((params): AmenityResponseDto[] => params.value || [])
+  public amenities!: AmenityResponseDto[];
+
+  @Expose()
+  public pricing!: PricingResponseDto;
+
+  @Expose()
+  public lastMaintenance?: Date;
+
+  @Expose()
+  public nextMaintenance!: Date;
+
+  @Expose()
+  public createdAt!: Date;
+
+  @Expose()
+  public updatedAt!: Date;
+
+  // @Expose()
+  // public get displayName(): string {
+  // 	return `Room ${this.roomNumber} (${this.roomType})`;
+  // }
+
+  // @Expose()
+  // public get isAvailable(): boolean {
+  // 	return this.status === RoomStatus.AVAILABLE;
+  // }
+}
+```
+
+</details>
+
+#### FilterDto
+
+<details>
+<summary>src/rooms/dto/filter-room.dto.ts</summary>
+
+```ts
+import {
+  IsEnum,
+  IsInt,
+  IsBoolean,
+  IsOptional,
+  Min,
+  Max,
+} from "class-validator";
+import { Type } from "class-transformer";
+import { RoomType, RoomStatus } from "../room.model";
+
+export class RoomFilterDto {
+  @IsEnum(RoomType)
+  @IsOptional()
+  public roomType?: RoomType;
+
+  @IsEnum(RoomStatus)
+  @IsOptional()
+  public status?: RoomStatus;
+
+  @IsBoolean()
+  @IsOptional()
+  @Type((): typeof Boolean => Boolean)
+  public hasSeaView?: boolean;
+
+  @IsInt()
+  @Min(1)
+  @Max(6)
+  @IsOptional()
+  @Type((): typeof Number => Number)
+  public minOccupancy?: number;
+
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  @Type((): typeof Number => Number)
+  public maxPrice?: number;
+
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  @Type((): typeof Number => Number)
+  public page?: number = 1;
+
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  @IsOptional()
+  @Type((): typeof Number => Number)
+  public limit?: number = 10;
+}
+```
+
+</details>
+
+### Register the MongooseModule `forFeature` in the `imports` Array of the Feature Module
 
 <details>
 <summary>src/notes/notes.module.ts</summary>
 
 ```TypeScript
 import { Module } from "@nestjs/common";
-import { NotesService } from "./notes.service";
-import { NotesController } from "./notes.controller";
-import { Note, NoteSchema } from "./note.model";
+import { RoomsService } from "./rooms.service";
+import { RoomsController } from "./rooms.controller";
 import { MongooseModule } from "@nestjs/mongoose";
+import { Room, RoomSchema } from "./room.model";
 
 @Module({
-	imports: [MongooseModule.forFeature([{ name: Note.name, schema: NoteSchema }])],
-	controllers: [NotesController],
-	providers: [NotesService],
+	imports: [
+		MongooseModule.forFeature([
+			{
+				name: Room.name,
+				schema: RoomSchema,
+			},
+		]),
+	],
+	providers: [RoomsService],
+	controllers: [RoomsController],
 })
-export class NotesModule {}
+export class RoomsModule {}
+
 ```
 
 </details>
@@ -431,228 +858,337 @@ export class NotesModule {}
 <summary>src/notes/notes.service.ts</summary>
 
 ```TypeScript
-import { Injectable } from "@nestjs/common";
-import { CreateNoteDto } from "./dto/create-note.dto";
-import { UpdateNoteDto } from "./dto/update-note.dto";
+import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Note, NoteDocument } from "./note.model";
-import { Model } from "mongoose";
+import { RootFilterQuery, Types } from "mongoose";
+import { Room, RoomDocument, RoomStatus, RoomType, type RoomModelType } from "./room.model";
+import { CreateRoomDto } from "./dto/create-room.dto";
+import { UpdateRoomDto } from "./dto/update-room.dto";
+import { RoomFilterDto } from "./dto/filter-room.dto";
 
 @Injectable()
-export class NotesService {
-	public constructor(@InjectModel(Note.name) private readonly noteModel: Model<NoteDocument>) {}
+export class RoomsService {
+	public constructor(@InjectModel(Room.name) private readonly roomModel: RoomModelType) {}
 
-// ...
+	public async create(dto: CreateRoomDto): Promise<RoomDocument> {
+		const existingRoom = await this.roomModel.findOne({
+			roomNumber: dto.roomNumber,
+		});
+
+		if (existingRoom) {
+			throw new ConflictException(`Room with number ${dto.roomNumber} already exists`);
+		}
+
+		const roomInstance = new this.roomModel(dto);
+		await roomInstance.save({
+			validateBeforeSave: true,
+		});
+
+		return roomInstance;
+	}
+
+	public async findAll(filterDto: RoomFilterDto): Promise<{
+		rooms: RoomDocument[];
+		total: number;
+		page: number;
+		limit: number;
+		pages: number;
+	}> {
+		const { page, limit, ...filters } = filterDto;
+		const skip = page === undefined || limit === undefined ? 0 : (page - 1) * limit;
+		const limitValue = limit ?? 10;
+		const pageValue = page ?? 0;
+		const query = this.buildFilterQuery(filters);
+
+		const [rooms, total] = await Promise.all([
+			this.roomModel.find(query).sort({ roomNumber: 1 }).skip(skip).limit(limitValue).exec(),
+			this.roomModel.countDocuments(query).exec(),
+		]);
+
+		return {
+			rooms,
+			total,
+			page: pageValue,
+			limit: limitValue,
+			pages: Math.ceil(total / limitValue),
+		};
+	}
+
+	public async findById(id: string): Promise<RoomDocument> {
+		const room = await this.roomModel.findById(new Types.ObjectId(id));
+
+		if (!room) {
+			throw new NotFoundException(`Room with ID ${id} not found`);
+		}
+
+		return room;
+	}
+
+	public async update(id: string, dto: UpdateRoomDto): Promise<RoomDocument> {
+		if (dto.roomNumber) {
+			const existingRoom = await this.roomModel.findOne({
+				roomNumber: dto.roomNumber,
+				_id: { $ne: new Types.ObjectId(id) },
+			});
+
+			if (existingRoom) {
+				throw new ConflictException(`Room with number ${dto.roomNumber} already exists`);
+			}
+		}
+
+		const updatedRoom = await this.roomModel.findByIdAndUpdate(
+			new Types.ObjectId(id),
+			{ $set: dto },
+			{ new: true, runValidators: true },
+		);
+
+		if (!updatedRoom) {
+			throw new NotFoundException(`Room with ID ${id} not found`);
+		}
+
+		return updatedRoom;
+	}
+
+	public async remove(id: string): Promise<void> {
+		const result = await this.roomModel.findByIdAndDelete(new Types.ObjectId(id));
+
+		if (!result) {
+			throw new NotFoundException(`Room with ID ${id} not found`);
+		}
+	}
+
+	public async findByType(roomType: RoomType): Promise<RoomDocument[]> {
+		return this.roomModel.findByType(roomType);
+	}
+
+	public async findAvailableRooms(): Promise<RoomDocument[]> {
+		return this.roomModel
+			.find({
+				status: RoomStatus.AVAILABLE,
+			})
+			.sort({ roomNumber: 1 })
+			.exec();
+	}
+
+	private buildFilterQuery(filters: Partial<RoomFilterDto>): RootFilterQuery<RoomDocument> {
+		const query: RootFilterQuery<RoomDocument> = {};
+
+		if (filters.roomType) {
+			query.roomType = filters.roomType;
+		}
+
+		if (filters.status) {
+			query.status = filters.status;
+		}
+
+		if (filters.hasSeaView !== undefined) {
+			query.hasSeaView = filters.hasSeaView;
+		}
+
+		if (filters.minOccupancy) {
+			query.maxOccupancy = { $gte: filters.minOccupancy };
+		}
+
+		if (filters.maxPrice) {
+			query["pricing.basePrice"] = { $lte: filters.maxPrice };
+		}
+
+		return query;
+	}
+
+	// public async update(id: string, dto: UpdateRoomDto): Promise<RoomDocument> {
+	// 	const updatedRoom = await this.roomModel.findByIdAndUpdate(
+	// 		new Types.ObjectId(id),
+	// 		{ $set: dto },
+	// 		{ new: true, runValidators: true },
+	// 	);
+
+	// 	if (!updatedRoom) {
+	// 		throw new NotFoundException(`Room with ID ${id} not found`);
+	// 	}
+
+	// 	return updatedRoom;
+	// }
+
+	// public async delete(id: string): Promise<RoomDocument | null> {
+	// 	const deletedRoom = await this.roomModel.findByIdAndDelete(new Types.ObjectId(id));
+	// 	if (!deletedRoom) {
+	// 		throw new NotFoundException(`Room with ID ${id} not found`);
+	// 	}
+	// 	return deletedRoom;
+	// }
+
+	// public async getById(id: string): Promise<RoomDocument | null> {
+	// 	const room = await this.roomModel.findById(new Types.ObjectId(id));
+	// 	if (!room) {
+	// 		throw new NotFoundException(`Room with ID ${id} not found`);
+	// 	}
+	// 	return room;
+	// }
+
+	// public async getAll(filter: { limit?: number }): Promise<RoomDocument[]> {
+	// 	return this.roomModel
+	// 		.find(filter)
+	// 		.limit(filter.limit ?? 10)
+	// 		.exec();
+	// }
+}
+
+```
+
+</details>
+
+<!-- ### Add interceptor -->
+
+<!--
+```sh
+mkdir src/rooms/interceptors
+```
+
+```sh
+echo "" > src/rooms/interceptors/serialize.interceptor.ts
+```
+
+<details>
+<summary>Response serializer</summary>
+
+```ts
+import {
+  CallHandler,
+  ExecutionContext,
+  NestInterceptor,
+  UseInterceptors,
+} from "@nestjs/common";
+import { Observable } from "rxjs";
+import { map } from "rxjs/operators";
+import { plainToInstance } from "class-transformer";
+
+interface ClassConstructor {
+  new (...args: any[]): {};
+}
+
+export function Serialize(dto: ClassConstructor) {
+  return UseInterceptors(new SerializeInterceptor(dto));
+}
+
+export class SerializeInterceptor implements NestInterceptor {
+  constructor(private dto: any) {}
+
+  intercept(context: ExecutionContext, handler: CallHandler): Observable<any> {
+    return handler.handle().pipe(
+      map((data: any) => {
+        if (data && data.rooms) {
+          // Для пагинированных результатов
+          return {
+            ...data,
+            rooms: plainToInstance(this.dto, data.rooms, {
+              excludeExtraneousValues: true,
+            }),
+          };
+        }
+
+        return plainToInstance(this.dto, data, {
+          excludeExtraneousValues: true,
+        });
+      })
+    );
+  }
+}
+```
+
+</details> -->
+
+### Controller
+
+<details>
+<summary>controller</summary>
+
+```ts
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  UseInterceptors,
+  // ParseIntPipe,
+  HttpStatus,
+  HttpCode,
+  ClassSerializerInterceptor,
+} from "@nestjs/common";
+// import { RoomService } from "./room.service";
+import { CreateRoomDto } from "./dto/create-room.dto";
+import { UpdateRoomDto } from "./dto/update-room.dto";
+import { RoomResponseDto } from "./dto/response-room.dto";
+import { RoomsService } from "./rooms.service";
+import { RoomDocument, RoomType } from "./room.model";
+import { RoomFilterDto } from "./dto/filter-room.dto";
+// import { RoomFilterDto } from "./dto/room-filter.dto";
+// import { RoomResponseDto } from "./dto/room-response.dto";
+// import { SerializeInterceptor } from "../interceptors/serialize.interceptor";
+
+@Controller("rooms")
+@UseInterceptors(new ClassSerializerInterceptor(RoomResponseDto))
+export class RoomController {
+  public constructor(private readonly roomService: RoomsService) {}
+
+  @Post()
+  public async create(
+    @Body() createRoomDto: CreateRoomDto
+  ): Promise<RoomDocument> {
+    return await this.roomService.create(createRoomDto);
+  }
+
+  @Get()
+  public async findAll(@Query() filterDto: RoomFilterDto): Promise<{
+    rooms: RoomDocument[];
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+  }> {
+    return await this.roomService.findAll(filterDto);
+  }
+
+  @Get("available")
+  public async findAvailable(): Promise<RoomDocument[]> {
+    return await this.roomService.findAvailableRooms();
+  }
+
+  @Get("type/:type")
+  public async findByType(
+    @Param("type") type: RoomType
+  ): Promise<RoomDocument[]> {
+    return await this.roomService.findByType(type);
+  }
+
+  @Get(":id")
+  public async findOne(@Param("id") id: string): Promise<RoomDocument> {
+    return await this.roomService.findById(id);
+  }
+
+  @Patch(":id")
+  public async update(
+    @Param("id") id: string,
+    @Body() updateRoomDto: UpdateRoomDto
+  ): Promise<RoomDocument> {
+    return await this.roomService.update(id, updateRoomDto);
+  }
+
+  @Delete(":id")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  public async remove(@Param("id") id: string): Promise<void> {
+    await this.roomService.remove(id);
+  }
 }
 ```
 
 </details>
 
 ### Add Decorators to DTOs
-
-<details>
-<summary><strong>Info</strong></summary>
-<dl><dd>
-
-Add any decorators you need, then run `npm run format` and `npm run lint`, and fix any warnings or errors that may appear.”
-
-The result should include the following files:
-
-<details><summary><strong>src/notes/dto/create-note.dto.ts</strong></summary>
-
-```ts
-// import { ApiProperty } from "@nestjs/swagger";
-import {
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsString,
-  Length,
-  Max,
-  MaxLength,
-  Min,
-  MinLength,
-} from "class-validator";
-
-export class CreateNoteDto {
-  // @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
-  @MinLength(3)
-  @MaxLength(20)
-  public title!: string;
-
-  // @ApiProperty()
-  @IsOptional()
-  @IsString()
-  @Length(5, 50)
-  public content?: string;
-
-  // @ApiProperty()
-  @IsOptional()
-  @IsString()
-  @Length(1, 30)
-  public source?: string;
-
-  // @ApiProperty()
-  @IsOptional()
-  @IsNumber()
-  // @IsPositive()
-  @Min(0)
-  @Max(5)
-  public priority?: number;
-
-  /* Example */
-  // @IsDate()
-  // public reservationDate!: Date;
-
-  /* Example */
-  // @IsMongoId()
-  // public room!: string;
-
-  public constructor(data: CreateNoteDto) {
-    if (data?.title != null) this.title = data?.title;
-    if (data?.content != null) this.content = data?.content;
-    if (data?.source != null) this.source = data?.source;
-    if (data?.priority != null) this.priority = data?.priority;
-  }
-}
-```
-
-</details>
-
-<br/>
-
-<details>
-	<summary><strong>src/notes/dto/update-note.dto.ts</strong></summary>
-
-```ts
-import {
-  IsBoolean,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsString,
-  Length,
-  Max,
-  MaxLength,
-  Min,
-  MinLength,
-} from "class-validator";
-
-export class UpdateNoteDto {
-  @IsOptional()
-  @IsNotEmpty()
-  @IsString()
-  @MinLength(3)
-  @MaxLength(20)
-  public title?: string;
-
-  @IsOptional()
-  @IsString()
-  @Length(5, 50)
-  public content?: string;
-
-  @IsOptional()
-  @IsString()
-  @Length(1, 30)
-  public source?: string;
-
-  @IsOptional()
-  @IsNumber()
-  // @IsPositive()
-  @Min(0)
-  @Max(5)
-  public priority?: number;
-
-  @IsOptional()
-  @IsBoolean()
-  public isArchived?: boolean;
-
-  public constructor(data: UpdateNoteDto) {
-    if (data?.title != null) this.title = data?.title;
-    if (data?.content != null) this.content = data?.content;
-    if (data?.source != null) this.source = data?.source;
-    if (data?.priority != null) this.priority = data?.priority;
-    if (data?.isArchived != null) this.isArchived = data?.isArchived;
-  }
-}
-```
-
-</details>
-
-<br/>
-
-<details><summary><strong>src/notes/dto/response-note.dto.ts</strong></summary>
-
-```ts
-export class ResponseNoteDto {
-  public id!: string;
-  public title!: string;
-  public content?: string | null;
-
-  public constructor(data: ResponseNoteDto) {
-    if (data?.id != null) this.id = data?.id;
-    if (data?.title != null) this.title = data?.title;
-    if (data?.content != null) this.content = data?.content;
-  }
-}
-```
-
-<!-- ```ts
-// src/notes/dto/login-note.dto.ts
-import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsString, MinLength } from "class-validator";
-
-export class LoginUserDto {
-	@ApiProperty({
-		description: "User email address",
-		example: "user@example.com",
-	})
-	@IsEmail()
-	public email: string;
-
-	@ApiProperty({
-		description: "User password",
-		example: "strongPassword123",
-		minLength: 6,
-	})
-	@IsString()
-	@MinLength(6)
-	public password: string;
-
-	public constructor(data: LoginUserDto) {
-		this.email = data.email;
-		this.password = data.password;
-	}
-}
-
-``` -->
-
-</details>
-
-<details><summary><strong>src/notes/dto/filter-note.dto.ts</strong></summary>
-
-```ts
-import { IsNumber, IsOptional } from "class-validator";
-
-export class FilterNoteDto {
-  // @IsString()
-  // @IsOptional()
-  // public category?: string;
-
-  @IsNumber()
-  @IsOptional()
-  public limit?: number;
-}
-```
-
-</details>
-
-</dd></dl>
-</details>
-
-<br/>
 
 ### Add `ValidationPipe` (+Transformation)
 
