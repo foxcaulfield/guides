@@ -231,15 +231,12 @@ rules: {
 			"prettier/prettier": [
 				"error",
 				{
-					// endOfLine: "auto",
-					printWidth: 120,
-					// trailingComma: "es5",
-					// semi: false,
-					doubleQuote: true,
-					// jsxSingleQuote: true,
 					singleQuote: false,
+					trailingComma: "es5",
 					useTabs: true,
-					// tabWidth: 4,
+					tabWidth: 4,
+					printWidth: 120,
+					bracketSameLine: false,
 				},
 			],
 			"@typescript-eslint/explicit-member-accessibility": ["error", { accessibility: "explicit" }],
@@ -253,6 +250,10 @@ rules: {
 					allowConciseArrowFunctionExpressionsStartingWithVoid: false,
 				},
 			],
+
+			"function-call-argument-newline": ["error", "consistent"],
+			"function-paren-newline": ["error", "multiline"],
+			// "object-curly-newline": ["error", { multiline: true, consistent: true }],
 			// ... existing rules
 		},
 // ...
