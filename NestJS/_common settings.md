@@ -207,8 +207,7 @@ Customize project configuration files as needed. For example:
   "trailingComma": "es5",
   "useTabs": true,
   "tabWidth": 4,
-  "printWidth": 120,
-  "bracketSameLine": false
+  "printWidth": 120
 }
 ```
 
@@ -251,8 +250,8 @@ rules: {
 				},
 			],
 
-			"function-call-argument-newline": ["error", "consistent"],
-			"function-paren-newline": ["error", "multiline"],
+			// "function-call-argument-newline": ["error", "consistent"],
+			// "function-paren-newline": ["error", "multiline"],
 			// "object-curly-newline": ["error", { multiline: true, consistent: true }],
 			// ... existing rules
 		},
