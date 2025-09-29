@@ -2,18 +2,48 @@ Perform commont settings
 
 ---
 
-# 4. Install and Configure Dependencies
+<style> 
+.hdr1 {
+	font-size: 35px;
+	text-align:center;
+	padding-top: 40px;
+}
 
-### dotenv [(docs)](https://www.npmjs.com/package/dotenv)
+/* .hdr2{
+	font-size: 27.5px;
+	text-align:center;
+	padding-top: 30px;
+} */
 
-<details>
-<summary>Settings</summary>
-<dl><dd>
+.hdr3{
+	font-size: 20px;
+	text-align:center;
+	padding-top: 20px;
+}
+
+.code-block-header {
+	padding-bottom: 0px;
+  	font-family: monospace;
+	font-weight: bold;
+	color: #a84923ff;
+	font-size: 1.05em;
+}
+</style>
+
+# 4. <div class="hdr1">4. Install and Configure Dependencies</div>
+
+### <div class="hdr3">Config and dotenv</div>
+
+- [(docs)](https://www.npmjs.com/package/dotenv)
 
 Install:
 
 ```sh
 npm install dotenv --save
+```
+
+```sh
+npm install @nestjs/config
 ```
 
 Create and configure a `.env` file:
@@ -22,14 +52,29 @@ Create and configure a `.env` file:
 echo "" > .env
 ```
 
-</dd></dl>
-</details>
+Add config module to the imports array of your root app module:
 
-### Docker + MongoDB
+<div class="code-block-header">src/app.module.ts</div>
 
-<details>
-<summary>Settings</summary>
-<dl><dd>
+```ts
+import { Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
+
+@Module({
+  imports: [
+    // ...
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: "./.env",
+    }),
+    // ...
+  ],
+  // ...
+})
+export class AppModule {}
+```
+
+### <div class="hdr3">Docker + MongoDB</div>
 
 Update the `.env` file
 
@@ -51,6 +96,8 @@ echo "" > docker-compose.yaml
 ```
 
 Add the following configuration:
+
+<div class="code-block-header">docker-compose.yaml</div>
 
 ```yaml
 services:
@@ -97,31 +144,61 @@ Or start only the `db` service:
 docker compose up db -d
 ```
 
-</dd></dl>
-</details>
-
-### ...
-
-For validation and documentation
-
-```sh
-npm install @nestjs/swagger class-validator class-transformer
-```
-
-```sh
-npm install @nestjs/config
-```
+### <div class="hdr3">Mongoose</div>
 
 ```sh
 npm install @nestjs/mongoose mongoose
 ```
 
-**Update main.ts**
+**Add config module and mongoose module to app**
+
+<div class="code-block-header">src/app.module.ts</div>
+
+```TypeScript
+import { Module } from "@nestjs/common";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { MongooseModule, MongooseModuleFactoryOptions } from "@nestjs/mongoose";
+
+// MongooseModule.forRoot("mongodb://root:example@localhost:27017/default_db"),
+// const uri = `mongodb://root:example@localhost:27017/default_db?authSource=admin`;
+
+@Module({
+	imports: [
+	// ...
+		MongooseModule.forRootAsync({
+			imports: [ConfigModule],
+			inject: [ConfigService],
+			useFactory: (configService: ConfigService): MongooseModuleFactoryOptions => {
+				const host = configService.get<string>("MONGO_HOST");
+				const port = configService.get<string>("MONGO_PORT");
+				const user = configService.get<string>("MONGO_INITDB_ROOT_USERNAME");
+				const pass = configService.get<string>("MONGO_INITDB_ROOT_PASSWORD");
+				const db = configService.get<string>("MONGO_INITDB_DATABASE");
+				const uri = `mongodb://${user}:${pass}@${host}:${port}/${db}?authSource=admin`;
+				return {
+					uri,
+				};
+			},
+		}),
+	// ...
+	],
+// ...
+})
+export class AppModule {}
+
+```
+
+### <div class="hdr3">Validation</div>
+
+For validation and documentation purposes
+
+```sh
+npm install @nestjs/swagger class-validator class-transformer
+```
 
 Add the swagger configuration and setup the global validation pipe at `main.ts`
 
-<details>
-<summary>src/main.ts</summary>
+<div class="code-block-header">src/main.ts</div>
 
 ```TypeScript
 import { NestFactory } from "@nestjs/core";
@@ -152,7 +229,8 @@ async function bootstrap(): Promise<void> {
 		.setVersion("1.0")
 		.addTag("app")
 		.build();
-	const documentFactory = (): OpenAPIObject => SwaggerModule.createDocument(app, config);
+	const documentFactory = (): OpenAPIObject =>
+			SwaggerModule.createDocument(app, config);
 
 	// Setup SwaggerUI
 	SwaggerModule.setup("api", app, documentFactory);
@@ -166,62 +244,7 @@ async function bootstrap(): Promise<void> {
 bootstrap().catch((e): void => console.error(e));
 ```
 
-</details>
-
-**Add config module and mongoose module to app**
-
-<details>
-<summary>src/app.module.ts</summary>
-
-```TypeScript
-import { Module } from "@nestjs/common";
-import { AppController } from "./app.controller";
-import { AppService } from "./app.service";
-import { ConfigModule, ConfigService } from "@nestjs/config";
-import { MongooseModule, MongooseModuleFactoryOptions } from "@nestjs/mongoose";
-
-@Module({
-	imports: [
-		ConfigModule.forRoot({
-			isGlobal: true,
-			envFilePath: "./.env",
-		}),
-		// MongooseModule.forRoot("mongodb://root:example@localhost:27017/default_db"),
-		MongooseModule.forRootAsync({
-			imports: [ConfigModule],
-			inject: [ConfigService],
-			useFactory: (configService: ConfigService): MongooseModuleFactoryOptions => {
-				const host = configService.get<string>("MONGO_HOST");
-				const port = configService.get<string>("MONGO_PORT");
-				const user = configService.get<string>("MONGO_INITDB_ROOT_USERNAME");
-				const pass = configService.get<string>("MONGO_INITDB_ROOT_PASSWORD");
-				const db = configService.get<string>("MONGO_INITDB_DATABASE");
-				const uri = `mongodb://${user}:${pass}@${host}:${port}/${db}?authSource=admin`;
-				// const uri = `mongodb://root:example@localhost:27017/default_db?authSource=admin`;
-
-				return {
-					uri,
-				};
-			},
-		}),
-	],
-	controllers: [AppController],
-	providers: [AppService],
-})
-export class AppModule {}
-
-```
-
-</details>
-
-# 5. Set Up the Project
-
-## Swagger (optional)
-
-<details><summary>Settings</summary>
-<dl><dd>
-
-**Adjust `Swagger`**
+### <div class="hdr3">Swagger auto annotations (optional)</div>
 
 > _A quick note:_
 > Usually, in order to make the class properties visible to the `SwaggerModule`, you need to annotate them with the `@ApiProperty()` decorator [(docs)](https://docs.nestjs.com/openapi/types-and-parameters#types-and-parameters).
@@ -240,7 +263,7 @@ Alternatively, you can use the appropriate plugin, as described below. [(Swagger
 
 To [enable]() the plugin, open `nest-cli.json` and add the following plugins configuration. You can also use the options property to customize the behavior of the plugin.
 
-<details><summary><strong>nest-cli.json</strong></summary>
+nest-cli.json
 
 ```JavaScript
 {
@@ -262,10 +285,6 @@ To [enable]() the plugin, open `nest-cli.json` and add the following plugins con
 }
 ```
 
-</details>
-
-<br/>
-
 The NestJS OpenAPI (Swagger) CLI plugin will automatically:
 
 - Annotate DTO properties with `@ApiProperty` and set `required`, `type`, and `default`.
@@ -274,76 +293,41 @@ The NestJS OpenAPI (Swagger) CLI plugin will automatically:
 - Generate descriptions and examples from comments (if `introspectComments` is enabled).
 - Generate and update Swagger (OpenAPI) documentation for your project.
 
-</dd></dl>
-</details>
+# <div class="hdr1">5. Set Up the Project</div>
 
-# 6. Create and Set Up the Feature
+<!-- Create and Set Up the Feature -->
 
-    🏁 From now on, adding a new feature will involve pretty much the same set of steps. 🏁
+<!-- ### <div class="hdr3">Create and Set Up the Feature</div> -->
 
-### Generate a Feature (Module/Service/Controller/DTOs)
+    🏁 From now on, adding a new feature
+    will involve pretty much the same set of steps. 🏁
 
-<details>
-<summary><strong>Generate rooms feature</strong></summary>
-<dl><dd>
+### <div class="hdr3">Generate a Feature files (Module/Service/Controller/DTOs)</div>
 
 You can generate the feature template with a single command and make a few adjustments:
 
 ```sh
-nest generate resource rooms
-```
-
-```sh
-rm -rf ./src/rooms/entities
-```
-
-```sh
-echo "" > ./src/rooms/dto/response-room.dto.ts
-```
-
-```sh
+while true; do echo y; sleep 1; done | nest generate resource rooms &&
+rm -rf ./src/rooms/entities &&
+nest generate class rooms/dto/response-room.dto --flat &&
+nest generate class rooms/dto/filter-room.dto --flat &&
 echo "" > ./src/rooms/room.model.ts
-```
-
-```sh
-echo "" > ./src/rooms/dto/filter-room.dto.ts
 ```
 
 Or you can create the files manually using separate commands.
 
 ```sh
-nest generate module rooms
+nest generate module rooms &&
+nest generate service rooms &&
+nest generate controller rooms &&
+nest generate class rooms/dto/create-room.dto --flat &&
+nest generate class rooms/dto/update-room.dto --flat &&
+nest generate class rooms/dto/response-room.dto --flat &&
+nest generate class rooms/dto/filter-room.dto --flat &&
+echo "" > ./src/rooms/room.model.ts &&
 ```
 
-```sh
-nest generate service rooms
-```
-
-```sh
-nest generate controller rooms
-```
-
-```sh
-nest generate class rooms/dto/create-room.dto --flat
-```
-
-```sh
-nest generate class rooms/dto/update-room.dto --flat
-```
-
-```sh
-nest generate class rooms/dto/response-room.dto --flat
-```
-
-```sh
-echo "" > ./src/rooms/room.model.ts
-```
-
-```sh
-nest generate class rooms/dto/filter-room.dto --flat
-```
-
-room: Don’t add any content yet; just ensure the files are created.
+Note: Don’t add any content yet; just ensure the files are created.
 
 - `src/rooms/rooms.service.ts` file
 - `src/rooms/rooms.controller.ts` file
@@ -351,92 +335,18 @@ room: Don’t add any content yet; just ensure the files are created.
 - `src/rooms/dto/create-room.dto.ts` file
 - `src/rooms/dto/update-room.dto.ts` file
 - `src/rooms/dto/response-room.dto.ts` file
-- `src/rooms/room.model.ts` file
 - `src/rooms/dto/filter-room.dto.ts` file
+- `src/rooms/room.model.ts` file
 
-</dd></dl>
-</details>
+**Generate reservations feature**
 
-<details>
-<summary><strong>Generate reservations feature</strong></summary>
-<dl><dd>
+> 📋 Do the same set of steps for the `reservation` feature
 
-You can generate the feature template with a single command and make a few adjustments:
-
-```sh
-nest generate resource reservations
-```
-
-```sh
-rm -rf ./src/reservations/entities
-```
-
-```sh
-echo "" > ./src/reservations/dto/response-reservation.dto.ts
-```
-
-```sh
-echo "" > ./src/reservations/reservation.model.ts
-```
-
-```sh
-echo "" > ./src/reservations/dto/filter-reservation.dto.ts
-```
-
-Or you can create the files manually using separate commands.
-
-```sh
-nest generate module reservations
-```
-
-```sh
-nest generate service reservations
-```
-
-```sh
-nest generate controller reservations
-```
-
-```sh
-nest generate class reservations/dto/create-reservation.dto --flat
-```
-
-```sh
-nest generate class reservations/dto/update-reservation.dto --flat
-```
-
-```sh
-nest generate class reservations/dto/response-reservation.dto --flat
-```
-
-```sh
-echo "" > ./src/reservations/reservation.model.ts
-```
-
-```sh
-nest generate class reservations/dto/filter-reservation.dto --flat
-```
-
-reservation: Don’t add any content yet; just ensure the files are created.
-
-- `src/reservations/reservations.service.ts` file
-- `src/reservations/reservations.controller.ts` file
-- `src/reservations/reservations.module.ts` file
-- `src/reservations/dto/create-reservation.dto.ts` file
-- `src/reservations/dto/update-reservation.dto.ts` file
-- `src/reservations/dto/response-reservation.dto.ts` file
-- `src/reservations/reservation.model.ts` file
-- `src/reservations/dto/filter-reservation.dto.ts` file
-
-</dd></dl>
-</details>
-
-<br/>
-
-### Create the model, schema, document
+### <div class="hdr3">Provide a model, a schema, a document, DTOs</div>
 
 <details>
-<summary>src/rooms/room.model.ts</summary>
+<summary><span class="code-block-header">src/rooms/room.model.ts</span>
+</summary>
 
 ```TypeScript
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
@@ -457,32 +367,20 @@ export enum RoomStatus {
 	CLEANING = "CLEANING",
 }
 
-// Nested schema
-@Schema({ _id: false })
-export class Amenity {
-	@Prop({ required: true, trim: true })
-	public name!: string;
+// // Nested schema
+// @Schema({ _id: false })
+// export class Amenity {
+// 	@Prop({ required: true, trim: true })
+// 	public name!: string;
 
-	@Prop({ default: false })
-	public isPremium?: boolean;
+// 	@Prop({ default: false })
+// 	public isPremium?: boolean;
 
-	@Prop()
-	public description?: string;
-}
+// 	@Prop()
+// 	public description?: string;
+// }
 
 // Main schema
-@Schema({ _id: false })
-export class Pricing {
-	@Prop({ required: true, min: 0 })
-	public basePrice!: number;
-
-	@Prop({ min: 0 })
-	public weekendSurcharge?: number;
-
-	@Prop({ min: 0 })
-	public seasonSurcharge?: number;
-}
-
 @Schema({
 	strict: true,
 	timestamps: true,
@@ -518,48 +416,42 @@ export class Room {
 	@Prop(Boolean)
 	public hasSeaView!: boolean;
 
-	@Prop({
-		type: Number,
-		min: 1,
-		max: 6,
-	})
-	public maxOccupancy!: number;
+	// @Prop({
+	// 	type: Number,
+	// 	min: 1,
+	// 	max: 6,
+	// })
+	// public maxOccupancy!: number;
 
-	@Prop({
-		type: [Amenity],
-		validate: {
-			validator: (arr: Amenity[]): boolean => arr.length <= 5,
-			message: "Amenity limit is 5",
-		},
-	})
-	public amenities!: Amenity[];
+	// @Prop({
+	// 	type: [Amenity],
+	// 	validate: {
+	// 		validator: (arr: Amenity[]): boolean => arr.length <= 5,
+	// 		message: "Amenity limit is 5",
+	// 	},
+	// })
+	// public amenities!: Amenity[];
 
-	@Prop({ type: Pricing, required: true })
-	public pricing!: Pricing;
+	// @Prop({ type: Date })
+	// public lastMaintenance?: Date;
 
-	@Prop({ type: Date })
-	public lastMaintenance?: Date;
+	// /* Virtual fields */
+	// public get displayName(): string {
+	// 	return `Room ${this.roomNumber} (${this.roomType})`;
+	// }
+	// public get isAvailable(): boolean {
+	// 	return this.status === RoomStatus.AVAILABLE;
+	// }
 
-	@Prop({ type: Date, default: Date.now })
-	public nextMaintenance!: Date;
+	// /* Methods */
+	// public hasAmenity(amenityName: string): boolean {
+	// 	return this.amenities?.some((a): boolean => a.name === amenityName) ?? false;
+	// }
 
-	/* Virtual fields */
-	public get displayName(): string {
-		return `Room ${this.roomNumber} (${this.roomType})`;
-	}
-	public get isAvailable(): boolean {
-		return this.status === RoomStatus.AVAILABLE;
-	}
-
-	/* Methods */
-	public hasAmenity(amenityName: string): boolean {
-		return this.amenities?.some((a): boolean => a.name === amenityName) ?? false;
-	}
-
-	/* Static */
-	public static async findByType(this: RoomModelType, roomType: RoomType): Promise<RoomDocument[]> {
-		return this.find({ roomType }).exec();
-	}
+	// /* Static */
+	// public static async findByType(this: RoomModelType, roomType: RoomType): Promise<RoomDocument[]> {
+	// 	return this.find({ roomType }).exec();
+	// }
 }
 export type RoomModelType = Model<RoomDocument> & typeof Room;
 export type RoomDocument = HydratedDocument<Room>;
@@ -569,12 +461,8 @@ export const RoomSchema = SchemaFactory.createForClass(Room);
 
 </details>
 
-### Add DTOs
-
-#### CreateDto
-
 <details>
-<summary>src/rooms/dto/create-room.dto.ts</summary>
+<summary><span class="code-block-header">src/rooms/dto/create-room.dto.ts</span></summary>
 
 ```ts
 import {
@@ -592,30 +480,14 @@ import {
 import { Type } from "class-transformer";
 import { RoomStatus, RoomType } from "../room.model";
 
-export class AmenityDto {
-  @IsBoolean()
-  @IsOptional()
-  public isPremium?: boolean;
+// export class AmenityDto {
+//   @IsBoolean()
+//   @IsOptional()
+//   public isPremium?: boolean;
 
-  @IsOptional()
-  public description?: string;
-}
-
-export class PricingDto {
-  @IsNumber()
-  @Min(0)
-  public basePrice!: number;
-
-  @IsNumber()
-  @Min(0)
-  @IsOptional()
-  public weekendSurcharge?: number;
-
-  @IsNumber()
-  @Min(0)
-  @IsOptional()
-  public seasonSurcharge?: number;
-}
+//   @IsOptional()
+//   public description?: string;
+// }
 
 export class CreateRoomDto {
   @IsInt()
@@ -634,39 +506,28 @@ export class CreateRoomDto {
   @IsOptional()
   public hasSeaView?: boolean;
 
-  @IsInt()
-  @Min(1)
-  @Max(6)
-  public maxOccupancy!: number;
+  //   @IsInt()
+  //   @Min(1)
+  //   @Max(6)
+  //   public maxOccupancy!: number;
 
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type((): typeof AmenityDto => AmenityDto)
-  @IsOptional()
-  public amenities?: AmenityDto[];
+  //   @IsArray()
+  //   @ValidateNested({ each: true })
+  //   @Type((): typeof AmenityDto => AmenityDto)
+  //   @IsOptional()
+  //   public amenities?: AmenityDto[];
 
-  @ValidateNested()
-  @Type((): typeof PricingDto => PricingDto)
-  public pricing!: PricingDto;
-
-  @IsDate()
-  @Type((): typeof Date => Date)
-  @IsOptional()
-  public lastMaintenance?: Date;
-
-  @IsDate()
-  @Type((): typeof Date => Date)
-  @IsOptional()
-  public nextMaintenance?: Date;
+  //   @IsDate()
+  //   @Type((): typeof Date => Date)
+  //   @IsOptional()
+  //   public lastMaintenance?: Date;
 }
 ```
 
 </details>
 
-#### UpdateDto
-
 <details>
-<summary>src/rooms/dto/update-room.dto.ts</summary>
+<summary><span class="code-block-header">src/rooms/dto/update-room.dto.ts</span></summary>
 
 ```ts
 import { PartialType } from "@nestjs/mapped-types";
@@ -677,37 +538,23 @@ export class UpdateRoomDto extends PartialType(CreateRoomDto) {}
 
 </details>
 
-#### ResponseDto
-
 <details>
-<summary>src/rooms/dto/response-room.dto.ts</summary>
+<summary><span class="code-block-header">src/rooms/dto/response-room.dto.ts</span></summary>
 
 ```ts
 import { Exclude, Expose, Transform } from "class-transformer";
 import { RoomStatus, RoomType } from "../room.model";
-// import { RoomType, RoomStatus } from "../schemas/room.schema";
 
-export class AmenityResponseDto {
-  @Expose()
-  public name!: string;
+// export class AmenityResponseDto {
+//   @Expose()
+//   public name!: string;
 
-  @Expose()
-  public isPremium?: boolean;
+//   @Expose()
+//   public isPremium?: boolean;
 
-  @Expose()
-  public description?: string;
-}
-
-export class PricingResponseDto {
-  @Expose()
-  public basePrice!: number;
-
-  @Expose()
-  public weekendSurcharge?: number;
-
-  @Expose()
-  public seasonSurcharge?: number;
-}
+//   @Expose()
+//   public description?: string;
+// }
 
 export class RoomResponseDto {
   @Expose()
@@ -725,21 +572,15 @@ export class RoomResponseDto {
   @Expose()
   public hasSeaView!: boolean;
 
-  @Expose()
-  public maxOccupancy!: number;
+  //   @Expose()
+  //   public maxOccupancy!: number;
 
-  @Expose()
-  @Transform((params): AmenityResponseDto[] => params.value || [])
-  public amenities!: AmenityResponseDto[];
+  //   @Expose()
+  //   @Transform((params): AmenityResponseDto[] => params.value || [])
+  //   public amenities!: AmenityResponseDto[];
 
-  @Expose()
-  public pricing!: PricingResponseDto;
-
-  @Expose()
-  public lastMaintenance?: Date;
-
-  @Expose()
-  public nextMaintenance!: Date;
+  //   @Expose()
+  //   public lastMaintenance?: Date;
 
   @Expose()
   public createdAt!: Date;
@@ -761,10 +602,8 @@ export class RoomResponseDto {
 
 </details>
 
-#### FilterDto
-
 <details>
-<summary>src/rooms/dto/filter-room.dto.ts</summary>
+<summary><span class="code-block-header">src/rooms/dto/filter-room.dto.ts</span></summary>
 
 ```ts
 import {
@@ -792,18 +631,18 @@ export class RoomFilterDto {
   @Type((): typeof Boolean => Boolean)
   public hasSeaView?: boolean;
 
-  @IsInt()
-  @Min(1)
-  @Max(6)
-  @IsOptional()
-  @Type((): typeof Number => Number)
-  public minOccupancy?: number;
+  //   @IsInt()
+  //   @Min(1)
+  //   @Max(6)
+  //   @IsOptional()
+  //   @Type((): typeof Number => Number)
+  //   public minOccupancy?: number;
 
-  @IsInt()
-  @Min(0)
-  @IsOptional()
-  @Type((): typeof Number => Number)
-  public maxPrice?: number;
+  //   @IsInt()
+  //   @Min(0)
+  //   @IsOptional()
+  //   @Type((): typeof Number => Number)
+  //   public maxPrice?: number;
 
   @IsInt()
   @Min(1)
@@ -822,10 +661,12 @@ export class RoomFilterDto {
 
 </details>
 
-### Register the MongooseModule `forFeature` in the `imports` Array of the Feature Module
+### <div class="hdr3">Provide a module, a service, a controller</div>
+
+#### Register the MongooseModule `forFeature` in the `imports` Array of the Feature Module
 
 <details>
-<summary>src/notes/notes.module.ts</summary>
+<summary><span class="code-block-header">src/rooms/rooms.module.ts</span></summary>
 
 ```TypeScript
 import { Module } from "@nestjs/common";
@@ -852,10 +693,10 @@ export class RoomsModule {}
 
 </details>
 
-### Inject the Feature Model into the Feature Service
+#### Inject the Feature Model into the Feature Service and Provide the Rest
 
 <details>
-<summary>src/notes/notes.service.ts</summary>
+<summary><span class="code-block-header">src/rooms/rooms.service.ts</span></summary>
 
 ```TypeScript
 import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
@@ -865,12 +706,17 @@ import { Room, RoomDocument, RoomStatus, RoomType, type RoomModelType } from "./
 import { CreateRoomDto } from "./dto/create-room.dto";
 import { UpdateRoomDto } from "./dto/update-room.dto";
 import { RoomFilterDto } from "./dto/filter-room.dto";
+import { ResponseRoomDto } from "./dto/response-room.dto";
+import { plainToInstance } from "class-transformer";
 
 @Injectable()
 export class RoomsService {
-	public constructor(@InjectModel(Room.name) private readonly roomModel: RoomModelType) {}
+	public constructor(
+		@InjectModel(Room.name)
+		private readonly roomModel: RoomModelType
+	) {}
 
-	public async create(dto: CreateRoomDto): Promise<RoomDocument> {
+	public async create(dto: CreateRoomDto): Promise<ResponseRoomDto> {
 		const existingRoom = await this.roomModel.findOne({
 			roomNumber: dto.roomNumber,
 		});
@@ -884,7 +730,16 @@ export class RoomsService {
 			validateBeforeSave: true,
 		});
 
-		return roomInstance;
+
+		const responseDto = plainToInstance(
+			ResponseRoomDto,
+			roomInstance,
+			{
+				excludeExtraneousValues: true
+			});
+
+
+		return responseDto;
 	}
 
 	public async findAll(filterDto: RoomFilterDto): Promise<{
@@ -925,7 +780,7 @@ export class RoomsService {
 	}
 
 	public async update(id: string, dto: UpdateRoomDto): Promise<RoomDocument> {
-		if (dto.roomNumber) {
+		/* if (dto.roomNumber) {
 			const existingRoom = await this.roomModel.findOne({
 				roomNumber: dto.roomNumber,
 				_id: { $ne: new Types.ObjectId(id) },
@@ -934,7 +789,7 @@ export class RoomsService {
 			if (existingRoom) {
 				throw new ConflictException(`Room with number ${dto.roomNumber} already exists`);
 			}
-		}
+		} */
 
 		const updatedRoom = await this.roomModel.findByIdAndUpdate(
 			new Types.ObjectId(id),
@@ -1038,70 +893,10 @@ export class RoomsService {
 
 </details>
 
-<!-- ### Add interceptor -->
-
-<!--
-```sh
-mkdir src/rooms/interceptors
-```
-
-```sh
-echo "" > src/rooms/interceptors/serialize.interceptor.ts
-```
+#### Setup the Controller
 
 <details>
-<summary>Response serializer</summary>
-
-```ts
-import {
-  CallHandler,
-  ExecutionContext,
-  NestInterceptor,
-  UseInterceptors,
-} from "@nestjs/common";
-import { Observable } from "rxjs";
-import { map } from "rxjs/operators";
-import { plainToInstance } from "class-transformer";
-
-interface ClassConstructor {
-  new (...args: any[]): {};
-}
-
-export function Serialize(dto: ClassConstructor) {
-  return UseInterceptors(new SerializeInterceptor(dto));
-}
-
-export class SerializeInterceptor implements NestInterceptor {
-  constructor(private dto: any) {}
-
-  intercept(context: ExecutionContext, handler: CallHandler): Observable<any> {
-    return handler.handle().pipe(
-      map((data: any) => {
-        if (data && data.rooms) {
-          // Для пагинированных результатов
-          return {
-            ...data,
-            rooms: plainToInstance(this.dto, data.rooms, {
-              excludeExtraneousValues: true,
-            }),
-          };
-        }
-
-        return plainToInstance(this.dto, data, {
-          excludeExtraneousValues: true,
-        });
-      })
-    );
-  }
-}
-```
-
-</details> -->
-
-### Controller
-
-<details>
-<summary>controller</summary>
+<summary><span class="code-block-header">src/rooms/rooms.controller.ts</span></summary>
 
 ```ts
 import {
@@ -1129,6 +924,7 @@ import { RoomFilterDto } from "./dto/filter-room.dto";
 // import { RoomFilterDto } from "./dto/room-filter.dto";
 // import { RoomResponseDto } from "./dto/room-response.dto";
 // import { SerializeInterceptor } from "../interceptors/serialize.interceptor";
+import { ResponseRoomDto } from "./dto/response-room.dto";
 
 @Controller("rooms")
 @UseInterceptors(new ClassSerializerInterceptor(RoomResponseDto))
@@ -1138,7 +934,7 @@ export class RoomController {
   @Post()
   public async create(
     @Body() createRoomDto: CreateRoomDto
-  ): Promise<RoomDocument> {
+  ): Promise<ResponseRoomDto> {
     return await this.roomService.create(createRoomDto);
   }
 
@@ -1188,13 +984,9 @@ export class RoomController {
 
 </details>
 
-### Add Decorators to DTOs
+### <div class="hdr3">Add `ValidationPipe` (+Transformation)</div>
 
-### Add `ValidationPipe` (+Transformation)
-
-<details>
-<summary><strong>Info</strong></summary>
-<dl><dd>
+<!-- Info -->
 
 <!-- **Update the Controller and Service, Add Pipes** -->
 
@@ -1202,10 +994,11 @@ export class RoomController {
 
  <!-- (and others `сlass-validator` pipes)  -->
 
-Validation and transformation can be enabled in the following ways:
-
 <details>
-<summary>Globally: In `src/main.ts`, apply the `ValidationPipe` to the entire application</summary>
+<summary>Validation and transformation can be enabled in the following ways:
+</summary>
+
+Globally: In `src/main.ts`, apply the `ValidationPipe` to the entire application
 
 ```TypeScript
 import { NestFactory } from "@nestjs/core";
@@ -1234,10 +1027,7 @@ async function bootstrap(): Promise<void> {
 bootstrap().catch((e): void => console.error(e));
 ```
 
-</details>
-
-<details>
-<summary>At the controller level: apply `ValidationPipe` using the `@UsePipes` decorator.</summary>
+At the controller level: apply `ValidationPipe` using the `@UsePipes` decorator.
 
 Use the `@UsePipes` to apply the `ValidationPipe` to an entire controller
 
@@ -1255,10 +1045,7 @@ Use the `@UsePipes` to apply the `ValidationPipe` to an entire controller
 export class NotesController {}
 ```
 
-</details>
-
-<details>
-<summary>At the method level: apply `ValidationPipe` using the `@UsePipes` decorator.</summary>
+At the method level: apply `ValidationPipe` using the `@UsePipes` decorator.
 
 ```TypeScript
 @Post()
@@ -1274,12 +1061,8 @@ export class NotesController {}
 async create(/* ... */) {}
 ```
 
-</details>
+At the parameter level: use `ParseIntPipe` or `ParseBoolPipe` to cast values explicitly
 
-<details>
-<summary>At the parameter level: use `ParseIntPipe` or `ParseBoolPipe` to cast values explicitly</summary>
-
-<br/>
 You can explicitly cast values using the `ParseIntPipe` or `ParseBoolPipe` inside `@Param()` or `@Query()` decorators. A separate pipe is used for each, so `ValidationPipe` is not needed for them to work:
 
 ```ts
@@ -1295,14 +1078,10 @@ findOne(
 }
 ```
 
-</details>
-
 <!-- </details> -->
 
 <!-- <details>
 <summary><strong>**How to use `class-validator` validation pipes**</strong></summary> -->
-
-<br/>
 
 > **How do pipes work?**
 > If a ValidationPipe is enabled (globally, at the controller, or method level), it automatically validates the DTO passed as an argument.
@@ -1310,8 +1089,6 @@ findOne(
 ```TypeScript
 create(@Body() createUserDto: CreateUserDto) {}
 ```
-
-<br/>
 
 > With the auto-transformation option enabled, the ValidationPipe will also perform primitive type conversion. For example, the findOne() method below takes an id path parameter and automatically converts its type to a number.
 
@@ -1322,8 +1099,6 @@ findOne(@Param('id') id: number) {
   return 'This action returns a user';
 }
 ```
-
-<br/>
 
 📝 If you need to validate arrays in NestJS, refer to [the official documentation](https://docs.nestjs.com/techniques/validation#parsing-and-validating-arrays).
 
@@ -1337,182 +1112,498 @@ findOne(@Param('id') id: number) {
 - [(OpenAPI/Swagger response decorators)](https://docs.nestjs.com/openapi/operations#responses)
 - [(docs)](https://docs.nestjs.com/techniques/validation#validation)
 - [(more docs)](https://docs.nestjs.com/pipes#class-validator)
-</details>
-
-<br/>
-
-### Do the rest (CRUD, service, controller, etc.)
-
-# Example resulting files are listed below:
-
-<details>
-<summary>src/notes/notes.service.ts</summary>
-
-```TypeScript
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
-import { Note, NoteDocument } from "./note.model";
-import { DeleteResult, Model, Types } from "mongoose";
-import { FilterNoteDto } from "./dto/filter-note.dto";
-import { CreateNoteDto } from "./dto/create-note.dto";
-import { UpdateNoteDto } from "./dto/update-note.dto";
-// import { FilterNoteDto } from "./dto/filter-note.dto";
-
-@Injectable()
-export class NoteService {
-	public constructor(@InjectModel(Note.name) private readonly noteModel: Model<NoteDocument>) {}
-
-	public async create(dto: CreateNoteDto): Promise<NoteDocument> {
-		// const instance2 = await this.noteModel.create([dto], { validateBeforeSave: true });
-		const noteInstance = new this.noteModel(dto);
-		await noteInstance.save({
-			validateBeforeSave: true,
-		});
-
-		return noteInstance;
-	}
-
-	public async update(id: string, dto: UpdateNoteDto): Promise<NoteDocument> {
-		const updatedNote = await this.noteModel.findByIdAndUpdate(
-			new Types.ObjectId(id),
-			{ $set: dto },
-			{ new: true, runValidators: true }
-		);
-
-		if (!updatedNote) {
-			throw new NotFoundException(`Note with ID ${id} not found`);
-		}
-
-		return updatedNote;
-	}
-
-	public async delete(id: string): Promise<NoteDocument | null> {
-		const deletedNote = await this.noteModel.findByIdAndDelete(new Types.ObjectId(id));
-		if (!deletedNote) {
-			throw new NotFoundException(`Note with ID ${id} not found`);
-		}
-		return deletedNote;
-	}
-
-	public async getById(id: string): Promise<NoteDocument | null> {
-		const note = await this.noteModel.findById(new Types.ObjectId(id));
-		if (!note) {
-			throw new NotFoundException(`Note with ID ${id} not found`);
-		}
-		return note;
-	}
-
-	public async getByProduct(productId: string): Promise<NoteDocument[] | null> {
-		return this.noteModel
-			.find({ productId: new Types.ObjectId(productId) })
-			.lean()
-			.exec();
-	}
-
-	public async getAll(filter: FilterNoteDto): Promise<NoteDocument[]> {
-		return this.noteModel
-			.find(filter)
-			.limit(filter.limit ?? 10)
-			.exec();
-	}
-
-	public async deleteByProductId(productId: string): Promise<DeleteResult> {
-		return this.noteModel.deleteMany({ productId: new Types.ObjectId(productId) }).exec();
-	}
-}
-
-```
 
 </details>
 
-<br/>
+# <div class="hdr1">Example resulting files are listed below</div>
 
 <details>
-<summary>src/note/notes.controller.ts</summary>
-
-```TypeScript
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
-import { Note, NoteDocument } from "./note.model";
-import { Model, Types } from "mongoose";
-import { FilterNoteDto } from "./dto/filter-note.dto";
-import { CreateNoteDto } from "./dto/create-note.dto";
-import { UpdateNoteDto } from "./dto/update-note.dto";
-// import { FilterNoteDto } from "./dto/filter-note.dto";
-
-@Injectable()
-export class NoteService {
-	public constructor(@InjectModel(Note.name) private readonly noteModel: Model<NoteDocument>) {}
-
-	public async create(dto: CreateNoteDto): Promise<NoteDocument> {
-		// const instance2 = await this.noteModel.create([dto], { validateBeforeSave: true });
-		const noteInstance = new this.noteModel(dto);
-		await noteInstance.save({
-			validateBeforeSave: true,
-		});
-
-		return noteInstance;
-	}
-
-	public async update(id: string, dto: UpdateNoteDto): Promise<NoteDocument> {
-		const updatedNote = await this.noteModel.findByIdAndUpdate(
-			new Types.ObjectId(id),
-			{ $set: dto },
-			{ new: true, runValidators: true }
-		);
-
-		if (!updatedNote) {
-			throw new NotFoundException(`Note with ID ${id} not found`);
-		}
-
-		return updatedNote;
-	}
-
-	public async delete(id: string): Promise<NoteDocument | null> {
-		const deletedNote = await this.noteModel.findByIdAndDelete(new Types.ObjectId(id));
-		if (!deletedNote) {
-			throw new NotFoundException(`Note with ID ${id} not found`);
-		}
-		return deletedNote;
-	}
-
-	public async getById(id: string): Promise<NoteDocument | null> {
-		const note = await this.noteModel.findById(new Types.ObjectId(id));
-		if (!note) {
-			throw new NotFoundException(`Note with ID ${id} not found`);
-		}
-		return note;
-	}
-
-	public async getAll(filter: FilterNoteDto): Promise<NoteDocument[]> {
-		return this.noteModel
-			.find(filter)
-			.limit(filter.limit ?? 10)
-			.exec();
-	}
-}
-```
-
-</details>
-
-<details>
-<summary>src/notes/notes.module.ts</summary>
+<summary><div class="code-block-header">src/reservation.model.ts</div></summary>
 
 ```ts
-import { Module } from "@nestjs/common";
-import { NoteService } from "./notes.service";
-import { NoteController } from "./notes.controller";
-import { Note, NoteSchema } from "./note.model";
-import { MongooseModule } from "@nestjs/mongoose";
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { HydratedDocument, Types } from "mongoose";
+import { Room } from "src/rooms/room.model";
 
-@Module({
-  imports: [
-    MongooseModule.forFeature([{ name: Note.name, schema: NoteSchema }]),
-  ],
-  controllers: [NoteController],
-  providers: [NoteService],
-})
-export class NotesModule {}
+@Schema({ strict: true, timestamps: true })
+export class Reservation {
+  @Prop({ type: Types.ObjectId, ref: Room.name, required: true })
+  public room!: Types.ObjectId;
+
+  @Prop({
+    type: Date,
+    required: true,
+    min: new Date(date.setHours(0, 0, 0, 0)),
+    set: (date: Date) => new Date(date.setHours(0, 0, 0, 0)),
+    validate: {
+      validator: (date: Date) => date >= new Date(),
+      message: "Date can't be in the past",
+    },
+  })
+  public checkInDate!: Date;
+
+  @Prop({
+    type: Date,
+    required: true,
+    min: new Date(date.setHours(0, 0, 0, 0)),
+    set: (date: Date) => new Date(date.setHours(0, 0, 0, 0)),
+    validate: {
+      validator: (date: Date) => date >= new Date(),
+      message: "Date can't be in the past",
+    },
+  })
+  public checkOutDate!: Date;
+}
+
+export type ReservationDocument = HydratedDocument<Reservation>;
+export const ReservationSchema = SchemaFactory.createForClass(Reservation);
+
+// Index for efficient queries on room and dates (non-unique for ranges)
+ReservationSchema.index({
+  room: 1,
+  checkInDate: 1,
+  checkOutDate: 1,
+});
+// Pre-save hook example for validation
+ReservationSchema.pre("save", function (next) {
+  if (this.checkInDate >= this.checkOutDate) {
+    return next(new Error("Start date must be before end date"));
+  }
+  next();
+});
 ```
 
 </details>
+
+---
+
+Create DTO
+
+```ts
+import { IsDate, IsMongoId, IsOptional, IsString, MinDate } from "class-validator";
+import { Type } from "class-transformer";
+
+export class CreateReservationDto {
+	@IsMongoId()
+	room: string;
+
+	@IsDate()
+	@Type(() => Date)
+	@MinDate(new Date(date.setHours(0, 0, 0, 0), { message: "Check-in date cannot be in the past" })
+	checkInDate: Date;
+
+	@IsDate()
+	@Type(() => Date)
+	@MinDate(new Date(date.setHours(0, 0, 0, 0), { message: "Check-out date cannot be in the past" })
+	checkOutDate: Date;
+}
+```
+
+---
+
+Update DTO
+
+```ts
+import { PartialType } from "@nestjs/mapped-types";
+import { CreateReservationDto } from "./create-reservation.dto";
+
+export class UpdateReservationDto extends PartialType(CreateReservationDto) {}
+```
+
+---
+
+Response DTO
+
+```ts
+import { Expose, Transform } from "class-transformer";
+
+export class ReservationResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  @Transform(({ obj }) => obj.room?.toString())
+  room: string;
+
+  @Expose()
+  @Transform(({ value }) => value.toISOString().split("T")[0])
+  checkInDate: string;
+
+  @Expose()
+  @Transform(({ value }) => value.toISOString().split("T")[0])
+  checkOutDate: string;
+
+  @Expose()
+  createdAt: Date;
+
+  @Expose()
+  updatedAt: Date;
+
+  @Expose()
+  @Transform(({ obj }) => {
+    const checkIn = new Date(obj.checkInDate);
+    const checkOut = new Date(obj.checkOutDate);
+    const timeDiff = checkOut.getTime() - checkIn.getTime();
+    return Math.ceil(timeDiff / (1000 * 3600 * 24));
+  })
+  nightsCount: number;
+}
+```
+
+---
+
+Service
+
+```ts
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model, Types } from "mongoose";
+import { Reservation } from "./reservation.model";
+import { CreateReservationDto } from "./dto/create-reservation.dto";
+import { UpdateReservationDto } from "./dto/update-reservation.dto";
+
+@Injectable()
+export class ReservationsService {
+  constructor(
+    @InjectModel(Reservation.name) private reservationModel: Model<Reservation>
+  ) {}
+
+  private normalizeDate(date: Date): Date {
+    return new Date(date.setHours(0, 0, 0, 0));
+  }
+
+  async checkRoomAvailability(
+    roomId: string,
+    checkInDate: Date,
+    checkOutDate: Date,
+    excludeReservationId?: string
+  ): Promise<boolean> {
+    const normalizedCheckIn = this.normalizeDate(new Date(checkInDate));
+    const normalizedCheckOut = this.normalizeDate(new Date(checkOutDate));
+
+    const query: any = {
+      room: new Types.ObjectId(roomId),
+      $or: [
+        {
+          checkInDate: { $lt: normalizedCheckOut },
+          checkOutDate: { $gt: normalizedCheckIn },
+        },
+      ],
+    };
+
+    if (excludeReservationId) {
+      query._id = { $ne: new Types.ObjectId(excludeReservationId) };
+    }
+
+    const conflictingReservation = await this.reservationModel.findOne(query);
+    return !conflictingReservation;
+  }
+
+  async create(
+    createReservationDto: CreateReservationDto
+  ): Promise<Reservation> {
+    const { room, checkInDate, checkOutDate } = createReservationDto;
+
+    // Валидация дат
+    if (checkInDate >= checkOutDate) {
+      throw new BadRequestException(
+        "Check-out date must be after check-in date"
+      );
+    }
+
+    // Проверка доступности
+    const isAvailable = await this.checkRoomAvailability(
+      room,
+      checkInDate,
+      checkOutDate
+    );
+    if (!isAvailable) {
+      throw new ConflictException(
+        "Room is not available for the selected dates"
+      );
+    }
+
+    const reservation = new this.reservationModel(createReservationDto);
+    return await reservation.save();
+  }
+
+  async findAll(): Promise<Reservation[]> {
+    return this.reservationModel.find().populate("room").exec();
+  }
+
+  async findByRoom(roomId: string): Promise<Reservation[]> {
+    return this.reservationModel
+      .find({ room: new Types.ObjectId(roomId) })
+      .sort({ checkInDate: 1 })
+      .exec();
+  }
+
+  async findOne(id: string): Promise<Reservation> {
+    const reservation = await this.reservationModel
+      .findById(id)
+      .populate("room")
+      .exec();
+
+    if (!reservation) {
+      throw new NotFoundException(`Reservation with ID ${id} not found`);
+    }
+
+    return reservation;
+  }
+
+  async update(
+    id: string,
+    updateReservationDto: UpdateReservationDto
+  ): Promise<Reservation> {
+    const existingReservation = await this.findOne(id);
+
+    const { room, checkInDate, checkOutDate } = updateReservationDto;
+
+    // Если обновляются даты или комната - проверяем доступность
+    if (room || checkInDate || checkOutDate) {
+      const finalRoom = room || existingReservation.room.toString();
+      const finalCheckIn = checkInDate || existingReservation.checkInDate;
+      const finalCheckOut = checkOutDate || existingReservation.checkOutDate;
+
+      if (finalCheckIn >= finalCheckOut) {
+        throw new BadRequestException(
+          "Check-out date must be after check-in date"
+        );
+      }
+
+      const isAvailable = await this.checkRoomAvailability(
+        finalRoom,
+        finalCheckIn,
+        finalCheckOut,
+        id
+      );
+
+      if (!isAvailable) {
+        throw new ConflictException(
+          "Room is not available for the selected dates"
+        );
+      }
+    }
+
+    const updatedReservation = await this.reservationModel
+      .findByIdAndUpdate(
+        id,
+        {
+          ...(room && { room: new Types.ObjectId(room) }),
+          ...(checkInDate && { checkInDate }),
+          ...(checkOutDate && { checkOutDate }),
+        },
+        { new: true, runValidators: true }
+      )
+      .populate("room")
+      .exec();
+
+    if (!updatedReservation) {
+      throw new NotFoundException(`Reservation with ID ${id} not found`);
+    }
+
+    return updatedReservation;
+  }
+
+  async remove(id: string): Promise<void> {
+    const result = await this.reservationModel.findByIdAndDelete(id).exec();
+    if (!result) {
+      throw new NotFoundException(`Reservation with ID ${id} not found`);
+    }
+  }
+
+  async getRoomAvailability(
+    roomId: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<{ available: boolean; conflictingDates?: Date[] }> {
+    const normalizedStart = startDate
+      ? this.normalizeDate(new Date(startDate))
+      : this.normalizeDate(new Date());
+    const normalizedEnd = endDate
+      ? this.normalizeDate(new Date(endDate))
+      : new Date(normalizedStart.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+    const conflicts = await this.reservationModel
+      .find({
+        room: new Types.ObjectId(roomId),
+        $or: [
+          {
+            checkInDate: { $lt: normalizedEnd },
+            checkOutDate: { $gt: normalizedStart },
+          },
+        ],
+      })
+      .sort({ checkInDate: 1 })
+      .exec();
+
+    return {
+      available: conflicts.length === 0,
+      conflictingDates: conflicts.map((res) => res.checkInDate),
+    };
+  }
+}
+```
+
+---
+
+```ts
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UsePipes,
+  ValidationPipe,
+} from "@nestjs/common";
+import { ReservationsService } from "./reservations.service";
+import { CreateReservationDto } from "./dto/create-reservation.dto";
+import { UpdateReservationDto } from "./dto/update-reservation.dto";
+import { ReservationResponseDto } from "./dto/reservation-response.dto";
+import { Serialize } from "../interceptors/serialize.interceptor";
+
+@Controller("reservations")
+@Serialize(ReservationResponseDto)
+export class ReservationsController {
+  constructor(private readonly reservationsService: ReservationsService) {}
+
+  @Post()
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async create(@Body() createReservationDto: CreateReservationDto) {
+    return await this.reservationsService.create(createReservationDto);
+  }
+
+  @Get()
+  async findAll() {
+    return await this.reservationsService.findAll();
+  }
+
+  @Get("room/:roomId")
+  async findByRoom(@Param("roomId") roomId: string) {
+    return await this.reservationsService.findByRoom(roomId);
+  }
+
+  @Get("availability/:roomId")
+  async checkAvailability(
+    @Param("roomId") roomId: string,
+    @Body("startDate") startDate?: Date,
+    @Body("endDate") endDate?: Date
+  ) {
+    return await this.reservationsService.getRoomAvailability(
+      roomId,
+      startDate,
+      endDate
+    );
+  }
+
+  @Get(":id")
+  async findOne(@Param("id") id: string) {
+    return await this.reservationsService.findOne(id);
+  }
+
+  @Patch(":id")
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async update(
+    @Param("id") id: string,
+    @Body() updateReservationDto: UpdateReservationDto
+  ) {
+    return await this.reservationsService.update(id, updateReservationDto);
+  }
+
+  @Delete(":id")
+  async remove(@Param("id") id: string) {
+    return await this.reservationsService.remove(id);
+  }
+}
+```
+
+---
+
+Serialize Interceptor for Responses
+
+```ts
+import {
+  UseInterceptors,
+  NestInterceptor,
+  ExecutionContext,
+  CallHandler,
+} from "@nestjs/common";
+import { Observable } from "rxjs";
+import { map } from "rxjs/operators";
+import { plainToInstance } from "class-transformer";
+
+export function Serialize(dto: any) {
+  return UseInterceptors(new SerializeInterceptor(dto));
+}
+
+export class SerializeInterceptor implements NestInterceptor {
+  constructor(private dto: any) {}
+
+  intercept(context: ExecutionContext, handler: CallHandler): Observable<any> {
+    return handler.handle().pipe(
+      map((data: any) => {
+        return plainToInstance(this.dto, data, {
+          excludeExtraneousValues: true,
+        });
+      })
+    );
+  }
+}
+```
+
+<!-- <details>
+<summary>Response serializer</summary>
+
+```ts
+import {
+  CallHandler,
+  ExecutionContext,
+  NestInterceptor,
+  UseInterceptors,
+} from "@nestjs/common";
+import { Observable } from "rxjs";
+import { map } from "rxjs/operators";
+import { plainToInstance } from "class-transformer";
+
+interface ClassConstructor {
+  new (...args: any[]): {};
+}
+
+export function Serialize(dto: ClassConstructor) {
+  return UseInterceptors(new SerializeInterceptor(dto));
+}
+
+export class SerializeInterceptor implements NestInterceptor {
+  constructor(private dto: any) {}
+
+  intercept(context: ExecutionContext, handler: CallHandler): Observable<any> {
+    return handler.handle().pipe(
+      map((data: any) => {
+        if (data && data.rooms) {
+          // Для пагинированных результатов
+          return {
+            ...data,
+            rooms: plainToInstance(this.dto, data.rooms, {
+              excludeExtraneousValues: true,
+            }),
+          };
+        }
+
+        return plainToInstance(this.dto, data, {
+          excludeExtraneousValues: true,
+        });
+      })
+    );
+  }
+}
+```
+
+</details> -->
