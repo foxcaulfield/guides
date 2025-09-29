@@ -1269,8 +1269,9 @@ import { UpdateReservationDto } from "./dto/update-reservation.dto";
 
 @Injectable()
 export class ReservationsService {
-  constructor(
-    @InjectModel(Reservation.name) private reservationModel: Model<Reservation>
+  public constructor(
+    @InjectModel(Reservation.name)
+    private readonly reservationModel: Model<ReservationDocument>
   ) {}
 
   private normalizeDate(date: Date): Date {
@@ -1306,7 +1307,7 @@ export class ReservationsService {
 
   async create(
     createReservationDto: CreateReservationDto
-  ): Promise<Reservation> {
+  ): Promise<ResponseReservationDto> {
     const { room, checkInDate, checkOutDate } = createReservationDto;
 
     // Валидация дат
@@ -1329,14 +1330,15 @@ export class ReservationsService {
     }
 
     const reservation = new this.reservationModel(createReservationDto);
+    // !!! + transformation
     return await reservation.save();
   }
 
-  async findAll(): Promise<Reservation[]> {
+  async findAll(): Promise<ResponseReservationDto[]> {
     return this.reservationModel.find().populate("room").exec();
   }
 
-  async findByRoom(roomId: string): Promise<Reservation[]> {
+  async findByRoom(roomId: string): Promise<ResponseReservationDto[]> {
     return this.reservationModel
       .find({ room: new Types.ObjectId(roomId) })
       .sort({ checkInDate: 1 })
@@ -1344,6 +1346,7 @@ export class ReservationsService {
   }
 
   async findOne(id: string): Promise<Reservation> {
+    // new Types.ObjectId(id), /* ??? */
     const reservation = await this.reservationModel
       .findById(id)
       .populate("room")
@@ -1352,14 +1355,14 @@ export class ReservationsService {
     if (!reservation) {
       throw new NotFoundException(`Reservation with ID ${id} not found`);
     }
-
+    // !!! + transformation
     return reservation;
   }
 
   async update(
     id: string,
     updateReservationDto: UpdateReservationDto
-  ): Promise<Reservation> {
+  ): Promise<ResponseReservationDto> {
     const existingReservation = await this.findOne(id);
 
     const { room, checkInDate, checkOutDate } = updateReservationDto;
@@ -1392,6 +1395,7 @@ export class ReservationsService {
 
     const updatedReservation = await this.reservationModel
       .findByIdAndUpdate(
+        // new Types.ObjectId(id), /* ??? */
         id,
         {
           ...(room && { room: new Types.ObjectId(room) }),
@@ -1406,15 +1410,17 @@ export class ReservationsService {
     if (!updatedReservation) {
       throw new NotFoundException(`Reservation with ID ${id} not found`);
     }
-
+    // !!! + transformation
     return updatedReservation;
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string): Promise<ResponseReservationDto | null> {
     const result = await this.reservationModel.findByIdAndDelete(id).exec();
     if (!result) {
       throw new NotFoundException(`Reservation with ID ${id} not found`);
     }
+    // !!! + transformation
+    return result;
   }
 
   async getRoomAvailability(
@@ -1452,6 +1458,8 @@ export class ReservationsService {
 
 ---
 
+Controller
+
 ```ts
 import {
   Controller,
@@ -1477,17 +1485,21 @@ export class ReservationsController {
 
   @Post()
   @UsePipes(new ValidationPipe({ transform: true }))
-  async create(@Body() createReservationDto: CreateReservationDto) {
+  async create(
+    @Body() createReservationDto: CreateReservationDto
+  ): Promise<ReservationDocument | null> {
     return await this.reservationsService.create(createReservationDto);
   }
 
   @Get()
-  async findAll() {
+  async findAll(): Promise<ReservationDocument[]> {
     return await this.reservationsService.findAll();
   }
 
   @Get("room/:roomId")
-  async findByRoom(@Param("roomId") roomId: string) {
+  async findByRoom(
+    @Param("roomId") roomId: string
+  ): Promise<ResponseReservationDto[]> {
     return await this.reservationsService.findByRoom(roomId);
   }
 
@@ -1496,7 +1508,7 @@ export class ReservationsController {
     @Param("roomId") roomId: string,
     @Body("startDate") startDate?: Date,
     @Body("endDate") endDate?: Date
-  ) {
+  ): Promise<{ available: boolean; conflictingDates?: Date[] }> {
     return await this.reservationsService.getRoomAvailability(
       roomId,
       startDate,
@@ -1505,7 +1517,7 @@ export class ReservationsController {
   }
 
   @Get(":id")
-  async findOne(@Param("id") id: string) {
+  async findOne(@Param("id") id: string): Promise<ReservationDocument | null> {
     return await this.reservationsService.findOne(id);
   }
 
@@ -1514,12 +1526,12 @@ export class ReservationsController {
   async update(
     @Param("id") id: string,
     @Body() updateReservationDto: UpdateReservationDto
-  ) {
+  ): Promise<ReservationDocument | null> {
     return await this.reservationsService.update(id, updateReservationDto);
   }
 
   @Delete(":id")
-  async remove(@Param("id") id: string) {
+  async remove(@Param("id") id: string): Promise<ReservationDocument | null> {
     return await this.reservationsService.remove(id);
   }
 }
