@@ -352,7 +352,7 @@ Note: Don’t add any content yet; just ensure the files are created.
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { HydratedDocument, Model } from "mongoose";
 
-export enum RoomType {
+export enum RoomTypeEnum {
 	STANDARD_ROOM = "STANDARD_ROOM",
 	DELUXE_ROOM = "DELUXE_ROOM",
 	STUDIO_ROOM = "STUDIO_ROOM",
@@ -360,7 +360,7 @@ export enum RoomType {
 	FAMILY_ROOM = "FAMILY_ROOM",
 }
 
-export enum RoomStatus {
+export enum RoomStatusEnum {
 	AVAILABLE = "AVAILABLE",
 	OCCUPIED = "OCCUPIED",
 	MAINTENANCE = "MAINTENANCE",
@@ -478,7 +478,7 @@ import {
   IsNumber,
 } from "class-validator";
 import { Type } from "class-transformer";
-import { RoomStatus, RoomType } from "../room.model";
+import { RoomStatusEnum, RoomTypeEnum } from "../room.model";
 
 // export class AmenityDto {
 //   @IsBoolean()
@@ -543,7 +543,7 @@ export class UpdateRoomDto extends PartialType(CreateRoomDto) {}
 
 ```ts
 import { Exclude, Expose, Transform } from "class-transformer";
-import { RoomStatus, RoomType } from "../room.model";
+import { RoomStatusEnum, RoomTypeEnum } from "../room.model";
 
 // export class AmenityResponseDto {
 //   @Expose()
@@ -615,9 +615,9 @@ import {
   Max,
 } from "class-validator";
 import { Type } from "class-transformer";
-import { RoomType, RoomStatus } from "../room.model";
+import { RoomStatusEnum, RoomTypeEnum } from "../room.model";
 
-export class RoomFilterDto {
+export class FilterRoomDto {
   @IsEnum(RoomType)
   @IsOptional()
   public roomType?: RoomType;
@@ -626,9 +626,9 @@ export class RoomFilterDto {
   @IsOptional()
   public status?: RoomStatus;
 
+  //   @Type((): typeof Boolean => Boolean)
   @IsBoolean()
   @IsOptional()
-  @Type((): typeof Boolean => Boolean)
   public hasSeaView?: boolean;
 
   //   @IsInt()
@@ -644,17 +644,21 @@ export class RoomFilterDto {
   //   @Type((): typeof Number => Number)
   //   public maxPrice?: number;
 
-  @IsInt()
-  @Min(1)
-  @IsOptional()
   @Type((): typeof Number => Number)
+  @Min(1)
+  @IsInt()
+  @IsPositive()
+  @IsNumber()
+  @IsOptional()
   public page?: number = 1;
 
-  @IsInt()
-  @Min(1)
-  @Max(100)
-  @IsOptional()
   @Type((): typeof Number => Number)
+  @Max(100)
+  @Min(1)
+  @IsInt()
+  @IsPositive()
+  @IsNumber()
+  @IsOptional()
   public limit?: number = 10;
 }
 ```
@@ -705,7 +709,7 @@ import { RootFilterQuery, Types } from "mongoose";
 import { Room, RoomDocument, RoomStatus, RoomType, type RoomModelType } from "./room.model";
 import { CreateRoomDto } from "./dto/create-room.dto";
 import { UpdateRoomDto } from "./dto/update-room.dto";
-import { RoomFilterDto } from "./dto/filter-room.dto";
+import { FilterRoomDto } from "./dto/filter-room.dto";
 import { ResponseRoomDto } from "./dto/response-room.dto";
 import { plainToInstance } from "class-transformer";
 
@@ -812,9 +816,9 @@ export class RoomsService {
 		}
 	}
 
-	public async findByType(roomType: RoomType): Promise<RoomDocument[]> {
-		return this.roomModel.findByType(roomType);
-	}
+	// public async findByType(roomType: RoomType): Promise<RoomDocument[]> {
+	// 	return this.roomModel.findByType(roomType);
+	// }
 
 	public async findAvailableRooms(): Promise<RoomDocument[]> {
 		return this.roomModel
@@ -825,7 +829,7 @@ export class RoomsService {
 			.exec();
 	}
 
-	private buildFilterQuery(filters: Partial<RoomFilterDto>): RootFilterQuery<RoomDocument> {
+	private buildFilterQuery(filters: Partial<FilterRoomDto>): RootFilterQuery<RoomDocument> {
 		const query: RootFilterQuery<RoomDocument> = {};
 
 		if (filters.roomType) {
@@ -920,7 +924,7 @@ import { UpdateRoomDto } from "./dto/update-room.dto";
 import { RoomResponseDto } from "./dto/response-room.dto";
 import { RoomsService } from "./rooms.service";
 import { RoomDocument, RoomType } from "./room.model";
-import { RoomFilterDto } from "./dto/filter-room.dto";
+import { FilterRoomDto } from "./dto/filter-room.dto";
 // import { RoomFilterDto } from "./dto/room-filter.dto";
 // import { RoomResponseDto } from "./dto/room-response.dto";
 // import { SerializeInterceptor } from "../interceptors/serialize.interceptor";
@@ -939,7 +943,7 @@ export class RoomController {
   }
 
   @Get()
-  public async findAll(@Query() filterDto: RoomFilterDto): Promise<{
+  public async findAll(@Query() filterDto: FilterRoomDto): Promise<{
     rooms: RoomDocument[];
     total: number;
     page: number;
@@ -954,12 +958,12 @@ export class RoomController {
     return await this.roomService.findAvailableRooms();
   }
 
-  @Get("type/:type")
-  public async findByType(
-    @Param("type") type: RoomType
-  ): Promise<RoomDocument[]> {
-    return await this.roomService.findByType(type);
-  }
+  //   @Get("type/:type")
+  //   public async findByType(
+  //     @Param("type") type: RoomType
+  //   ): Promise<RoomDocument[]> {
+  //     return await this.roomService.findByType(type);
+  //   }
 
   @Get(":id")
   public async findOne(@Param("id") id: string): Promise<RoomDocument> {
@@ -1133,7 +1137,7 @@ export class Reservation {
   @Prop({
     type: Date,
     required: true,
-    min: new Date(date.setHours(0, 0, 0, 0)),
+    // min: new Date(date.setHours(0, 0, 0, 0)),
     set: (date: Date) => new Date(date.setHours(0, 0, 0, 0)),
     validate: {
       validator: (date: Date) => date >= new Date(),
@@ -1145,7 +1149,7 @@ export class Reservation {
   @Prop({
     type: Date,
     required: true,
-    min: new Date(date.setHours(0, 0, 0, 0)),
+    // min: new Date(date.setHours(0, 0, 0, 0)),
     set: (date: Date) => new Date(date.setHours(0, 0, 0, 0)),
     validate: {
       validator: (date: Date) => date >= new Date(),
@@ -1156,6 +1160,7 @@ export class Reservation {
 }
 
 export type ReservationDocument = HydratedDocument<Reservation>;
+export type ReservationModelType = Model<ReservationDocument>;
 export const ReservationSchema = SchemaFactory.createForClass(Reservation);
 
 // Index for efficient queries on room and dates (non-unique for ranges)
@@ -1180,22 +1185,28 @@ ReservationSchema.pre("save", function (next) {
 Create DTO
 
 ```ts
-import { IsDate, IsMongoId, IsOptional, IsString, MinDate } from "class-validator";
+import {
+  IsDate,
+  IsMongoId,
+  IsOptional,
+  IsString,
+  MinDate,
+} from "class-validator";
 import { Type } from "class-transformer";
 
 export class CreateReservationDto {
-	@IsMongoId()
-	room: string;
+  @IsMongoId()
+  public room!: string;
 
-	@IsDate()
-	@Type(() => Date)
-	@MinDate(new Date(date.setHours(0, 0, 0, 0), { message: "Check-in date cannot be in the past" })
-	checkInDate: Date;
+  @IsDate()
+  @Type((): typeof Date => Date)
+  // @MinDate(new Date(date.setHours(0, 0, 0, 0), { message: "Check-in date cannot be in the past" })
+  public checkInDate!: Date;
 
-	@IsDate()
-	@Type(() => Date)
-	@MinDate(new Date(date.setHours(0, 0, 0, 0), { message: "Check-out date cannot be in the past" })
-	checkOutDate: Date;
+  @IsDate()
+  // @Type(():typeof Date => Date)
+  // @MinDate(new Date(date.setHours(0, 0, 0, 0), { message: "Check-out date cannot be in the past" })
+  public checkOutDate!: Date;
 }
 ```
 
@@ -1215,38 +1226,38 @@ export class UpdateReservationDto extends PartialType(CreateReservationDto) {}
 Response DTO
 
 ```ts
-import { Expose, Transform } from "class-transformer";
+import { Expose } from "class-transformer";
 
-export class ReservationResponseDto {
+export class ResponseReservationDto {
   @Expose()
-  id: string;
-
-  @Expose()
-  @Transform(({ obj }) => obj.room?.toString())
-  room: string;
+  public id!: string;
 
   @Expose()
-  @Transform(({ value }) => value.toISOString().split("T")[0])
-  checkInDate: string;
+  // @Transform(({ obj }) => obj.room?.toString())
+  public room!: string;
 
   @Expose()
-  @Transform(({ value }) => value.toISOString().split("T")[0])
-  checkOutDate: string;
+  // @Transform(({ value }) => value.toISOString().split("T")[0])
+  public checkInDate!: string;
 
   @Expose()
-  createdAt: Date;
+  // @Transform(({ value }) => value.toISOString().split("T")[0])
+  public checkOutDate!: string;
 
   @Expose()
-  updatedAt: Date;
+  public createdAt!: Date;
 
   @Expose()
-  @Transform(({ obj }) => {
-    const checkIn = new Date(obj.checkInDate);
-    const checkOut = new Date(obj.checkOutDate);
-    const timeDiff = checkOut.getTime() - checkIn.getTime();
-    return Math.ceil(timeDiff / (1000 * 3600 * 24));
-  })
-  nightsCount: number;
+  public updatedAt!: Date;
+
+  // @Expose()
+  // @Transform(({ obj }) => {
+  // 	const checkIn = new Date(obj.checkInDate);
+  // 	const checkOut = new Date(obj.checkOutDate);
+  // 	const timeDiff = checkOut.getTime() - checkIn.getTime();
+  // 	return Math.ceil(timeDiff / (1000 * 3600 * 24));
+  // })
+  // nightsCount: number;
 }
 ```
 
@@ -1263,9 +1274,11 @@ import {
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
-import { Reservation } from "./reservation.model";
+import { Reservation, ReservationDocument } from "./reservation.model";
 import { CreateReservationDto } from "./dto/create-reservation.dto";
 import { UpdateReservationDto } from "./dto/update-reservation.dto";
+import { ResponseReservationDto } from "./dto/response-reservation.dto";
+import { plainToInstance } from "class-transformer";
 
 @Injectable()
 export class ReservationsService {
@@ -1278,16 +1291,16 @@ export class ReservationsService {
     return new Date(date.setHours(0, 0, 0, 0));
   }
 
-  async checkRoomAvailability(
+  public async checkRoomAvailability(
     roomId: string,
     checkInDate: Date,
-    checkOutDate: Date,
-    excludeReservationId?: string
+    checkOutDate: Date
+    // excludeReservationId?: string,
   ): Promise<boolean> {
     const normalizedCheckIn = this.normalizeDate(new Date(checkInDate));
     const normalizedCheckOut = this.normalizeDate(new Date(checkOutDate));
 
-    const query: any = {
+    const query: Parameters<typeof this.reservationModel.findOne>[number] = {
       room: new Types.ObjectId(roomId),
       $or: [
         {
@@ -1297,27 +1310,25 @@ export class ReservationsService {
       ],
     };
 
-    if (excludeReservationId) {
-      query._id = { $ne: new Types.ObjectId(excludeReservationId) };
-    }
+    // if (excludeReservationId) {
+    // 	query.id = { $ne: new Types.ObjectId(excludeReservationId) };
+    // } /* id! */
 
     const conflictingReservation = await this.reservationModel.findOne(query);
     return !conflictingReservation;
   }
 
-  async create(
+  public async create(
     createReservationDto: CreateReservationDto
   ): Promise<ResponseReservationDto> {
     const { room, checkInDate, checkOutDate } = createReservationDto;
 
-    // Валидация дат
     if (checkInDate >= checkOutDate) {
       throw new BadRequestException(
         "Check-out date must be after check-in date"
       );
     }
 
-    // Проверка доступности
     const isAvailable = await this.checkRoomAvailability(
       room,
       checkInDate,
@@ -1331,21 +1342,39 @@ export class ReservationsService {
 
     const reservation = new this.reservationModel(createReservationDto);
     // !!! + transformation
-    return await reservation.save();
+    await reservation.save();
+
+    const responseDto = plainToInstance(ResponseReservationDto, reservation, {
+      excludeExtraneousValues: true,
+    });
+
+    return responseDto;
   }
 
-  async findAll(): Promise<ResponseReservationDto[]> {
-    return this.reservationModel.find().populate("room").exec();
+  public async findAll(): Promise<ResponseReservationDto[]> {
+    const result = await this.reservationModel.find().populate("room").exec();
+
+    const responseDto = plainToInstance(ResponseReservationDto, result, {
+      excludeExtraneousValues: true,
+    });
+
+    return responseDto;
   }
 
-  async findByRoom(roomId: string): Promise<ResponseReservationDto[]> {
-    return this.reservationModel
+  public async findByRoom(roomId: string): Promise<ResponseReservationDto[]> {
+    const result = await this.reservationModel
       .find({ room: new Types.ObjectId(roomId) })
       .sort({ checkInDate: 1 })
       .exec();
+
+    const responseDto = plainToInstance(ResponseReservationDto, result, {
+      excludeExtraneousValues: true,
+    });
+
+    return responseDto;
   }
 
-  async findOne(id: string): Promise<Reservation> {
+  public async findOne(id: string): Promise<ResponseReservationDto> {
     // new Types.ObjectId(id), /* ??? */
     const reservation = await this.reservationModel
       .findById(id)
@@ -1355,11 +1384,15 @@ export class ReservationsService {
     if (!reservation) {
       throw new NotFoundException(`Reservation with ID ${id} not found`);
     }
-    // !!! + transformation
-    return reservation;
+
+    const responseDto = plainToInstance(ResponseReservationDto, reservation, {
+      excludeExtraneousValues: true,
+    });
+
+    return responseDto;
   }
 
-  async update(
+  public async update(
     id: string,
     updateReservationDto: UpdateReservationDto
   ): Promise<ResponseReservationDto> {
@@ -1370,7 +1403,8 @@ export class ReservationsService {
     // Если обновляются даты или комната - проверяем доступность
     if (room || checkInDate || checkOutDate) {
       const finalRoom = room || existingReservation.room.toString();
-      const finalCheckIn = checkInDate || existingReservation.checkInDate;
+      const finalCheckIn =
+        checkInDate || existingReservation.checkInDate; /* !!! */
       const finalCheckOut = checkOutDate || existingReservation.checkOutDate;
 
       if (finalCheckIn >= finalCheckOut) {
@@ -1381,9 +1415,8 @@ export class ReservationsService {
 
       const isAvailable = await this.checkRoomAvailability(
         finalRoom,
-        finalCheckIn,
-        finalCheckOut,
-        id
+        new Date(finalCheckIn),
+        new Date(finalCheckOut)
       );
 
       if (!isAvailable) {
@@ -1410,20 +1443,30 @@ export class ReservationsService {
     if (!updatedReservation) {
       throw new NotFoundException(`Reservation with ID ${id} not found`);
     }
-    // !!! + transformation
-    return updatedReservation;
+    const responseDto = plainToInstance(
+      ResponseReservationDto,
+      updatedReservation,
+      {
+        excludeExtraneousValues: true,
+      }
+    );
+
+    return responseDto;
   }
 
-  async remove(id: string): Promise<ResponseReservationDto | null> {
+  public async remove(id: string): Promise<ResponseReservationDto | null> {
     const result = await this.reservationModel.findByIdAndDelete(id).exec();
     if (!result) {
       throw new NotFoundException(`Reservation with ID ${id} not found`);
     }
-    // !!! + transformation
-    return result;
+    const responseDto = plainToInstance(ResponseReservationDto, result, {
+      excludeExtraneousValues: true,
+    });
+
+    return responseDto;
   }
 
-  async getRoomAvailability(
+  public async getRoomAvailability(
     roomId: string,
     startDate?: Date,
     endDate?: Date
@@ -1450,7 +1493,7 @@ export class ReservationsService {
 
     return {
       available: conflicts.length === 0,
-      conflictingDates: conflicts.map((res) => res.checkInDate),
+      conflictingDates: conflicts.map((res): Date => res.checkInDate),
     };
   }
 }
@@ -1475,36 +1518,38 @@ import {
 import { ReservationsService } from "./reservations.service";
 import { CreateReservationDto } from "./dto/create-reservation.dto";
 import { UpdateReservationDto } from "./dto/update-reservation.dto";
-import { ReservationResponseDto } from "./dto/reservation-response.dto";
-import { Serialize } from "../interceptors/serialize.interceptor";
+import { Serialize } from "./interceptors/serialize.interceptor";
+import { ResponseReservationDto } from "./dto/response-reservation.dto";
 
 @Controller("reservations")
-@Serialize(ReservationResponseDto)
+@Serialize(ResponseReservationDto)
 export class ReservationsController {
-  constructor(private readonly reservationsService: ReservationsService) {}
+  public constructor(
+    private readonly reservationsService: ReservationsService
+  ) {}
 
   @Post()
   @UsePipes(new ValidationPipe({ transform: true }))
-  async create(
+  public async create(
     @Body() createReservationDto: CreateReservationDto
-  ): Promise<ReservationDocument | null> {
+  ): Promise<ResponseReservationDto | null> {
     return await this.reservationsService.create(createReservationDto);
   }
 
   @Get()
-  async findAll(): Promise<ReservationDocument[]> {
+  public async findAll(): Promise<ResponseReservationDto[]> {
     return await this.reservationsService.findAll();
   }
 
   @Get("room/:roomId")
-  async findByRoom(
+  public async findByRoom(
     @Param("roomId") roomId: string
   ): Promise<ResponseReservationDto[]> {
     return await this.reservationsService.findByRoom(roomId);
   }
 
   @Get("availability/:roomId")
-  async checkAvailability(
+  public async checkAvailability(
     @Param("roomId") roomId: string,
     @Body("startDate") startDate?: Date,
     @Body("endDate") endDate?: Date
@@ -1517,21 +1562,25 @@ export class ReservationsController {
   }
 
   @Get(":id")
-  async findOne(@Param("id") id: string): Promise<ReservationDocument | null> {
+  public async findOne(
+    @Param("id") id: string
+  ): Promise<ResponseReservationDto | null> {
     return await this.reservationsService.findOne(id);
   }
 
   @Patch(":id")
   @UsePipes(new ValidationPipe({ transform: true }))
-  async update(
+  public async update(
     @Param("id") id: string,
     @Body() updateReservationDto: UpdateReservationDto
-  ): Promise<ReservationDocument | null> {
+  ): Promise<ResponseReservationDto | null> {
     return await this.reservationsService.update(id, updateReservationDto);
   }
 
   @Delete(":id")
-  async remove(@Param("id") id: string): Promise<ReservationDocument | null> {
+  public async remove(
+    @Param("id") id: string
+  ): Promise<ResponseReservationDto | null> {
     return await this.reservationsService.remove(id);
   }
 }
@@ -1550,18 +1599,23 @@ import {
 } from "@nestjs/common";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
-import { plainToInstance } from "class-transformer";
+import { ClassConstructor, plainToInstance } from "class-transformer";
 
-export function Serialize(dto: any) {
+export function Serialize(
+  dto: ClassConstructor<unknown>
+): MethodDecorator & ClassDecorator {
   return UseInterceptors(new SerializeInterceptor(dto));
 }
 
 export class SerializeInterceptor implements NestInterceptor {
-  constructor(private dto: any) {}
+  public constructor(private dto: ClassConstructor<unknown>) {}
 
-  intercept(context: ExecutionContext, handler: CallHandler): Observable<any> {
+  public intercept(
+    _context: ExecutionContext,
+    handler: CallHandler
+  ): Observable<any> {
     return handler.handle().pipe(
-      map((data: any) => {
+      map((data: any): unknown => {
         return plainToInstance(this.dto, data, {
           excludeExtraneousValues: true,
         });
