@@ -54,13 +54,7 @@ echo "" > .env
 
 Add config module to the imports array of your root app module:
 
-$
-\begin{aligned}
-\color{#a84923} \texttt{src/app.module.ts}
-\end{aligned}
-$
-
-<!-- <div class="code-block-header">src/app.module.ts</div> -->
+<div class="code-block-header">src/app.module.ts</div>
 
 ```ts
 import { Module } from "@nestjs/common";
@@ -459,8 +453,8 @@ export class Room {
 	// 	return this.find({ roomType }).exec();
 	// }
 }
-export type RoomModelType = Model<RoomDocument> & typeof Room;
 export type RoomDocument = HydratedDocument<Room>;
+export type RoomModelType = Model<RoomDocument> & typeof Room;
 export const RoomSchema = SchemaFactory.createForClass(Room);
 
 ```
