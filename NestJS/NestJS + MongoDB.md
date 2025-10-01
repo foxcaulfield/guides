@@ -401,17 +401,17 @@ export class Room {
 
 	@Prop({
 		type: String,
-		enum: RoomType,
-		default: RoomType.STANDARD_ROOM,
+		enum: RoomTypeEnum,
+		default: RoomTypeEnum.STANDARD_ROOM,
 	})
-	public roomType!: RoomType;
+	public roomType!: RoomTypeEnum;
 
 	@Prop({
 		type: String,
-		enum: RoomStatus,
-		default: RoomStatus.AVAILABLE,
+		enum: RoomStatusEnum,
+		default: RoomStatusEnum.AVAILABLE,
 	})
-	public status!: RoomStatus;
+	public roomStatus!: RoomStatusEnum;
 
 	@Prop(Boolean)
 	public hasSeaView!: boolean;
@@ -469,15 +469,10 @@ import {
   IsEnum,
   IsInt,
   IsBoolean,
-  IsArray,
-  ValidateNested,
   Min,
   Max,
   IsOptional,
-  IsDate,
-  IsNumber,
 } from "class-validator";
-import { Type } from "class-transformer";
 import { RoomStatusEnum, RoomTypeEnum } from "../room.model";
 
 // export class AmenityDto {
@@ -495,12 +490,12 @@ export class CreateRoomDto {
   @Max(1000)
   public roomNumber!: number;
 
-  @IsEnum(RoomType)
-  public roomType!: RoomType;
+  @IsEnum(RoomTypeEnum)
+  public roomType!: RoomTypeEnum;
 
-  @IsEnum(RoomStatus)
+  @IsEnum(RoomStatusEnum)
   @IsOptional()
-  public status?: RoomStatus;
+  public status?: RoomStatusEnum;
 
   @IsBoolean()
   @IsOptional()
@@ -530,7 +525,7 @@ export class CreateRoomDto {
 <summary><span class="code-block-header">src/rooms/dto/update-room.dto.ts</span></summary>
 
 ```ts
-import { PartialType } from "@nestjs/mapped-types";
+import { PartialType } from "@nestjs/swagger";
 import { CreateRoomDto } from "./create-room.dto";
 
 export class UpdateRoomDto extends PartialType(CreateRoomDto) {}
@@ -542,7 +537,7 @@ export class UpdateRoomDto extends PartialType(CreateRoomDto) {}
 <summary><span class="code-block-header">src/rooms/dto/response-room.dto.ts</span></summary>
 
 ```ts
-import { Exclude, Expose, Transform } from "class-transformer";
+import { Expose } from "class-transformer";
 import { RoomStatusEnum, RoomTypeEnum } from "../room.model";
 
 // export class AmenityResponseDto {
@@ -556,7 +551,7 @@ import { RoomStatusEnum, RoomTypeEnum } from "../room.model";
 //   public description?: string;
 // }
 
-export class RoomResponseDto {
+export class ResponseRoomDto {
   @Expose()
   public id!: string;
 
@@ -564,10 +559,10 @@ export class RoomResponseDto {
   public roomNumber!: number;
 
   @Expose()
-  public roomType!: RoomType;
+  public roomType!: RoomTypeEnum;
 
   @Expose()
-  public status!: RoomStatus;
+  public roomStatus!: RoomStatusEnum;
 
   @Expose()
   public hasSeaView!: boolean;
@@ -613,18 +608,19 @@ import {
   IsOptional,
   Min,
   Max,
+  IsPositive,
+  IsNumber,
 } from "class-validator";
-import { Type } from "class-transformer";
 import { RoomStatusEnum, RoomTypeEnum } from "../room.model";
 
 export class FilterRoomDto {
-  @IsEnum(RoomType)
+  @IsEnum(RoomTypeEnum)
   @IsOptional()
-  public roomType?: RoomType;
+  public roomType?: RoomTypeEnum;
 
-  @IsEnum(RoomStatus)
+  @IsEnum(RoomStatusEnum)
   @IsOptional()
-  public status?: RoomStatus;
+  public status?: RoomStatusEnum;
 
   //   @Type((): typeof Boolean => Boolean)
   @IsBoolean()
@@ -644,7 +640,7 @@ export class FilterRoomDto {
   //   @Type((): typeof Number => Number)
   //   public maxPrice?: number;
 
-  @Type((): typeof Number => Number)
+  // @Type((): typeof Number => Number)
   @Min(1)
   @IsInt()
   @IsPositive()
@@ -652,7 +648,7 @@ export class FilterRoomDto {
   @IsOptional()
   public page?: number = 1;
 
-  @Type((): typeof Number => Number)
+  // @Type((): typeof Number => Number)
   @Max(100)
   @Min(1)
   @IsInt()
@@ -706,24 +702,27 @@ export class RoomsModule {}
 import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { RootFilterQuery, Types } from "mongoose";
-import { Room, RoomDocument, RoomStatus, RoomType, type RoomModelType } from "./room.model";
+import { Room, RoomDocument, RoomStatusEnum, type RoomModelType } from "./room.model";
 import { CreateRoomDto } from "./dto/create-room.dto";
 import { UpdateRoomDto } from "./dto/update-room.dto";
 import { FilterRoomDto } from "./dto/filter-room.dto";
-import { ResponseRoomDto } from "./dto/response-room.dto";
+// import { ResponseRoomDto } from "./dto/response-room.dto";
 import { plainToInstance } from "class-transformer";
+import { ResponseRoomDto } from "./dto/response-room.dto";
 
 @Injectable()
 export class RoomsService {
 	public constructor(
 		@InjectModel(Room.name)
-		private readonly roomModel: RoomModelType
+		private readonly roomModel: RoomModelType,
 	) {}
 
 	public async create(dto: CreateRoomDto): Promise<ResponseRoomDto> {
-		const existingRoom = await this.roomModel.findOne({
-			roomNumber: dto.roomNumber,
-		});
+		const existingRoom = await this.roomModel
+			.findOne({
+				roomNumber: dto.roomNumber,
+			})
+			.exec();
 
 		if (existingRoom) {
 			throw new ConflictException(`Room with number ${dto.roomNumber} already exists`);
@@ -734,19 +733,14 @@ export class RoomsService {
 			validateBeforeSave: true,
 		});
 
-
-		const responseDto = plainToInstance(
-			ResponseRoomDto,
-			roomInstance,
-			{
-				excludeExtraneousValues: true
-			});
-
+		const responseDto = plainToInstance(ResponseRoomDto, roomInstance, {
+			excludeExtraneousValues: true,
+		});
 
 		return responseDto;
 	}
 
-	public async findAll(filterDto: RoomFilterDto): Promise<{
+	public async findAll(filterDto: FilterRoomDto): Promise<{
 		rooms: RoomDocument[];
 		total: number;
 		page: number;
@@ -823,7 +817,7 @@ export class RoomsService {
 	public async findAvailableRooms(): Promise<RoomDocument[]> {
 		return this.roomModel
 			.find({
-				status: RoomStatus.AVAILABLE,
+				roomStatus: RoomStatusEnum.AVAILABLE,
 			})
 			.sort({ roomNumber: 1 })
 			.exec();
@@ -844,13 +838,13 @@ export class RoomsService {
 			query.hasSeaView = filters.hasSeaView;
 		}
 
-		if (filters.minOccupancy) {
-			query.maxOccupancy = { $gte: filters.minOccupancy };
-		}
+		// if (filters.minOccupancy) {
+		// 	query.maxOccupancy = { $gte: filters.minOccupancy };
+		// }
 
-		if (filters.maxPrice) {
-			query["pricing.basePrice"] = { $lte: filters.maxPrice };
-		}
+		// if (filters.maxPrice) {
+		// 	query["pricing.basePrice"] = { $lte: filters.maxPrice };
+		// }
 
 		return query;
 	}
@@ -921,9 +915,8 @@ import {
 // import { RoomService } from "./room.service";
 import { CreateRoomDto } from "./dto/create-room.dto";
 import { UpdateRoomDto } from "./dto/update-room.dto";
-import { RoomResponseDto } from "./dto/response-room.dto";
 import { RoomsService } from "./rooms.service";
-import { RoomDocument, RoomType } from "./room.model";
+import { RoomDocument } from "./room.model";
 import { FilterRoomDto } from "./dto/filter-room.dto";
 // import { RoomFilterDto } from "./dto/room-filter.dto";
 // import { RoomResponseDto } from "./dto/room-response.dto";
@@ -931,8 +924,8 @@ import { FilterRoomDto } from "./dto/filter-room.dto";
 import { ResponseRoomDto } from "./dto/response-room.dto";
 
 @Controller("rooms")
-@UseInterceptors(new ClassSerializerInterceptor(RoomResponseDto))
-export class RoomController {
+@UseInterceptors(new ClassSerializerInterceptor(ResponseRoomDto))
+export class RoomsController {
   public constructor(private readonly roomService: RoomsService) {}
 
   @Post()
@@ -1126,7 +1119,7 @@ findOne(@Param('id') id: number) {
 
 ```ts
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { HydratedDocument, Types } from "mongoose";
+import { HydratedDocument, Model, Types } from "mongoose";
 import { Room } from "src/rooms/room.model";
 
 @Schema({ strict: true, timestamps: true })
@@ -1138,9 +1131,9 @@ export class Reservation {
     type: Date,
     required: true,
     // min: new Date(date.setHours(0, 0, 0, 0)),
-    set: (date: Date) => new Date(date.setHours(0, 0, 0, 0)),
+    set: (date: Date): Date => new Date(date.setHours(0, 0, 0, 0)),
     validate: {
-      validator: (date: Date) => date >= new Date(),
+      validator: (date: Date): boolean => date >= new Date(),
       message: "Date can't be in the past",
     },
   })
@@ -1150,9 +1143,9 @@ export class Reservation {
     type: Date,
     required: true,
     // min: new Date(date.setHours(0, 0, 0, 0)),
-    set: (date: Date) => new Date(date.setHours(0, 0, 0, 0)),
+    set: (date: Date): Date => new Date(date.setHours(0, 0, 0, 0)),
     validate: {
-      validator: (date: Date) => date >= new Date(),
+      validator: (date: Date): boolean => date >= new Date(),
       message: "Date can't be in the past",
     },
   })
@@ -1170,7 +1163,7 @@ ReservationSchema.index({
   checkOutDate: 1,
 });
 // Pre-save hook example for validation
-ReservationSchema.pre("save", function (next) {
+ReservationSchema.pre("save", function (next): void {
   if (this.checkInDate >= this.checkOutDate) {
     return next(new Error("Start date must be before end date"));
   }
@@ -1215,7 +1208,7 @@ export class CreateReservationDto {
 Update DTO
 
 ```ts
-import { PartialType } from "@nestjs/mapped-types";
+import { PartialType } from "@nestjs/swagger";
 import { CreateReservationDto } from "./create-reservation.dto";
 
 export class UpdateReservationDto extends PartialType(CreateReservationDto) {}
@@ -1623,6 +1616,30 @@ export class SerializeInterceptor implements NestInterceptor {
     );
   }
 }
+```
+
+Module
+
+```ts
+import { Module } from "@nestjs/common";
+import { ReservationsService } from "./reservations.service";
+import { ReservationsController } from "./reservations.controller";
+import { MongooseModule } from "@nestjs/mongoose";
+import { Reservation, ReservationSchema } from "./reservation.model";
+
+@Module({
+  imports: [
+    MongooseModule.forFeature([
+      {
+        name: Reservation.name,
+        schema: ReservationSchema,
+      },
+    ]),
+  ],
+  providers: [ReservationsService],
+  controllers: [ReservationsController],
+})
+export class ReservationsModule {}
 ```
 
 <!-- <details>
