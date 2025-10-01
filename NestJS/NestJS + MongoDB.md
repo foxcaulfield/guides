@@ -54,7 +54,13 @@ echo "" > .env
 
 Add config module to the imports array of your root app module:
 
-<div class="code-block-header">src/app.module.ts</div>
+$
+\begin{aligned}
+\color{#a84923} \texttt{src/app.module.ts}
+\end{aligned}
+$
+
+<!-- <div class="code-block-header">src/app.module.ts</div> -->
 
 ```ts
 import { Module } from "@nestjs/common";
