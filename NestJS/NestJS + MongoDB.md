@@ -384,9 +384,9 @@ export enum RoomStatusEnum {
 @Schema({
 	strict: true,
 	timestamps: true,
-	toJSON: {
-		virtuals: false,
-	},
+	// toJSON: {
+	// 	virtuals: false,
+	// },
 })
 export class Room {
 	@Prop({
@@ -409,13 +409,21 @@ export class Room {
 	@Prop({
 		type: String,
 		enum: RoomStatusEnum,
-		default: RoomStatusEnum.AVAILABLE,
+		default: RoomStatusEnum.MAINTENANCE,
 	})
 	public roomStatus!: RoomStatusEnum;
 
 	@Prop(Boolean)
 	public hasSeaView!: boolean;
 
+	// @Prop(String)
+	public id?: string;
+
+	// @Prop(Date)
+	public createdAt?: Date;
+
+	// @Prop(Date)
+	public updatedAt?: Date;
 	// @Prop({
 	// 	type: Number,
 	// 	min: 1,
@@ -454,7 +462,7 @@ export class Room {
 	// }
 }
 export type RoomDocument = HydratedDocument<Room>;
-export type RoomModelType = Model<RoomDocument> & typeof Room;
+export type RoomModelType = Model<RoomDocument>;
 export const RoomSchema = SchemaFactory.createForClass(Room);
 
 ```
@@ -473,7 +481,7 @@ import {
   Max,
   IsOptional,
 } from "class-validator";
-import { RoomStatusEnum, RoomTypeEnum } from "../room.model";
+import { RoomTypeEnum } from "../room.model";
 
 // export class AmenityDto {
 //   @IsBoolean()
@@ -493,9 +501,9 @@ export class CreateRoomDto {
   @IsEnum(RoomTypeEnum)
   public roomType!: RoomTypeEnum;
 
-  @IsEnum(RoomStatusEnum)
-  @IsOptional()
-  public status?: RoomStatusEnum;
+  // @IsEnum(RoomStatusEnum)
+  // @IsOptional()
+  // public roomStatus?: RoomStatusEnum = RoomStatusEnum.MAINTENANCE;
 
   @IsBoolean()
   @IsOptional()
@@ -620,7 +628,7 @@ export class FilterRoomDto {
 
   @IsEnum(RoomStatusEnum)
   @IsOptional()
-  public status?: RoomStatusEnum;
+  public roomStatus?: RoomStatusEnum;
 
   //   @Type((): typeof Boolean => Boolean)
   @IsBoolean()
@@ -686,6 +694,7 @@ import { Room, RoomSchema } from "./room.model";
 	],
 	providers: [RoomsService],
 	controllers: [RoomsController],
+	exports: [RoomsService],
 })
 export class RoomsModule {}
 
@@ -709,13 +718,26 @@ import { FilterRoomDto } from "./dto/filter-room.dto";
 // import { ResponseRoomDto } from "./dto/response-room.dto";
 import { plainToInstance } from "class-transformer";
 import { ResponseRoomDto } from "./dto/response-room.dto";
+import { PaginatedResponse } from "./room.types";
 
 @Injectable()
 export class RoomsService {
+	private toResponseDto(entity: RoomDocument): ResponseRoomDto;
+	private toResponseDto(entity: RoomDocument[]): ResponseRoomDto[];
+	private toResponseDto(entity: RoomDocument | RoomDocument[]): ResponseRoomDto | ResponseRoomDto[] {
+		return plainToInstance(ResponseRoomDto, entity, {
+			excludeExtraneousValues: true,
+		});
+	}
+
 	public constructor(
 		@InjectModel(Room.name)
 		private readonly roomModel: RoomModelType,
 	) {}
+
+	public async checkRoomExists(id: string): Promise<boolean> {
+		return !!(await this.roomModel.exists({ _id: new Types.ObjectId(id) }));
+	}
 
 	public async create(dto: CreateRoomDto): Promise<ResponseRoomDto> {
 		const existingRoom = await this.roomModel
@@ -733,20 +755,12 @@ export class RoomsService {
 			validateBeforeSave: true,
 		});
 
-		const responseDto = plainToInstance(ResponseRoomDto, roomInstance, {
-			excludeExtraneousValues: true,
-		});
+		const responseDto = this.toResponseDto(roomInstance);
 
 		return responseDto;
 	}
 
-	public async findAll(filterDto: FilterRoomDto): Promise<{
-		rooms: RoomDocument[];
-		total: number;
-		page: number;
-		limit: number;
-		pages: number;
-	}> {
+	public async findAll(filterDto: FilterRoomDto): Promise<PaginatedResponse> {
 		const { page, limit, ...filters } = filterDto;
 		const skip = page === undefined || limit === undefined ? 0 : (page - 1) * limit;
 		const limitValue = limit ?? 10;
@@ -759,7 +773,7 @@ export class RoomsService {
 		]);
 
 		return {
-			rooms,
+			rooms: this.toResponseDto(rooms),
 			total,
 			page: pageValue,
 			limit: limitValue,
@@ -767,17 +781,17 @@ export class RoomsService {
 		};
 	}
 
-	public async findById(id: string): Promise<RoomDocument> {
+	public async findById(id: string): Promise<ResponseRoomDto> {
 		const room = await this.roomModel.findById(new Types.ObjectId(id));
 
 		if (!room) {
 			throw new NotFoundException(`Room with ID ${id} not found`);
 		}
 
-		return room;
+		return this.toResponseDto(room);
 	}
 
-	public async update(id: string, dto: UpdateRoomDto): Promise<RoomDocument> {
+	public async update(id: string, dto: UpdateRoomDto): Promise<ResponseRoomDto> {
 		/* if (dto.roomNumber) {
 			const existingRoom = await this.roomModel.findOne({
 				roomNumber: dto.roomNumber,
@@ -799,7 +813,7 @@ export class RoomsService {
 			throw new NotFoundException(`Room with ID ${id} not found`);
 		}
 
-		return updatedRoom;
+		return this.toResponseDto(updatedRoom);
 	}
 
 	public async remove(id: string): Promise<void> {
@@ -814,24 +828,28 @@ export class RoomsService {
 	// 	return this.roomModel.findByType(roomType);
 	// }
 
-	public async findAvailableRooms(): Promise<RoomDocument[]> {
-		return this.roomModel
-			.find({
-				roomStatus: RoomStatusEnum.AVAILABLE,
-			})
-			.sort({ roomNumber: 1 })
-			.exec();
+	public async findAvailableRooms(): Promise<PaginatedResponse> {
+		// const result = await this.roomModel
+		// 	.find({
+		// 		roomStatus: RoomStatusEnum.AVAILABLE,
+		// 	})
+		// 	.sort({ roomNumber: 1 })
+		// 	.exec();
+
+		// return this.toResponseDto(result);
+
+		return this.findAll({ roomStatus: RoomStatusEnum.AVAILABLE });
 	}
 
-	private buildFilterQuery(filters: Partial<FilterRoomDto>): RootFilterQuery<RoomDocument> {
-		const query: RootFilterQuery<RoomDocument> = {};
+	private buildFilterQuery(filters: Partial<FilterRoomDto>): RootFilterQuery<ResponseRoomDto> {
+		const query: RootFilterQuery<ResponseRoomDto> = {};
 
 		if (filters.roomType) {
 			query.roomType = filters.roomType;
 		}
 
-		if (filters.status) {
-			query.status = filters.status;
+		if (filters.roomStatus) {
+			query.roomStatus = filters.roomStatus;
 		}
 
 		if (filters.hasSeaView !== undefined) {
@@ -905,26 +923,26 @@ import {
   Patch,
   Param,
   Delete,
-  Query,
-  UseInterceptors,
+  // Query,
+  // UseInterceptors,
   // ParseIntPipe,
   HttpStatus,
   HttpCode,
-  ClassSerializerInterceptor,
+  // ClassSerializerInterceptor,
 } from "@nestjs/common";
 // import { RoomService } from "./room.service";
 import { CreateRoomDto } from "./dto/create-room.dto";
 import { UpdateRoomDto } from "./dto/update-room.dto";
 import { RoomsService } from "./rooms.service";
-import { RoomDocument } from "./room.model";
 import { FilterRoomDto } from "./dto/filter-room.dto";
 // import { RoomFilterDto } from "./dto/room-filter.dto";
 // import { RoomResponseDto } from "./dto/room-response.dto";
 // import { SerializeInterceptor } from "../interceptors/serialize.interceptor";
 import { ResponseRoomDto } from "./dto/response-room.dto";
+import { PaginatedResponse } from "./room.types";
 
 @Controller("rooms")
-@UseInterceptors(new ClassSerializerInterceptor(ResponseRoomDto))
+// @UseInterceptors(new ClassSerializerInterceptor(ResponseRoomDto))
 export class RoomsController {
   public constructor(private readonly roomService: RoomsService) {}
 
@@ -935,19 +953,15 @@ export class RoomsController {
     return await this.roomService.create(createRoomDto);
   }
 
-  @Get()
-  public async findAll(@Query() filterDto: FilterRoomDto): Promise<{
-    rooms: RoomDocument[];
-    total: number;
-    page: number;
-    limit: number;
-    pages: number;
-  }> {
+  @Post("get_all")
+  public async findAll(
+    @Body() filterDto: FilterRoomDto
+  ): Promise<PaginatedResponse> {
     return await this.roomService.findAll(filterDto);
   }
 
   @Get("available")
-  public async findAvailable(): Promise<RoomDocument[]> {
+  public async findAvailable(): Promise<PaginatedResponse> {
     return await this.roomService.findAvailableRooms();
   }
 
@@ -959,7 +973,7 @@ export class RoomsController {
   //   }
 
   @Get(":id")
-  public async findOne(@Param("id") id: string): Promise<RoomDocument> {
+  public async findOne(@Param("id") id: string): Promise<ResponseRoomDto> {
     return await this.roomService.findById(id);
   }
 
@@ -967,7 +981,7 @@ export class RoomsController {
   public async update(
     @Param("id") id: string,
     @Body() updateRoomDto: UpdateRoomDto
-  ): Promise<RoomDocument> {
+  ): Promise<ResponseRoomDto> {
     return await this.roomService.update(id, updateRoomDto);
   }
 
@@ -1133,7 +1147,11 @@ export class Reservation {
     // min: new Date(date.setHours(0, 0, 0, 0)),
     set: (date: Date): Date => new Date(date.setHours(0, 0, 0, 0)),
     validate: {
-      validator: (date: Date): boolean => date >= new Date(),
+      validator: (date: Date): boolean => {
+        const todayMidnight = new Date(new Date().setHours(0, 0, 0, 0));
+        // today.setUTCHours(0, 0, 0, 0);
+        return date >= todayMidnight;
+      },
       message: "Date can't be in the past",
     },
   })
@@ -1145,7 +1163,12 @@ export class Reservation {
     // min: new Date(date.setHours(0, 0, 0, 0)),
     set: (date: Date): Date => new Date(date.setHours(0, 0, 0, 0)),
     validate: {
-      validator: (date: Date): boolean => date >= new Date(),
+      validator: (date: Date): boolean => {
+        const todayMidnight = new Date(new Date().setHours(0, 0, 0, 0));
+        // const today = new Date();
+        // today.setUTCHours(0, 0, 0, 0);
+        return date >= todayMidnight;
+      },
       message: "Date can't be in the past",
     },
   })
@@ -1164,7 +1187,7 @@ ReservationSchema.index({
 });
 // Pre-save hook example for validation
 ReservationSchema.pre("save", function (next): void {
-  if (this.checkInDate >= this.checkOutDate) {
+  if (this.checkInDate > this.checkOutDate) {
     return next(new Error("Start date must be before end date"));
   }
   next();
@@ -1178,26 +1201,27 @@ ReservationSchema.pre("save", function (next): void {
 Create DTO
 
 ```ts
-import {
-  IsDate,
-  IsMongoId,
-  IsOptional,
-  IsString,
-  MinDate,
-} from "class-validator";
-import { Type } from "class-transformer";
+import { IsDate, IsMongoId } from "class-validator";
+import { Transform, Type } from "class-transformer";
 
 export class CreateReservationDto {
   @IsMongoId()
   public room!: string;
 
-  @IsDate()
-  @Type((): typeof Date => Date)
+  @IsDate() /* validation */
+  @Type((): typeof Date => Date) /* transformation */
+  @Transform((tp): Date => {
+    // const type = tp.type;
+
+    const date = new Date(tp.value);
+    date.setUTCHours(0, 0, 0, 0);
+    return date;
+  })
   // @MinDate(new Date(date.setHours(0, 0, 0, 0), { message: "Check-in date cannot be in the past" })
   public checkInDate!: Date;
 
   @IsDate()
-  // @Type(():typeof Date => Date)
+  @Type((): typeof Date => Date)
   // @MinDate(new Date(date.setHours(0, 0, 0, 0), { message: "Check-out date cannot be in the past" })
   public checkOutDate!: Date;
 }
@@ -1219,14 +1243,17 @@ export class UpdateReservationDto extends PartialType(CreateReservationDto) {}
 Response DTO
 
 ```ts
-import { Expose } from "class-transformer";
+import { Expose, Transform } from "class-transformer";
 
 export class ResponseReservationDto {
   @Expose()
   public id!: string;
 
   @Expose()
-  // @Transform(({ obj }) => obj.room?.toString())
+  @Transform(({ obj }): unknown => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    return obj?.room?.toString?.();
+  })
   public room!: string;
 
   @Expose()
@@ -1272,86 +1299,120 @@ import { CreateReservationDto } from "./dto/create-reservation.dto";
 import { UpdateReservationDto } from "./dto/update-reservation.dto";
 import { ResponseReservationDto } from "./dto/response-reservation.dto";
 import { plainToInstance } from "class-transformer";
+import { RoomsService } from "src/rooms/rooms.service";
+// import { Room, type RoomModelType } from "src/rooms/room.model";
 
 @Injectable()
 export class ReservationsService {
   public constructor(
     @InjectModel(Reservation.name)
-    private readonly reservationModel: Model<ReservationDocument>
+    private readonly reservationModel: Model<ReservationDocument>,
+    // @InjectModel(Room.name)
+    // private readonly roomModel: RoomModelType,
+    private readonly roomService: RoomsService
   ) {}
+
+  private toResponseDto(entity: ReservationDocument): ResponseReservationDto;
+  private toResponseDto(
+    entity: ReservationDocument[]
+  ): ResponseReservationDto[];
+  private toResponseDto(
+    entity: ReservationDocument | ReservationDocument[]
+  ): ResponseReservationDto | ResponseReservationDto[] {
+    return plainToInstance(ResponseReservationDto, entity, {
+      excludeExtraneousValues: true,
+    });
+  }
 
   private normalizeDate(date: Date): Date {
     return new Date(date.setHours(0, 0, 0, 0));
   }
 
-  public async checkRoomAvailability(
+  private async ensureRoomExists(roomId: string): Promise<void> {
+    const doesRoomExist = await this.roomService.checkRoomExists(roomId);
+
+    if (!doesRoomExist) {
+      throw new NotFoundException("Room is not found");
+    }
+  }
+
+  private checkDatesAreValid(checkInDate: Date, checkOutDate: Date): void {
+    if (checkInDate > checkOutDate) {
+      throw new BadRequestException(
+        "Check-out date must be after or equal check-in date"
+      );
+    }
+  }
+
+  public async ensureRoomAvailable(
     roomId: string,
     checkInDate: Date,
-    checkOutDate: Date
-    // excludeReservationId?: string,
-  ): Promise<boolean> {
+    checkOutDate: Date,
+    excludeReservationId?: string
+  ): Promise<void> {
     const normalizedCheckIn = this.normalizeDate(new Date(checkInDate));
     const normalizedCheckOut = this.normalizeDate(new Date(checkOutDate));
 
-    const query: Parameters<typeof this.reservationModel.findOne>[number] = {
-      room: new Types.ObjectId(roomId),
+    const query: Parameters<typeof this.reservationModel.findOne>[0] = {
+      room: new Types.ObjectId(roomId) /* important */,
       $or: [
         {
-          checkInDate: { $lt: normalizedCheckOut },
-          checkOutDate: { $gt: normalizedCheckIn },
+          $and: [
+            { checkInDate: { $lt: normalizedCheckOut } },
+            { checkOutDate: { $gt: normalizedCheckIn } },
+          ],
+        },
+        {
+          $or: [
+            { checkOutDate: { $eq: normalizedCheckIn } },
+            { checkInDate: { $eq: normalizedCheckOut } },
+          ],
         },
       ],
     };
 
-    // if (excludeReservationId) {
-    // 	query.id = { $ne: new Types.ObjectId(excludeReservationId) };
-    // } /* id! */
+    if (excludeReservationId) {
+      query._id = { $ne: new Types.ObjectId(excludeReservationId) };
+    } /* id! */
 
     const conflictingReservation = await this.reservationModel.findOne(query);
-    return !conflictingReservation;
+    // return !conflictingReservation;
+    if (conflictingReservation) {
+      throw new ConflictException(
+        "Room is not available for the selected dates"
+      );
+    }
   }
 
   public async create(
     createReservationDto: CreateReservationDto
   ): Promise<ResponseReservationDto> {
-    const { room, checkInDate, checkOutDate } = createReservationDto;
-
-    if (checkInDate >= checkOutDate) {
-      throw new BadRequestException(
-        "Check-out date must be after check-in date"
-      );
-    }
-
-    const isAvailable = await this.checkRoomAvailability(
-      room,
+    const {
+      room: roomId,
       checkInDate,
-      checkOutDate
-    );
-    if (!isAvailable) {
-      throw new ConflictException(
-        "Room is not available for the selected dates"
-      );
-    }
+      checkOutDate,
+      ...restOfDto
+    } = createReservationDto;
 
-    const reservation = new this.reservationModel(createReservationDto);
-    // !!! + transformation
-    await reservation.save();
+    await this.ensureRoomExists(roomId);
+    this.checkDatesAreValid(checkInDate, checkOutDate);
+    await this.ensureRoomAvailable(roomId, checkInDate, checkOutDate);
 
-    const responseDto = plainToInstance(ResponseReservationDto, reservation, {
-      excludeExtraneousValues: true,
+    const reservation = new this.reservationModel({
+      room: new Types.ObjectId(roomId) /* important */,
+      checkInDate,
+      checkOutDate,
+      ...restOfDto,
     });
 
-    return responseDto;
+    await reservation.save();
+
+    return this.toResponseDto(reservation);
   }
 
   public async findAll(): Promise<ResponseReservationDto[]> {
-    const result = await this.reservationModel.find().populate("room").exec();
-
-    const responseDto = plainToInstance(ResponseReservationDto, result, {
-      excludeExtraneousValues: true,
-    });
-
-    return responseDto;
+    const result = await this.reservationModel.find().exec();
+    return this.toResponseDto(result);
   }
 
   public async findByRoom(roomId: string): Promise<ResponseReservationDto[]> {
@@ -1360,91 +1421,89 @@ export class ReservationsService {
       .sort({ checkInDate: 1 })
       .exec();
 
-    const responseDto = plainToInstance(ResponseReservationDto, result, {
-      excludeExtraneousValues: true,
-    });
-
-    return responseDto;
+    return this.toResponseDto(result);
   }
 
   public async findOne(id: string): Promise<ResponseReservationDto> {
-    // new Types.ObjectId(id), /* ??? */
-    const reservation = await this.reservationModel
-      .findById(id)
-      .populate("room")
-      .exec();
+    const reservation = await this.reservationModel.findById(id).exec();
 
     if (!reservation) {
       throw new NotFoundException(`Reservation with ID ${id} not found`);
     }
 
-    const responseDto = plainToInstance(ResponseReservationDto, reservation, {
-      excludeExtraneousValues: true,
-    });
-
-    return responseDto;
+    return this.toResponseDto(reservation);
   }
 
   public async update(
     id: string,
     updateReservationDto: UpdateReservationDto
   ): Promise<ResponseReservationDto> {
-    const existingReservation = await this.findOne(id);
-
-    const { room, checkInDate, checkOutDate } = updateReservationDto;
-
-    // Если обновляются даты или комната - проверяем доступность
-    if (room || checkInDate || checkOutDate) {
-      const finalRoom = room || existingReservation.room.toString();
-      const finalCheckIn =
-        checkInDate || existingReservation.checkInDate; /* !!! */
-      const finalCheckOut = checkOutDate || existingReservation.checkOutDate;
-
-      if (finalCheckIn >= finalCheckOut) {
-        throw new BadRequestException(
-          "Check-out date must be after check-in date"
-        );
-      }
-
-      const isAvailable = await this.checkRoomAvailability(
-        finalRoom,
-        new Date(finalCheckIn),
-        new Date(finalCheckOut)
-      );
-
-      if (!isAvailable) {
-        throw new ConflictException(
-          "Room is not available for the selected dates"
-        );
-      }
+    // 1. Найти существующее бронирование
+    const existingReservation = await this.reservationModel.findById(id).exec();
+    if (!existingReservation) {
+      throw new NotFoundException(`Reservation with ID ${id} not found`);
     }
 
+    // 2. Извлечь обновляемые поля
+    const {
+      room: newRoomId,
+      checkInDate: newCheckIn,
+      checkOutDate: newCheckOut,
+      // ...otherUpdates
+    } = updateReservationDto;
+
+    // 3. Подготовить финальные значения для проверки и обновления
+    const finalRoomId = newRoomId
+      ? newRoomId
+      : existingReservation.room.toString();
+    const finalCheckIn = newCheckIn
+      ? new Date(newCheckIn)
+      : existingReservation.checkInDate;
+    const finalCheckOut = newCheckOut
+      ? new Date(newCheckOut)
+      : existingReservation.checkOutDate;
+
+    // 4. Выполнить проверки (если обновляются связанные поля)
+    if (newRoomId || newCheckIn || newCheckOut) {
+      this.checkDatesAreValid(finalCheckIn, finalCheckOut);
+      if (newRoomId) {
+        await this.ensureRoomExists(finalRoomId);
+      }
+      // Важно: исключаем текущее бронирование из проверки конфликтов
+      await this.ensureRoomAvailable(
+        finalRoomId,
+        finalCheckIn,
+        finalCheckOut,
+        id
+      );
+    }
+
+    // 6. Выполнить обновление и вернуть результат
     const updatedReservation = await this.reservationModel
       .findByIdAndUpdate(
-        // new Types.ObjectId(id), /* ??? */
         id,
         {
-          ...(room && { room: new Types.ObjectId(room) }),
-          ...(checkInDate && { checkInDate }),
-          ...(checkOutDate && { checkOutDate }),
-        },
-        { new: true, runValidators: true }
+          $set: {
+            ...(newRoomId ? { room: new Types.ObjectId(newRoomId) } : {}),
+            ...(newCheckIn ? { checkInDate: finalCheckIn } : {}),
+            ...(newCheckOut ? { checkOutDate: finalCheckOut } : {}),
+          },
+        }, // Явно используем оператор $set
+        {
+          new: true, // Вернуть обновленный документ
+          runValidators: true, // Запустить валидаторы схемы
+        }
       )
-      .populate("room")
       .exec();
 
     if (!updatedReservation) {
-      throw new NotFoundException(`Reservation with ID ${id} not found`);
+      // Эта строка должна быть недостижима после первой проверки, но для безопасности оставим
+      throw new NotFoundException(
+        `Reservation with ID ${id} not found after update`
+      );
     }
-    const responseDto = plainToInstance(
-      ResponseReservationDto,
-      updatedReservation,
-      {
-        excludeExtraneousValues: true,
-      }
-    );
 
-    return responseDto;
+    return this.toResponseDto(updatedReservation);
   }
 
   public async remove(id: string): Promise<ResponseReservationDto | null> {
@@ -1459,36 +1518,34 @@ export class ReservationsService {
     return responseDto;
   }
 
-  public async getRoomAvailability(
-    roomId: string,
-    startDate?: Date,
-    endDate?: Date
-  ): Promise<{ available: boolean; conflictingDates?: Date[] }> {
-    const normalizedStart = startDate
-      ? this.normalizeDate(new Date(startDate))
-      : this.normalizeDate(new Date());
-    const normalizedEnd = endDate
-      ? this.normalizeDate(new Date(endDate))
-      : new Date(normalizedStart.getTime() + 30 * 24 * 60 * 60 * 1000);
+  // public async getRoomAvailability(
+  // 	roomId: string,
+  // 	startDate?: Date,
+  // 	endDate?: Date,
+  // ): Promise<{ available: boolean; conflictingDates?: Date[] }> {
+  // 	const normalizedStart = startDate ? this.normalizeDate(new Date(startDate)) : this.normalizeDate(new Date());
+  // 	const normalizedEnd = endDate
+  // 		? this.normalizeDate(new Date(endDate))
+  // 		: new Date(normalizedStart.getTime() + 30 * 24 * 60 * 60 * 1000);
 
-    const conflicts = await this.reservationModel
-      .find({
-        room: new Types.ObjectId(roomId),
-        $or: [
-          {
-            checkInDate: { $lt: normalizedEnd },
-            checkOutDate: { $gt: normalizedStart },
-          },
-        ],
-      })
-      .sort({ checkInDate: 1 })
-      .exec();
+  // 	const conflicts = await this.reservationModel
+  // 		.find({
+  // 			room: new Types.ObjectId(roomId),
+  // 			$or: [
+  // 				{
+  // 					checkInDate: { $lt: normalizedEnd },
+  // 					checkOutDate: { $gt: normalizedStart },
+  // 				},
+  // 			],
+  // 		})
+  // 		.sort({ checkInDate: 1 })
+  // 		.exec();
 
-    return {
-      available: conflicts.length === 0,
-      conflictingDates: conflicts.map((res): Date => res.checkInDate),
-    };
-  }
+  // 	return {
+  // 		available: conflicts.length === 0,
+  // 		conflictingDates: conflicts.map((res): Date => res.checkInDate),
+  // 	};
+  // }
 }
 ```
 
@@ -1541,18 +1598,14 @@ export class ReservationsController {
     return await this.reservationsService.findByRoom(roomId);
   }
 
-  @Get("availability/:roomId")
-  public async checkAvailability(
-    @Param("roomId") roomId: string,
-    @Body("startDate") startDate?: Date,
-    @Body("endDate") endDate?: Date
-  ): Promise<{ available: boolean; conflictingDates?: Date[] }> {
-    return await this.reservationsService.getRoomAvailability(
-      roomId,
-      startDate,
-      endDate
-    );
-  }
+  // @Get("availability/:roomId")
+  // public async checkAvailability(
+  // 	@Param("roomId") roomId: string,
+  // 	@Body("startDate") startDate?: Date,
+  // 	@Body("endDate") endDate?: Date,
+  // ): Promise<{ available: boolean; conflictingDates?: Date[] }> {
+  // 	return await this.reservationsService.getRoomAvailability(roomId, startDate, endDate);
+  // }
 
   @Get(":id")
   public async findOne(
@@ -1626,6 +1679,8 @@ import { ReservationsService } from "./reservations.service";
 import { ReservationsController } from "./reservations.controller";
 import { MongooseModule } from "@nestjs/mongoose";
 import { Reservation, ReservationSchema } from "./reservation.model";
+// import { Room, RoomSchema } from "src/rooms/room.model";
+import { RoomsModule } from "src/rooms/rooms.module";
 
 @Module({
   imports: [
@@ -1634,7 +1689,12 @@ import { Reservation, ReservationSchema } from "./reservation.model";
         name: Reservation.name,
         schema: ReservationSchema,
       },
+      // {
+      // 	name: Room.name,
+      // 	schema: RoomSchema,
+      // },
     ]),
+    RoomsModule,
   ],
   providers: [ReservationsService],
   controllers: [ReservationsController],
