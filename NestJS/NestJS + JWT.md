@@ -897,3 +897,234 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 })
 export class AuthModule {}
 ```
+
+# Create Roles guard and decorator (optional)
+
+### Roles guard
+
+<details>
+<summary>src/guards/roles.guard.ts</summary>
+
+```ts
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+} from "@nestjs/common";
+import { Reflector } from "@nestjs/core";
+import { IS_PUBLIC_KEY, ROLES_KEY } from "src/decorators/roles.decorator";
+import { UsersService } from "src/users/users.service";
+import { JwtPayload } from "src/interfaces/jwt-payload.interface";
+import { UserRoleEnum } from "src/users/user.model";
+
+@Injectable()
+export class RolesGuard implements CanActivate {
+  public constructor(
+    private reflector: Reflector,
+    private usersService: UsersService
+  ) {}
+
+  public async canActivate(context: ExecutionContext): Promise<boolean> {
+    // Check for public access
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (isPublic) return true;
+
+    // Get required roles from metadata
+    const requiredRoles = this.reflector.getAllAndOverride<UserRoleEnum[]>(
+      ROLES_KEY,
+      [context.getHandler(), context.getClass()]
+    );
+    if (!requiredRoles) return true;
+
+    // Get user from request
+    const request = context.switchToHttp().getRequest<{ user?: JwtPayload }>();
+    const user: JwtPayload | undefined = request.user;
+
+    if (!user || !user.userId) {
+      throw new ForbiddenException("User not authenticated");
+    }
+
+    // Fetch the latest user from the database
+    const dbUser = await this.usersService.findById(user.userId);
+    if (!dbUser) {
+      throw new ForbiddenException("User not found");
+    }
+
+    // Check roles (assuming dbUser.role is a string or array)
+    const userRoles = Array.isArray(dbUser.role) ? dbUser.role : [dbUser.role];
+    const hasRole = requiredRoles.some((role): boolean =>
+      userRoles.includes(role)
+    );
+
+    if (!hasRole) {
+      throw new ForbiddenException("User does not have the required role");
+    }
+
+    return true;
+  }
+}
+```
+
+</details>
+
+### Roles decorator
+
+<details>
+<summary>src/decorators/roles.decorator.ts</summary>
+
+```ts
+// roles.decorator.ts
+import { CustomDecorator, SetMetadata } from "@nestjs/common";
+
+export const ROLES_KEY = "roles";
+export const Roles = (...roles: string[]): CustomDecorator =>
+  SetMetadata(ROLES_KEY, roles);
+
+// public.decorator.ts (опционально)
+export const IS_PUBLIC_KEY = "isPublic";
+export const Public = (): CustomDecorator => SetMetadata(IS_PUBLIC_KEY, true);
+```
+
+</details>
+
+<br/>
+
+Add UsersModule to imports in reservations.module.ts to use UsersService in RolesGuard and use RolesGuard in reservations.controller.ts.
+
+Add UsersModule to imports in rooms.module.ts to use UsersService in RolesGuard for similar reasons.
+
+Add decorators and guards to controllers methods where needed.
+
+rooms.controller.ts example:
+
+```ts
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Controller("rooms")
+// @UseInterceptors(new ClassSerializerInterceptor(ResponseRoomDto))
+export class RoomsController {
+  public constructor(private readonly roomService: RoomsService) {}
+
+  // Only for ADMIN role
+  @Roles(UserRoleEnum.ADMIN)
+  @Post()
+  public async create(
+    @Body() createRoomDto: CreateRoomDto
+  ): Promise<ResponseRoomDto> {
+    return await this.roomService.create(createRoomDto);
+  }
+
+  // For all users (including unauthenticated)
+  @Public()
+  @Get("available")
+  public async findAvailable(): Promise<PaginatedResponse> {
+    return await this.roomService.findAvailableRooms();
+  }
+
+  // For all authenticated users
+  @Post("get_all")
+  public async findAll(
+    @Body() filterDto: FilterRoomDto
+  ): Promise<PaginatedResponse> {
+    return await this.roomService.findAll(filterDto);
+  }
+}
+```
+
+Or in users.controller.ts:
+
+```ts
+@Controller("users")
+export class UsersController {
+  // ...
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRoleEnum.ADMIN)
+  @Get(":id")
+  public async findOne(@Param("id") id: string): Promise<ResponseUserDto> {
+    const user = await this.usersService.findById(id);
+    if (!user) {
+      throw new NotFoundException("User not found");
+    }
+  }
+  //...
+}
+```
+
+Update reservations.service.ts to use enhanced remove method (will check if user is ADMIN or the owner of the reservation):
+
+```ts
+@Injectable()
+export class ReservationsService {
+  // ...
+  public async remove(
+    id: string,
+    user: ResponseUserDto
+  ): Promise<ResponseReservationDto | null> {
+    const result = await this.reservationModel.findById(id).exec();
+    if (!result) {
+      throw new NotFoundException(`Reservation with ID ${id} not found`);
+    }
+    const isAuthor = result.userId.toString() === user.id;
+    const isAdmin = user.role === UserRoleEnum.ADMIN;
+
+    // Only the author of the reservation or an admin can delete it
+    if (!isAuthor || !isAdmin) {
+      throw new ForbiddenException(
+        "You do not have permission to delete this reservation"
+      );
+    }
+
+    await result.deleteOne().exec();
+
+    const responseDto = plainToInstance(ResponseReservationDto, result, {
+      excludeExtraneousValues: true,
+    });
+
+    return responseDto;
+  }
+}
+```
+
+Update reservations.controller.ts to pass the current user to the remove method:
+
+```ts
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Controller("reservations")
+@Serialize(ResponseReservationDto)
+export class ReservationsController {
+  // ...
+  public async remove(
+    @Param("id") id: string,
+    @CurrentUser(undefined, CurrentUserPipe) currentUser: ResponseUserDto
+  ): Promise<ResponseReservationDto | null> {
+    return await this.reservationsService.remove(id, currentUser);
+  }
+}
+```
+
+And update reservation model to include userId field:
+
+```ts
+@Schema({ strict: true, timestamps: true })
+export class Reservation {
+  // ...
+
+  @Prop({ type: Types.ObjectId, ref: User.name, required: true })
+  public userId!: Types.ObjectId;
+}
+```
+
+Optionally, you can enable RolesGuard globally in main.ts:
+
+```ts
+async function bootstrap(): Promise<void> {
+  // ...
+  app.useGlobalGuards(
+    new RolesGuard(app.get(Reflector) /*, app.get(UsersService)*/)
+  );
+  // ...
+}
+```
