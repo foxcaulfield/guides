@@ -18,6 +18,9 @@ Install:
 ```sh
 npm install dotenv --save
 ```
+```sh
+npm install @nestjs/config
+```
 
 Create and configure a `.env` file:
 
