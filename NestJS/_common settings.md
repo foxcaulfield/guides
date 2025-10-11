@@ -129,6 +129,12 @@ Customize project configuration files as needed. For example:
 			"console": "integratedTerminal",
 			"restart": true,
 			"autoAttachChildProcesses": true
+		},
+{
+			"type": "node",
+			"request": "attach",
+			"name": "Attach Debug NestJS",
+			"port": 9229
 		}
 	]
 }
